@@ -1,0 +1,36 @@
+Arguments: 
+  /opt/homebrew/Cellar/node/17.0.1/bin/node /opt/homebrew/bin/yarn init
+
+PATH: 
+  /Users/zekenie/.rbenv/shims:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+
+Yarn version: 
+  1.22.17
+
+Node version: 
+  17.0.1
+
+Platform: 
+  darwin arm64
+
+Trace: 
+  Error: canceled
+      at Interface.<anonymous> (/opt/homebrew/lib/node_modules/yarn/lib/cli.js:137143:13)
+      at Interface.emit (node:events:390:28)
+      at Interface.[_ttyWrite] [as _ttyWrite] (node:internal/readline/interface:973:18)
+      at ReadStream.onkeypress (node:internal/readline/interface:240:20)
+      at ReadStream.emit (node:events:390:28)
+      at emitKeys (node:internal/readline/utils:358:14)
+      at emitKeys.next (<anonymous>)
+      at ReadStream.onData (node:internal/readline/emitKeypressEvents:64:36)
+      at ReadStream.emit (node:events:390:28)
+      at addChunk (node:internal/streams/readable:324:12)
+
+npm manifest: 
+  No manifest
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

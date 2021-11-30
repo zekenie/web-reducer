@@ -1,0 +1,58 @@
+import { Job, Worker } from "bullmq";
+
+import { QueueEvents } from "bullmq";
+
+const queueEvents = new QueueEvents("Paint");
+
+queueEvents.on(
+  "completed",
+  ({ jobId, returnvalue }: { jobId: string; returnvalue: any }) => {
+    console.log("failed", jobId, returnvalue);
+    // Called every time a job is completed in any worker.
+  }
+);
+
+queueEvents.on(
+  "failed",
+  ({ jobId, failedReason }: { jobId: string; failedReason: string }) => {
+    // jobId received a progress event
+    console.log("failed", jobId, failedReason);
+  }
+);
+
+type WorkerType<T extends keyof Queue.WorkerTypes> = {
+  name: Queue.WorkerTypes[T]["name"];
+  concurency: number;
+  worker: (
+    job: Job<Queue.WorkerTypes[T]["input"], Queue.WorkerTypes[T]["output"]>
+  ) => Promise<Queue.WorkerTypes[T]["output"]>;
+};
+
+export default function registerWorker<T extends keyof Queue.WorkerTypes>(
+  worker: WorkerType<T>
+) {
+  return new Worker<
+    Queue.WorkerTypes[T]["input"],
+    Queue.WorkerTypes[T]["output"]
+  >(
+    worker.name,
+    async (job) => {
+      // wrapper code here...
+      try {
+        return worker.worker(job);
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    { concurrency: worker.concurency }
+  );
+}
+
+// registerWorker<"runInVM">({
+//   name: "runInVM",
+//   worker: async (job) => {
+//     return {
+//       boof: "wer",
+//     };
+//   },
+// });
