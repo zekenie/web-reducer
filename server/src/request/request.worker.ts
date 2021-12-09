@@ -1,3 +1,4 @@
+import { enqueue } from "../worker/queue.service";
 import { registerQueue } from "../worker/queues";
 import registerWorker from "../worker/register-worker";
 import { captureRequest } from "./request.db";
@@ -26,11 +27,19 @@ registerWorker<WORKER_NAME>({
   concurency: 100,
   name: WORKER_NAME,
   worker: async (j) => {
-    await captureRequest({
+    const { requestId, hookId } = await captureRequest({
       id: j.data.requestId,
       contentType: j.data.contentType,
       body: j.data.body as {},
       writeKey: j.data.writeKey,
+    });
+
+    enqueue({
+      name: "run-hook",
+      input: {
+        requestId,
+        hookId,
+      },
     });
   },
 });

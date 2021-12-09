@@ -1,0 +1,2 @@
+- https://daisyui.com/components/navbar/
+- https://www.vechaiui.com/code

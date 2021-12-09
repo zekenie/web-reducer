@@ -12,14 +12,24 @@ export const captureRequest = async ({
   body: {};
   writeKey: string;
 }) => {
+  const pool = getPool();
+  const key = await pool.one<{ hookId: string }>(
+    sql`select "hookId" from "key" where type = 'write' and key = ${writeKey}`
+  );
+
+  if (!key) {
+    throw new Error("invalid write key");
+  }
+
   const query = sql`
     insert into request
     ("id", "contentType", "body", "writeKey", "createdAt")
     values
     (${id}, ${contentType}, ${sql.json(body)}, ${writeKey}, NOW())
+    returning id
   `;
 
-  const pool = getPool();
+  const { id: requestId } = await pool.one<{ id: string }>(query);
 
-  await pool.query(query);
+  return { hookId: key.hookId, requestId };
 };
