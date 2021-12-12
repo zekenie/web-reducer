@@ -1,2 +1,4 @@
 - https://github.com/suren-atoyan/monaco-react
   - [intellisense](https://stackoverflow.com/questions/43037243/provide-type-hints-to-monaco-editor)
+- command pallet
+  - https://github.com/timc1/kbar
