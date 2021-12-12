@@ -14,6 +14,10 @@ export default function makeServer(config: Config) {
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(makeRequestContextMiddleware());
 
+  app.get("/heartbeat", (req, res) => {
+    res.json({ ok: true });
+  });
+
   app.use("/", requestController);
 
   return app;

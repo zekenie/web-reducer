@@ -1,0 +1,9 @@
+node_modules
+dist
+*.md
+*.test.ts
+.git
+.gitignore
+Dockerfile
+*.env
+.npmrc

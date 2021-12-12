@@ -83,3 +83,18 @@ it("filters out our code from stacktraces", () => {
   );
   expect(result.error?.stacktrace).toEqual(expect.not.stringContaining("vm2"));
 });
+
+it("times out code that doesn't finish", () => {
+  const program = `
+    while(true) {}
+    function reducer(state, event) {
+    }
+  `;
+  const result = runCode({
+    code: program,
+    event: JSON.stringify({ number: 3 }),
+    state: JSON.stringify({ number: 4 }),
+  });
+
+  expect(result.error?.name).toEqual("TimeoutError");
+});

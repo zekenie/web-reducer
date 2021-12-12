@@ -8,8 +8,8 @@ export default Router().post(
   validate(VMInput),
   async function updateHook(req, res, next) {
     try {
-      service.runCode(req.body);
-      res.json({});
+      const payload = service.runCode(req.body);
+      res.json(payload);
     } catch (e) {
       next(e);
     }

@@ -1,6 +1,7 @@
 import { sql } from "slonik";
 import { getPool } from "../db";
-import { runCode } from "../vm/vm.service";
+import { runCode } from "../runner/runner.service";
+
 import { enqueue } from "../worker/queue.service";
 
 export async function handleRequest({
@@ -30,8 +31,10 @@ export async function runHook(requestId: string): Promise<unknown> {
   const request = await pool.one<{
     writeKey: string;
     id: string;
-    body: any;
-  }>(sql`select * from request where id = ${requestId}`);
+    body: string;
+  }>(
+    sql`select "writeKey", "id", body::text from request where id = ${requestId}`
+  );
   const { id, code } = await pool.one<{ code: string; id: string }>(sql`
     select id, code from hook
     join "key"
@@ -40,21 +43,21 @@ export async function runHook(requestId: string): Promise<unknown> {
     and "key"."key" = ${request.writeKey}
   `);
 
-  const { state } = await pool.one<{ state: unknown }>(sql`
-    select state from request where "hookId" = ${id}
+  const { state } = await pool.one<{ state: string }>(sql`
+    select state::text from request where "hookId" = ${id}
     order by "createdAt" desc
     limit 1
   `);
 
-  const { result, ms, error } = runCode({
+  const { result, ms, error } = await runCode({
     code,
-    state,
+    state: state,
     event: request.body,
   });
 
   await pool.anyFirst(sql`
     update request
-    set state = ${result},
+    set state = ${sql.json(result as {})},
     "error" = ${sql.json(JSON.stringify(error))},
     "executionTime" = ${ms}
     where id = ${request.id}

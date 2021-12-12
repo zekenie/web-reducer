@@ -47,6 +47,13 @@ export function runCode({
   const end = new Date();
   const ms = end.getTime() - start.getTime();
 
+  if (!error && !result && ms >= 249) {
+    error = {
+      name: "TimeoutError",
+      message: "Code has timed out",
+    };
+  }
+
   return {
     ms,
     result,

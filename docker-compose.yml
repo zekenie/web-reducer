@@ -16,3 +16,7 @@ services:
     image: redis:6.2.6
     ports:
       - 6379:6379
+  code_runner:
+    build: ./runner
+    ports:
+      - 3002:3002
