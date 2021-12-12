@@ -1,31 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import "./index.css";
 import App from "./App";
+import CommandPallet from "./command-pallet";
+import "./index.css";
 import reportWebVitals from "./reportWebVitals";
-import { KBarProvider } from "kbar";
 
-const actions = [
-  {
-    id: "blog",
-    name: "Blog",
-    shortcut: ["b"],
-    keywords: "writing words",
-    perform: () => (window.location.pathname = "blog"),
-  },
-  {
-    id: "contact",
-    name: "Contact",
-    shortcut: ["c"],
-    keywords: "email",
-    perform: () => (window.location.pathname = "contact"),
-  },
-];
 ReactDOM.render(
   <React.StrictMode>
-    <KBarProvider actions={actions}>
+    <CommandPallet>
       <App />
-    </KBarProvider>
+    </CommandPallet>
   </React.StrictMode>,
   document.getElementById("root")
 );
