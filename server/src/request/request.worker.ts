@@ -1,3 +1,4 @@
+import { IncomingHttpHeaders } from "http";
 import { enqueue } from "../worker/queue.service";
 import { registerQueue } from "../worker/queues";
 import registerWorker from "../worker/register-worker";
@@ -16,6 +17,7 @@ declare global {
           requestId: string;
           contentType: string;
           body: unknown;
+          headers: IncomingHttpHeaders | Record<string, string>;
           writeKey: string;
         };
       };
@@ -31,6 +33,7 @@ registerWorker<WORKER_NAME>({
       id: j.data.requestId,
       contentType: j.data.contentType,
       body: j.data.body as {},
+      headers: j.data.headers,
       writeKey: j.data.writeKey,
     });
 

@@ -1,3 +1,4 @@
+import { IncomingHttpHeaders } from "http";
 import { sql } from "slonik";
 import { getPool } from "../db";
 import { runCode } from "../runner/runner.service";
@@ -6,11 +7,13 @@ import { enqueue } from "../worker/queue.service";
 
 export async function handleRequest({
   body,
+  headers,
   requestId,
   contentType,
   writeKey,
 }: {
   body: unknown;
+  headers: IncomingHttpHeaders | Record<string, string>;
   requestId: string;
   contentType: string;
   writeKey: string;
@@ -19,6 +22,7 @@ export async function handleRequest({
     name: "request",
     input: {
       body,
+      headers,
       requestId,
       contentType,
       writeKey,
@@ -32,19 +36,38 @@ export async function runHook(requestId: string): Promise<unknown> {
     writeKey: string;
     id: string;
     body: string;
+    headers: string;
   }>(
-    sql`select "writeKey", "id", body::text from request where id = ${requestId}`
+    sql`
+      select
+        "writeKey",
+        "id",
+        body::text,
+        headers::text
+      from request
+      where id = ${requestId}`
   );
-  const { id, code } = await pool.one<{ code: string; id: string }>(sql`
-    select id, code from hook
+  const { versionId, hookId, code } = await pool.one<{
+    versionId: string;
+    code: string;
+    hookId: string;
+  }>(sql`
+    select
+      version.id as "versionId",
+      version."hookId" as "hookId",
+      code from version
     join "key"
-      on "key"."hookId" = hook.id
+      on "key"."hookId" = version.hookId
     where "key"."type" = 'write'
-    and "key"."key" = ${request.writeKey}
+      and "key"."key" = ${request.writeKey}
+      and version.workflowState = 'published'
+    limit 1
   `);
 
   const { state } = await pool.one<{ state: string }>(sql`
-    select state::text from request where "hookId" = ${id}
+    select state::text from state 
+    where "hookId" = ${hookId}
+    and "versionId" = ${versionId}
     order by "createdAt" desc
     limit 1
   `);
@@ -53,15 +76,26 @@ export async function runHook(requestId: string): Promise<unknown> {
     code,
     state: state,
     event: request.body,
+    headers: request.headers,
   });
 
-  await pool.anyFirst(sql`
-    update request
-    set state = ${sql.json(result as {})},
-    "error" = ${sql.json(JSON.stringify(error))},
-    "executionTime" = ${ms}
-    where id = ${request.id}
-  `);
+  if (error) {
+    await pool.anyFirst(sql`
+      update request
+        set "error" = ${sql.json(error)}
+    `);
+  }
+
+  if (result) {
+    await pool.anyFirst(sql`
+      insert into state 
+      (state, hash, "hookId", "requestId", "versionId")
+      values
+      (${sql.json(
+        state
+      )}, 'hash to go here', ${hookId}, ${requestId}, ${versionId})
+    `);
+  }
 
   return false;
 }

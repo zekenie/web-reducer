@@ -8,6 +8,7 @@ import {
 } from "@heroicons/react/outline";
 import Editor from "@monaco-editor/react";
 import { Tab, Tabs } from "./components/Tabs";
+import { useRegisterActions } from "kbar";
 
 const ResourceBar = () => {
   return (
@@ -56,6 +57,49 @@ function reducer(previousState, webhook) {
 }`;
 
 function App() {
+  useRegisterActions([
+    {
+      id: "requests",
+      name: "Requests",
+
+      // shortcut: ["a"],
+      section: "demo-hook",
+      keywords: "See recent requests",
+      perform: () => (window.location.pathname = "hooks"),
+    },
+    {
+      id: "state",
+      name: "State",
+
+      // shortcut: ["a"],
+      section: "demo-hook",
+      perform: () => (window.location.pathname = "hooks"),
+    },
+    {
+      id: "keys",
+      name: "Keys",
+
+      // shortcut: ["a"],
+      section: "demo-hook",
+      perform: () => (window.location.pathname = "hooks"),
+    },
+    {
+      id: "config",
+      name: "Config",
+
+      // shortcut: ["a"],
+      section: "demo-hook",
+      perform: () => (window.location.pathname = "hooks"),
+    },
+    {
+      id: "docs",
+      name: "Docs",
+
+      // shortcut: ["a"],
+      section: "demo-hook",
+      perform: () => (window.location.pathname = "hooks"),
+    },
+  ]);
   return (
     <div>
       <header className="px-3 py-3 border-b grid grid-cols-3">
@@ -87,10 +131,8 @@ function App() {
             <Tab selected>Requests</Tab>
             <Tab>State</Tab>
             <Tab>Keys</Tab>
-            <Tab>Dependent hooks</Tab>
-            <Tab>Test</Tab>
             <Tab>Config</Tab>
-            <Tab>Documentation</Tab>
+            <Tab>Docs</Tab>
           </Tabs>
         </div>
       </section>

@@ -1,3 +1,4 @@
+import { IncomingHttpHeaders } from "http";
 import { sql } from "slonik";
 import { getPool } from "../db";
 
@@ -5,11 +6,13 @@ export const captureRequest = async ({
   id,
   contentType,
   body,
+  headers,
   writeKey,
 }: {
   id: string;
   contentType: string;
   body: {};
+  headers: IncomingHttpHeaders | Record<string, string>;
   writeKey: string;
 }) => {
   const pool = getPool();
@@ -23,9 +26,11 @@ export const captureRequest = async ({
 
   const query = sql`
     insert into request
-    ("id", "contentType", "body", "writeKey", "createdAt")
+    ("id", "contentType", "body", "headers", "writeKey", "createdAt")
     values
-    (${id}, ${contentType}, ${sql.json(body)}, ${writeKey}, NOW())
+    (${id}, ${contentType}, ${sql.json(body)}, ${sql.json(
+    headers
+  )}, ${writeKey}, NOW())
     returning id
   `;
 

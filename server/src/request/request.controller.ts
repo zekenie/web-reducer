@@ -8,6 +8,7 @@ export default Router().post(
     try {
       await service.handleRequest({
         body: req.body,
+        headers: req.headers,
         writeKey: req.params.writeKey,
         contentType: req.headers["content-type"]!,
         requestId: getStore().id,

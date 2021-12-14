@@ -12,6 +12,11 @@ export default class VMInput {
 
   @IsJSON()
   @IsString()
+  @MaxLength(15 * 1000)
+  readonly headers: string;
+
+  @IsJSON()
+  @IsString()
   @MaxLength(100 * 1000)
   readonly event: string;
 }

@@ -42,11 +42,12 @@ const ResultItem = React.forwardRef(
         }}
       >
         <div
+          className="text-sm"
           style={{
             display: "flex",
             gap: "8px",
             alignItems: "center",
-            fontSize: 14,
+            // fontSize: 14,
           }}
         >
           {action.icon && action.icon}

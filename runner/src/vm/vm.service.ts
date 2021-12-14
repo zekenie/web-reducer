@@ -3,14 +3,16 @@ import { formatStacktrace } from "../stacktrace/stacktrace.service";
 
 export function runCode({
   code,
-  event,
+  body,
   state,
+  headers,
   timeout = 250,
   filename = "hook.js",
 }: {
   code: string;
-  event: unknown;
-  state: unknown;
+  body: string;
+  state: string;
+  headers: string;
   timeout?: number;
   filename?: string;
 }) {
@@ -20,12 +22,13 @@ export function runCode({
   let error: { message: string; name: string; stacktrace?: string } | null =
     null;
   let result = null;
+  const request = `{ "body": ${body}, "headers": ${headers}}`;
   try {
     result = vm.run(
       `(function(state, event) {
       ${code}
       return reducer(state, event);
-    })(${state}, ${event})`,
+    })(${state}, ${request})`,
       filename
     );
   } catch (e: unknown) {

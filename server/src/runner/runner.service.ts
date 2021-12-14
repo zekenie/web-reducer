@@ -12,13 +12,20 @@ type CodeResponse = {
 
 export async function runCode({
   code,
+  headers,
   state,
   event,
 }: {
   code: string;
+  headers: string;
   state: string;
   event: string;
 }): Promise<CodeResponse> {
-  const { data } = await client.post<CodeResponse>("/", { code, state, event });
+  const { data } = await client.post<CodeResponse>("/", {
+    code,
+    state,
+    headers,
+    event,
+  });
   return data;
 }

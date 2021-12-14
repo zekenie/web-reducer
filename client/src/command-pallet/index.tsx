@@ -27,15 +27,6 @@ const animatorStyle = {
 
 const actions: Action[] = [
   {
-    id: "requests",
-    name: "Requests",
-
-    shortcut: ["a"],
-    section: "demo-hook",
-    keywords: "See recent requests",
-    perform: () => (window.location.pathname = "hooks"),
-  },
-  {
     id: "all-hooks",
     name: "All Hooks",
 
