@@ -2,6 +2,27 @@ import { IncomingHttpHeaders } from "http";
 import { sql } from "slonik";
 import { getPool } from "../db";
 
+type RequestToRun = {
+  writeKey: string;
+  id: string;
+  body: string;
+  headers: string;
+};
+
+export function getRequestToRun(id: string): Promise<RequestToRun> {
+  const pool = getPool();
+  return pool.one<RequestToRun>(
+    sql`
+      select
+        "writeKey",
+        "id",
+        body::text,
+        headers::text
+      from request
+      where id = ${id}`
+  );
+}
+
 export const captureRequest = async ({
   id,
   contentType,
