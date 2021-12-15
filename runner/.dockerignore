@@ -7,3 +7,4 @@ dist
 Dockerfile
 *.env
 .npmrc
+**/*.test.ts
