@@ -59,59 +59,60 @@ it("works with state and event", () => {
   );
 });
 
-// it("returns errors with stack and message", () => {
-//   const program = `                  // line 1
-//     function reducer(state, event) { // line 2
-//       throw new TypeError('oh no')   // line 3
-//     }
-//   `;
-//   expect(
-//     runCode({
-//       code: program,
-//       event: JSON.stringify({ number: 3 }),
-//       state: JSON.stringify({ number: 4 }),
-//     })
-//   ).toEqual(
-//     expect.objectContaining({
-//       ms: expect.any(Number),
-//       error: {
-//         message: "oh no",
-//         name: "TypeError",
-//         stacktrace: expect.stringContaining("hook.js:3"),
-//       },
-//       result: null,
-//     })
-//   );
-// });
+it("returns errors with stack and message", () => {
+  const program = `                  // line 1
+    function reducer(state, event) { // line 2
+      throw new TypeError('oh no')   // line 3
+    }
+  `;
+  expect(
+    runCode({
+      code: program,
+      requestsJSON: formatRequest({ body: { number: 3 } }),
+      state: JSON.stringify({ number: 4 }),
+    })
+  ).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        ms: expect.any(Number),
+        error: {
+          message: "oh no",
+          name: "TypeError",
+          stacktrace: expect.stringContaining("hook.js:3"),
+        },
+        state: { number: 4 },
+      }),
+    ])
+  );
+});
 
-// it("filters out our code from stacktraces", () => {
-//   const program = `                  // line 1
-//     function reducer(state, event) { // line 2
-//       throw new TypeError('oh no')   // line 3
-//     }
-//   `;
-//   const result = runCode({
-//     code: program,
-//     event: JSON.stringify({ number: 3 }),
-//     state: JSON.stringify({ number: 4 }),
-//   });
-//   expect(result.error?.stacktrace).toEqual(
-//     expect.not.stringContaining("vm.service")
-//   );
-//   expect(result.error?.stacktrace).toEqual(expect.not.stringContaining("vm2"));
-// });
+it("filters out our code from stacktraces", () => {
+  const program = `                  // line 1
+    function reducer(state, event) { // line 2
+      throw new TypeError('oh no')   // line 3
+    }
+  `;
+  const result = runCode({
+    code: program,
+    requestsJSON: formatRequest({ body: { number: 3 } }),
+    state: JSON.stringify({ number: 4 }),
+  });
+  expect(JSON.stringify(result)).not.toContain("vm.service");
+  expect(JSON.stringify(result)).not.toContain("vm2");
+});
 
-// it("times out code that doesn't finish", () => {
-//   const program = `
-//     while(true) {}
-//     function reducer(state, event) {
-//     }
-//   `;
-//   const result = runCode({
-//     code: program,
-//     event: JSON.stringify({ number: 3 }),
-//     state: JSON.stringify({ number: 4 }),
-//   });
+it("times out code that doesn't finish", () => {
+  const program = `
+    while(true) {}
+    function reducer(state, event) {
+    }
+  `;
 
-//   expect(result.error?.name).toEqual("TimeoutError");
-// });
+  expect(() => {
+    runCode({
+      code: program,
+      requestsJSON: formatRequest({ body: { number: 3 } }),
+      state: JSON.stringify({ number: 4 }),
+    });
+  }).toThrow("Script execution timed out after 250ms");
+});

@@ -59,8 +59,6 @@ export function runCode({
     filename
   );
 
-  console.log(codeWithRuntime);
-
   const end = new Date();
   const ms = end.getTime() - start.getTime();
 
