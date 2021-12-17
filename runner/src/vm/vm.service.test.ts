@@ -9,7 +9,8 @@ function formatRequest(
   return `[${JSON.stringify({ headers, body })}]`;
 }
 
-function formatRequests(requests: { headers: unknown; body: unknown }) {
+function formatRequests(requests: { headers?: unknown; body?: unknown }[]) {
+  requests = requests.map((r) => ({ body: {}, headers: {}, ...r }));
   return JSON.stringify(requests);
 }
 
@@ -115,4 +116,30 @@ it("times out code that doesn't finish", () => {
       state: JSON.stringify({ number: 4 }),
     });
   }).toThrow("Script execution timed out after 250ms");
+});
+
+it("accepts multiple requests", () => {
+  const program = `
+  function reducer(state, { body }) {
+    return { number: state.number + body.number }
+  }
+`;
+  expect(
+    runCode({
+      code: program,
+      requestsJSON: formatRequests([
+        { body: { number: 3 } },
+        { body: { number: 3 } },
+      ]),
+      state: JSON.stringify({ number: 4 }),
+    })
+  ).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        ms: expect.any(Number),
+        error: null,
+        state: { number: 10 },
+      }),
+    ])
+  );
 });
