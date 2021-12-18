@@ -1,18 +1,5 @@
+import { formatRequest, formatRequests } from "./test-helpers";
 import { runCode } from "./vm.service";
-
-function formatRequest(
-  { headers = {}, body = {} }: { headers?: unknown; body?: unknown } = {
-    headers: {},
-    body: {},
-  }
-) {
-  return `[${JSON.stringify({ headers, body })}]`;
-}
-
-function formatRequests(requests: { headers?: unknown; body?: unknown }[]) {
-  requests = requests.map((r) => ({ body: {}, headers: {}, ...r }));
-  return JSON.stringify(requests);
-}
 
 it("runs hello world", () => {
   const helloWorld = `

@@ -1,8 +1,10 @@
 import bodyParser from "body-parser";
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import vmController from "../vm/vm.controller";
 
-type Config = {};
+type Config = {
+  onError?: (err: unknown | Error) => void;
+};
 
 export default function makeServer(config: Config) {
   const app = express();
@@ -13,6 +15,22 @@ export default function makeServer(config: Config) {
 
   app.get("/heartbeat", (req, res) => {
     res.json({ ok: true });
+  });
+
+  app.use(function errorHandler(
+    err: unknown,
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    if (err) {
+      if (config.onError) {
+        config.onError(err);
+      }
+      next(err);
+      return;
+    }
+    next();
   });
 
   return app;

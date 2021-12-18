@@ -1,6 +1,6 @@
 import { IsJSON, IsString, MaxLength } from "class-validator";
 
-export default class VMInput {
+export default class BulkVMInput {
   @IsString()
   @MaxLength(10000)
   readonly code: string;
@@ -12,6 +12,6 @@ export default class VMInput {
 
   @IsJSON()
   @IsString()
-  @MaxLength(115 * 1000)
-  readonly requestJson: string;
+  @MaxLength(250 * 1000)
+  readonly requestsJson: string;
 }
