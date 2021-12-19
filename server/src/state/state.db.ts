@@ -1,6 +1,39 @@
 import { sql } from "slonik";
 import { getPool } from "../db";
 
+export async function bulkCreateState({
+  requests,
+  hookId,
+  versionId,
+}: {
+  requests: {
+    id: string;
+    executionTime: number;
+    state: {};
+    error?: { name: string; message: string; stacktrace?: string };
+  }[];
+  hookId: string;
+  versionId: string;
+}) {
+  const pool = getPool();
+  await pool.maybeOne(sql`
+    insert into state
+    (state, error, "executionTime", hash, "hookId", "requestId", "versionId")
+    select * from ${sql.unnest(
+      requests.map((request) => [
+        sql.json(request.state),
+        sql.json(request.error as {}),
+        request.executionTime,
+        "foobar",
+        hookId,
+        request.id,
+        versionId,
+      ]),
+      ["jsonb", "jsonb", "int4", "varchar", "uuid", "uuid", "uuid"]
+    )}
+  `);
+}
+
 export async function createState({
   state,
   error,
@@ -10,7 +43,7 @@ export async function createState({
   executionTime,
 }: {
   state: {};
-  error: {};
+  error?: { name: string; message: string; stacktrace?: string };
   hookId: string;
   requestId: string;
   versionId: string;
@@ -21,26 +54,29 @@ export async function createState({
       insert into state 
       (state, error, "executionTime", hash, "hookId", "requestId", "versionId")
       values
-      (${sql.json(state)}, ${sql.json(
-    error
-  )}, ${executionTime}, 'hash to go here', ${hookId}, ${requestId}, ${versionId})
+      (${sql.json(state)}, ${
+    error ? sql.json(error) : null
+  }, ${executionTime}, 'hash to go here', ${hookId}, ${requestId}, ${versionId})
     `);
 }
 
-export async function fetchStateJSON({
+export async function fetchState({
   hookId,
   versionId,
 }: {
   hookId: string;
   versionId: string;
-}): Promise<string> {
+}): Promise<{ state: {}; requestId: string } | null> {
   const pool = getPool();
-  const { state } = await pool.one<{ state: string }>(sql`
-    select state::text from state 
+  const result = await pool.maybeOne<{ state: {}; requestId: string }>(sql`
+    select state from state 
     where "hookId" = ${hookId}
     and "versionId" = ${versionId}
     order by "createdAt" desc
     limit 1
   `);
-  return state;
+  if (!result) {
+    return null;
+  }
+  return result;
 }

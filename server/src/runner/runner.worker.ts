@@ -1,6 +1,6 @@
-import { runHook } from "./request.service";
 import { registerNameMapper, registerQueue } from "../worker/queues";
 import registerWorker from "../worker/register-worker";
+import { runHook } from "./runner.service";
 
 type WORKER_NAME = "run-hook";
 const WORKER_NAME: WORKER_NAME = "run-hook";

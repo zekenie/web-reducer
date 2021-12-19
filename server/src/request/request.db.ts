@@ -1,13 +1,62 @@
 import { IncomingHttpHeaders } from "http";
 import { sql } from "slonik";
 import { getPool } from "../db";
+import { WebhookRequest } from "./types";
 
-type RequestToRun = {
+type RequestToRun = WebhookRequest & {
   writeKey: string;
   id: string;
-  body: string;
-  headers: string;
 };
+
+export async function countRequestsForHook(
+  hookId: string,
+  after?: string
+): Promise<number> {
+  const pool = getPool();
+  const { count } = await pool.one<{ count: number }>(sql`
+    select count(request.id)
+    from request
+    join "writeKey"
+      on request."writeKey" = "writeKey"."key"
+    where
+      "writeKey"."hookId" = ${hookId}
+    ${after ? sql`and "id" > ${after}` : ""}
+    order by "createdAt" asc
+  `);
+  return count;
+}
+
+export async function streamRequestsForHook(
+  hookId: string,
+  onRecord: (request: WebhookRequest & { id: string }) => void
+): Promise<void> {
+  const pool = getPool();
+  await pool.stream(
+    sql`
+    select
+      request.id,
+      request.body,
+      request.headers
+    from request
+    join "writeKey"
+      on request."writeKey" = "writeKey"."key"
+    where
+      "writeKey"."hookId" = ${hookId}
+    order by request."createdAt" asc
+  `,
+    (stream) => {
+      stream.on(
+        "data",
+        (datum: {
+          fields: { name: string; dataTypeId: number }[];
+          row: WebhookRequest & { id: string };
+        }) => {
+          onRecord(datum.row);
+        }
+      );
+    }
+  );
+}
 
 export function getRequestToRun(id: string): Promise<RequestToRun> {
   const pool = getPool();
@@ -16,8 +65,8 @@ export function getRequestToRun(id: string): Promise<RequestToRun> {
       select
         "writeKey",
         "id",
-        body::text,
-        headers::text
+        body,
+        headers
       from request
       where id = ${id}`
   );
@@ -26,14 +75,15 @@ export function getRequestToRun(id: string): Promise<RequestToRun> {
 export const captureRequest = async ({
   id,
   contentType,
-  body,
-  headers,
+  request,
   writeKey,
 }: {
   id: string;
   contentType: string;
-  body: {};
-  headers: IncomingHttpHeaders | Record<string, string>;
+  request: {
+    body: {};
+    headers: IncomingHttpHeaders | Record<string, string>;
+  };
   writeKey: string;
 }) => {
   const pool = getPool();
@@ -49,8 +99,8 @@ export const captureRequest = async ({
     insert into request
     ("id", "contentType", "body", "headers", "writeKey", "createdAt")
     values
-    (${id}, ${contentType}, ${sql.json(body)}, ${sql.json(
-    headers
+    (${id}, ${contentType}, ${sql.json(request.body)}, ${sql.json(
+    request.headers
   )}, ${writeKey}, NOW())
     returning id
   `;

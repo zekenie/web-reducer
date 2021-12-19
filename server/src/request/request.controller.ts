@@ -7,8 +7,10 @@ export default Router().post(
   async function handleRequest(req, res, next) {
     try {
       await service.handleRequest({
-        body: req.body,
-        headers: req.headers,
+        request: {
+          body: req.body,
+          headers: req.headers,
+        },
         writeKey: req.params.writeKey,
         contentType: req.headers["content-type"]!,
         requestId: getStore().id,

@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@slonik/migrator": "^0.8.5",
+    "@types/async": "^3.2.10",
     "@types/axios": "^0.14.0",
     "@types/body-parser-xml": "^2.0.2",
     "@types/dotenv": "^8.2.0",
@@ -16,6 +17,7 @@
     "@types/lodash": "^4.14.177",
     "@types/node": "^16.11.10",
     "@types/uuid": "^8.3.3",
+    "async": "^3.2.2",
     "axios": "^0.24.0",
     "body-parser": "^1.19.0",
     "body-parser-xml": "^2.0.3",

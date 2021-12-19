@@ -1,31 +1,35 @@
-import axios from "axios";
+import { getCodeByWriteKey } from "../hook/hook.db";
+import { getRequestToRun } from "../request/request.db";
+import { createState, fetchState } from "../state/state.db";
+import { runCode } from "./vm.remote";
 
-const client = axios.create({
-  baseURL: process.env.RUNNER_URL,
-});
+export async function runHook(requestId: string): Promise<unknown> {
+  const request = await getRequestToRun(requestId);
+  const { versionId, hookId, code } = await getCodeByWriteKey(request.writeKey);
 
-type CodeResponse = {
-  ms: number;
-  error: { name: string; message: string; stack: string };
-  result: unknown;
-};
+  const state = await fetchState({ hookId, versionId });
 
-export async function runCode({
-  code,
-  headers,
-  state,
-  event,
-}: {
-  code: string;
-  headers: string;
-  state: string;
-  event: string;
-}): Promise<CodeResponse> {
-  const { data } = await client.post<CodeResponse>("/", {
+  const {
+    state: newState,
+    ms,
+    error,
+  } = await runCode({
     code,
-    state,
-    headers,
-    event,
+    request: {
+      body: request.body,
+      headers: request.headers,
+    },
+    state: state?.state || {},
   });
-  return data;
+
+  await createState({
+    state: newState as {},
+    error,
+    hookId,
+    requestId,
+    versionId,
+    executionTime: ms,
+  });
+
+  return false;
 }

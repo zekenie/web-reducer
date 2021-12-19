@@ -3,6 +3,7 @@ import { enqueue } from "../worker/queue.service";
 import { registerQueue } from "../worker/queues";
 import registerWorker from "../worker/register-worker";
 import { captureRequest } from "./request.db";
+import { WebhookRequest } from "./types";
 
 type WORKER_NAME = "request";
 const WORKER_NAME: WORKER_NAME = "request";
@@ -16,8 +17,7 @@ declare global {
         input: {
           requestId: string;
           contentType: string;
-          body: unknown;
-          headers: IncomingHttpHeaders | Record<string, string>;
+          request: WebhookRequest;
           writeKey: string;
         };
       };
@@ -32,8 +32,7 @@ registerWorker<WORKER_NAME>({
     const { requestId, hookId } = await captureRequest({
       id: j.data.requestId,
       contentType: j.data.contentType,
-      body: j.data.body as {},
-      headers: j.data.headers,
+      request: j.data.request,
       writeKey: j.data.writeKey,
     });
 

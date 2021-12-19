@@ -1,20 +1,13 @@
-import { IncomingHttpHeaders } from "http";
-import { getCode } from "../hook/hook.db";
-import { runCode } from "../runner/runner.service";
-import { createState, fetchStateJSON } from "../state/state.db";
-
 import { enqueue } from "../worker/queue.service";
-import { getRequestToRun } from "./request.db";
+import { WebhookRequest } from "./types";
 
 export async function handleRequest({
-  body,
-  headers,
+  request,
   requestId,
   contentType,
   writeKey,
 }: {
-  body: unknown;
-  headers: IncomingHttpHeaders | Record<string, string>;
+  request: WebhookRequest;
   requestId: string;
   contentType: string;
   writeKey: string;
@@ -22,36 +15,10 @@ export async function handleRequest({
   await enqueue({
     name: "request",
     input: {
-      body,
-      headers,
+      request,
       requestId,
       contentType,
       writeKey,
     },
   });
-}
-
-export async function runHook(requestId: string): Promise<unknown> {
-  const request = await getRequestToRun(requestId);
-  const { versionId, hookId, code } = await getCode(request.writeKey);
-
-  const stateJSON = await fetchStateJSON({ hookId, versionId });
-
-  const { result, ms, error } = await runCode({
-    code,
-    state: stateJSON,
-    event: request.body,
-    headers: request.headers,
-  });
-
-  await createState({
-    state: result as {},
-    error,
-    hookId,
-    requestId,
-    versionId,
-    executionTime: ms,
-  });
-
-  return false;
 }
