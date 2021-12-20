@@ -1,6 +1,6 @@
 import axios from "axios";
-import { IncomingHttpHeaders } from "http";
 import { WebhookRequest } from "../request/types";
+import { RuntimeError } from "./types";
 
 const client = axios.create({
   baseURL: process.env.RUNNER_URL,
@@ -21,7 +21,7 @@ client.interceptors.response.use(
 
 type CodeResponse = {
   ms: number;
-  error?: { name: string; message: string; stacktrace?: string };
+  error?: RuntimeError;
   state: unknown;
 };
 

@@ -1,5 +1,21 @@
 import { sql } from "slonik";
 import { getPool } from "../db";
+import { RuntimeError } from "../runner/types";
+
+export async function readState(readKey: string): Promise<unknown> {
+  const pool = getPool();
+  return pool.maybeOne(sql`
+    select state.state
+    from state
+    join "key"
+      on "key"."hookId" = state."hookId"
+    where
+      "key"."key" = ${readKey}
+      and "key"."type" = 'read'
+    order by "state"."createdAt" desc
+    limit 1
+  `);
+}
 
 export async function bulkCreateState({
   requests,
@@ -10,7 +26,7 @@ export async function bulkCreateState({
     id: string;
     executionTime: number;
     state: {};
-    error?: { name: string; message: string; stacktrace?: string };
+    error?: RuntimeError;
   }[];
   hookId: string;
   versionId: string;
@@ -18,18 +34,17 @@ export async function bulkCreateState({
   const pool = getPool();
   await pool.maybeOne(sql`
     insert into state
-    (state, error, "executionTime", hash, "hookId", "requestId", "versionId")
+    (state, error, "executionTime", "hookId", "requestId", "versionId")
     select * from ${sql.unnest(
       requests.map((request) => [
         sql.json(request.state),
         sql.json(request.error as {}),
         request.executionTime,
-        "foobar",
         hookId,
         request.id,
         versionId,
       ]),
-      ["jsonb", "jsonb", "int4", "varchar", "uuid", "uuid", "uuid"]
+      ["jsonb", "jsonb", "int4", "uuid", "uuid", "uuid"]
     )}
   `);
 }
@@ -43,7 +58,7 @@ export async function createState({
   executionTime,
 }: {
   state: {};
-  error?: { name: string; message: string; stacktrace?: string };
+  error?: RuntimeError;
   hookId: string;
   requestId: string;
   versionId: string;
@@ -52,11 +67,11 @@ export async function createState({
   const pool = getPool();
   await pool.anyFirst(sql`
       insert into state 
-      (state, error, "executionTime", hash, "hookId", "requestId", "versionId")
+      (state, error, "executionTime", "hookId", "requestId", "versionId")
       values
       (${state ? sql.json(state) : null}, ${
     error ? sql.json(error) : null
-  }, ${executionTime}, 'hash to go here', ${hookId}, ${requestId}, ${versionId})
+  }, ${executionTime}, ${hookId}, ${requestId}, ${versionId})
     `);
 }
 
