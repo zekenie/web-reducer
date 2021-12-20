@@ -3,9 +3,12 @@ config();
 
 import makeServer from "./server";
 
-const server = makeServer({}).listen(process.env.PORT!, () => {
-  console.log("code runner on port", process.env.PORT!);
-});
+const server = makeServer({ onError: (err) => console.error(err) }).listen(
+  process.env.PORT!,
+  () => {
+    console.log("code runner on port", process.env.PORT!);
+  }
+);
 
 function closeGracefully(signal: string) {
   console.log(`*^!@4=> Received signal to terminate: ${signal}`);

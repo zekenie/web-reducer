@@ -20,17 +20,20 @@ declare global {
   }
 }
 
-registerWorker({
-  concurency: 1,
-  name: WORKER_NAME,
-  worker: async (j) => {
-    await runHook(j.data.requestId);
-  },
-});
-
 const NUM_BUCKETS = 10;
 for (let i = 0; i < NUM_BUCKETS; i++) {
   registerQueue(queueName(i));
+  registerWorker(
+    {
+      concurrency: 1,
+      name: WORKER_NAME,
+      worker: async (j) => {
+        console.log("running runner");
+        await runHook(j.data.requestId);
+      },
+    },
+    queueName(i)
+  );
 }
 
 registerNameMapper(WORKER_NAME, (job) => {

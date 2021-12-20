@@ -22,20 +22,21 @@ queueEvents.on(
 
 type WorkerType<T extends keyof Queue.WorkerTypes> = {
   name: Queue.WorkerTypes[T]["name"];
-  concurency: number;
+  concurrency: number;
   worker: (
     job: Job<Queue.WorkerTypes[T]["input"], Queue.WorkerTypes[T]["output"]>
   ) => Promise<Queue.WorkerTypes[T]["output"]>;
 };
 
 export default function registerWorker<T extends keyof Queue.WorkerTypes>(
-  worker: WorkerType<T>
+  worker: WorkerType<T>,
+  name: string = worker.name
 ) {
   return new Worker<
     Queue.WorkerTypes[T]["input"],
     Queue.WorkerTypes[T]["output"]
   >(
-    worker.name,
+    name,
     async (job) => {
       // wrapper code here...
       try {
@@ -44,7 +45,7 @@ export default function registerWorker<T extends keyof Queue.WorkerTypes>(
         console.error(e);
       }
     },
-    { concurrency: worker.concurency }
+    { concurrency: worker.concurrency }
   );
 }
 

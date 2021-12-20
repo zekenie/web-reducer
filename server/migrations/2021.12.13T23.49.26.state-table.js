@@ -31,7 +31,7 @@ exports.up = async ({ context: { connection, sql } }) => {
     create table "state" (
       id uuid primary key default uuid_generate_v4(),
       "createdAt" timestamptz not null default NOW(),
-      state jsonb not null default '{}',
+      state jsonb default '{}',
       "hash" varchar not null,
       "hookId" uuid not null,
       "requestId" uuid not null,

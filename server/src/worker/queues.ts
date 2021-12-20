@@ -14,6 +14,10 @@ export function getQueue(key: string) {
   return queues[key];
 }
 
+export function allQueues() {
+  return Object.values(queues);
+}
+
 export function registerNameMapper(name: string, mapper: Mapper) {
   mappers[name] = mapper;
 }

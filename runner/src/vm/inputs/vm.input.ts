@@ -1,4 +1,4 @@
-import { IsJSON, IsString, MaxLength } from "class-validator";
+import { IsJSON, IsOptional, IsString, MaxLength } from "class-validator";
 
 export default class VMInput {
   @IsString()
@@ -7,8 +7,9 @@ export default class VMInput {
 
   @IsJSON()
   @IsString()
+  @IsOptional()
   @MaxLength(100 * 1000)
-  readonly state: string;
+  readonly state?: string;
 
   @IsJSON()
   @IsString()

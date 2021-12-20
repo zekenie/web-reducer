@@ -26,7 +26,7 @@ declare global {
 }
 
 registerWorker<WORKER_NAME>({
-  concurency: 100,
+  concurrency: 100,
   name: WORKER_NAME,
   worker: async (j) => {
     const { requestId, hookId } = await captureRequest({

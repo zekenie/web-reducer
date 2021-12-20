@@ -60,6 +60,7 @@ export async function streamRequestsForHook(
 
 export function getRequestToRun(id: string): Promise<RequestToRun> {
   const pool = getPool();
+  console.log("finding request with", id);
   return pool.one<RequestToRun>(
     sql`
       select
@@ -97,11 +98,11 @@ export const captureRequest = async ({
 
   const query = sql`
     insert into request
-    ("id", "contentType", "body", "headers", "writeKey", "createdAt")
+    ("id", "contentType", "body", "headers", "writeKey", "hookId", "createdAt")
     values
     (${id}, ${contentType}, ${sql.json(request.body)}, ${sql.json(
     request.headers
-  )}, ${writeKey}, NOW())
+  )}, ${writeKey}, ${key.hookId}, NOW())
     returning id
   `;
 

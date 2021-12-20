@@ -17,7 +17,7 @@ export function getCodeByHook(hookId: string): Promise<CodeToRun> {
         code
       from version
       where "version"."hookId" = ${hookId}
-        and version.workflowState = 'published'
+        and version."workflowState" = 'published'
       limit 1
   `
   );
@@ -36,13 +36,14 @@ export function getCodeByWriteKey(writeKey: string): Promise<CodeToRun> {
       version."hookId" as "hookId",
       code from version
     join "key"
-      on "key"."hookId" = version.hookId
+      on "key"."hookId" = version."hookId"
     where "key"."type" = 'write'
       and "key"."key" = ${writeKey}
-      and version.workflowState = 'published'
+      and version."workflowState" = 'published'
     limit 1
   `
   );
+
   if (!code) {
     throw new Error("no code found with that write key");
   }

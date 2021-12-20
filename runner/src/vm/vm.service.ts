@@ -33,7 +33,7 @@ export function runCode({
 }: {
   code: string;
   requestsJSON: string;
-  state: string;
+  state?: string;
   timeout?: number;
   filename?: string;
 }) {

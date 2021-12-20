@@ -54,7 +54,7 @@ export async function createState({
       insert into state 
       (state, error, "executionTime", hash, "hookId", "requestId", "versionId")
       values
-      (${sql.json(state)}, ${
+      (${state ? sql.json(state) : null}, ${
     error ? sql.json(error) : null
   }, ${executionTime}, 'hash to go here', ${hookId}, ${requestId}, ${versionId})
     `);

@@ -4,10 +4,12 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
+    "start:dev": "nodemon src/index.ts",
     "migrate": "node migrate",
     "build": "tsc"
   },
   "dependencies": {
+    "@bull-board/express": "^3.8.1",
     "@slonik/migrator": "^0.8.5",
     "@types/async": "^3.2.10",
     "@types/axios": "^0.14.0",
@@ -35,6 +37,8 @@
     "vm2": "^3.9.5"
   },
   "devDependencies": {
-    "@tsconfig/recommended": "^1.0.1"
+    "@tsconfig/recommended": "^1.0.1",
+    "nodemon": "^2.0.15",
+    "ts-node": "^10.4.0"
   }
 }

@@ -1,5 +1,6 @@
 import { Job, Queue as BullQueue } from "bullmq";
-import "../vm/vm.worker";
+import "../request/request.worker";
+import "../runner/runner.worker";
 import { getMapper, getQueue } from "./queues";
 import { JobDescription } from "./types";
 

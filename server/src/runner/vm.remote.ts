@@ -4,7 +4,20 @@ import { WebhookRequest } from "../request/types";
 
 const client = axios.create({
   baseURL: process.env.RUNNER_URL,
+  headers: { "content-type": "application/json" },
 });
+
+client.interceptors.response.use(
+  (r) => {
+    console.log(`success from runner`, r.data);
+    return r;
+  },
+  (err) => {
+    const response = err.response.data;
+    console.error(response);
+    throw err;
+  }
+);
 
 type CodeResponse = {
   ms: number;
@@ -21,12 +34,12 @@ export async function runCode({
   request: WebhookRequest;
   state: unknown;
 }): Promise<CodeResponse> {
-  const { data } = await client.post<CodeResponse>("/", {
+  const res = await client.post<CodeResponse>("/", {
     code,
     requestJson: JSON.stringify(request),
-    state: JSON.stringify(state),
+    state: state ? JSON.stringify(state) : undefined,
   });
-  return data;
+  return res.data;
 }
 
 export async function runCodeBulk({
