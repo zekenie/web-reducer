@@ -1,39 +1,10 @@
-import React from "react";
-import {
-  ChevronDownIcon,
-  ChevronRightIcon,
-  InboxInIcon,
-  KeyIcon,
-  MenuIcon,
-} from "@heroicons/react/outline";
+import { MenuIcon } from "@heroicons/react/outline";
 import Editor from "@monaco-editor/react";
-import { Tab, Tabs } from "./components/Tabs";
 import { useRegisterActions } from "kbar";
-
-const ResourceBar = () => {
-  return (
-    <div className="font-mono flex-1 itens-center rounded bg-canvas-50 hover:bg-canvas-100 text-canvas-500 cursor-pointer border p-2 cursor-no flex space-x-2">
-      <div className="bg-sky-500 text-white p-1 rounded flex items-center justify-center text-xs font-bold">
-        your-hooks
-      </div>
-      <ChevronRightIcon className="w-4 h-4 self-center" />
-
-      <div className="font-mono">demo-hook</div>
-
-      <div className="flex-1" />
-      <div className="bg-fern-500 h-2 w-2 rounded-full self-center"></div>
-      <div className="flex border items-center space-x-1 flex-row text-canvas-400 px-2 p-1 rounded text-xs font-bold">
-        <InboxInIcon className="w-4 h-4 self-center" />
-        <div className="self-center">1.2k</div>
-      </div>
-      <div className="flex border items-center space-x-1 flex-row text-canvas-400 px-2 p-1 rounded text-xs font-bold">
-        <KeyIcon className="w-4 h-4 self-center" />
-        <div className="self-center">2</div>
-      </div>
-      <ChevronDownIcon className="w-4 h-4 self-center" />
-    </div>
-  );
-};
+import React from "react";
+import Requests from "./components/Requests";
+import ResourceBar from "./components/ResourceBar";
+import { Tab, Tabs } from "./components/Tabs";
 
 const exampleCode = `function getIdempotencyKey({ headers }) {
   return headers["x-something"];
@@ -50,9 +21,14 @@ function isAuthentic({ headers }) {
 }
 
 function reducer(previousState, webhook) {
+  if (!webhook.body.action) {
+    console.warn("action not recognized!")
+    return previousState;
+  }
   return {
     ...previousState,
-    [webhook.body.companyId]: webhook.body.updatedAt
+    [webhook.body.acction]:
+      (previousState[webhook.body.acction] || 0) + 1
   }
 }`;
 
@@ -100,8 +76,9 @@ function App() {
       perform: () => (window.location.pathname = "hooks"),
     },
   ]);
+
   return (
-    <div>
+    <div className="flex flex-col">
       <header className="px-3 py-3 border-b grid grid-cols-3">
         <div className="flex flex-row items-center space-x-4">
           <button className="p-3 hover:bg-canvas-50 rounded-full">
@@ -116,24 +93,30 @@ function App() {
         <div />
       </header>
 
-      <section className="grid grid-cols-2">
-        <Editor
-          options={{
-            fontSize: "16px",
-            minimap: { enabled: false },
-          }}
-          defaultLanguage="javascript"
-          defaultValue={exampleCode}
-        />
+      <section className="flex-1 flex flex-row">
+        <div className="overflow-hidden flex-1">
+          <Editor
+            options={{
+              fontSize: "16px",
+              minimap: { enabled: false },
+            }}
+            defaultLanguage="javascript"
+            defaultValue={exampleCode}
+          />
+        </div>
 
-        <div className="border-l">
+        <div className="border-l flex-1 flex-col flex overflow-y-auto">
           <Tabs>
             <Tab selected>Requests</Tab>
             <Tab>State</Tab>
+            <Tab>Secrets</Tab>
             <Tab>Keys</Tab>
             <Tab>Config</Tab>
             <Tab>Docs</Tab>
           </Tabs>
+          <div className="overflow-y-scroll">
+            <Requests />
+          </div>
         </div>
       </section>
     </div>

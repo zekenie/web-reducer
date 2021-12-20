@@ -1,7 +1,10 @@
 - take your endpoint with you
 - delete your data forever
 - cycle keys
+- LSH hashing in db to show "similar" requests?
+  - https://github.com/dsablic/node-nilsimsa#readme
 - state diffs
+- tags
 - must record each state change
 
 ## pro
@@ -15,6 +18,7 @@
 - publish your state updates to
   - SQS
   - Webhook
+    - option to bulk them (like async cargo)
   - Another Hook Reducer
 - priority runtime
 - increased throughput and body size

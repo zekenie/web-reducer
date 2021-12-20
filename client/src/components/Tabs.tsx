@@ -1,6 +1,11 @@
-import React, { FC } from "react";
+import React, { FC, ReactElement } from "react";
 
-export const Tabs: FC = ({ children }) => {
+export const Tabs = ({
+  children,
+}: {
+  children: ReactElement<TabProps> | ReactElement<TabProps>[];
+}) => {
+  const selectedChild = React.useMemo(() => {}, [children]);
   return (
     <nav
       role="tablist"
@@ -11,10 +16,9 @@ export const Tabs: FC = ({ children }) => {
   );
 };
 
-export const Tab: FC<{ selected?: boolean }> = ({
-  children,
-  selected = false,
-}) => {
+type TabProps = FC<{ selected?: boolean }>;
+
+export const Tab: TabProps = ({ children, selected = false }) => {
   return (
     <a
       href=""

@@ -3,3 +3,11 @@
 - command pallet
   - https://github.com/timc1/kbar
 - visual hashing... for payloads? state? https://jdenticon.com/#icon-Zeke
+- JQ expressions in column!!!!!!
+- locality sensitive hashing -> jdenticon
+  - like things would collide
+
+## component needs
+
+- [ ] modal
+- [ ] tooltip

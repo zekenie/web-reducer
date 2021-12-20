@@ -3,5 +3,5 @@
 @tailwind utilities;
 
 .monaco-editor {
-  height: calc(100vh - 76px) !important;
+  height: calc(100vh - 176px) !important;
 }
