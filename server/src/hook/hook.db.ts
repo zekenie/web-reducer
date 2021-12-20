@@ -1,5 +1,6 @@
 import { sql } from "slonik";
 import { getPool } from "../db";
+import { createKey } from "../key/key.db";
 import { HookWorkflowState } from "./types";
 
 type CodeToRun = {
@@ -10,22 +11,22 @@ type CodeToRun = {
 
 export async function createHook() {
   const pool = getPool();
-  await pool.transaction(async () => {
-    const { id } = await pool.one<{ id: string }>(sql`
-      insert into "hook"
-      ("createdAt")
-      values
-      (NOW())
-      returning id
-    `);
-    await pool.one<{ id: string }>(sql`
-      insert into "version"
-      ("hookId", "code", "workflowState", "createdAt", "updatedAt")
-      values
-      (${id}, '', ${HookWorkflowState.DRAFT}, NOW(), NOW())
-      returning id
+  const { id } = await pool.one<{ id: string }>(sql`
+    insert into "hook"
+    ("createdAt")
+    values
+    (NOW())
+    returning id
   `);
-  });
+  await pool.one<{ id: string }>(sql`
+    insert into "version"
+    ("hookId", "code", "workflowState", "createdAt", "updatedAt")
+    values
+    (${id}, '', ${HookWorkflowState.DRAFT}, NOW(), NOW())
+    returning id
+  `);
+
+  return id;
 }
 
 export function getCodeByHook(hookId: string): Promise<CodeToRun> {

@@ -1,7 +1,7 @@
 import { IncomingHttpHeaders } from "http";
 import { enqueue } from "../worker/queue.service";
 import { registerQueue } from "../worker/queues";
-import registerWorker from "../worker/register-worker";
+import registerWorker from "../worker/workers";
 import { captureRequest } from "./request.db";
 import { WebhookRequest } from "./types";
 

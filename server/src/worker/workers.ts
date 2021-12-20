@@ -28,32 +28,30 @@ type WorkerType<T extends keyof Queue.WorkerTypes> = {
   ) => Promise<Queue.WorkerTypes[T]["output"]>;
 };
 
+const allWorkerFactories: (() => Worker)[] = [];
+
 export default function registerWorker<T extends keyof Queue.WorkerTypes>(
   worker: WorkerType<T>,
   name: string = worker.name
 ) {
-  return new Worker<
-    Queue.WorkerTypes[T]["input"],
-    Queue.WorkerTypes[T]["output"]
-  >(
-    name,
-    async (job) => {
-      // wrapper code here...
-      try {
-        return worker.worker(job);
-      } catch (e) {
-        console.error(e);
-      }
-    },
-    { concurrency: worker.concurrency }
+  allWorkerFactories.push(
+    () =>
+      new Worker<Queue.WorkerTypes[T]["input"], Queue.WorkerTypes[T]["output"]>(
+        name,
+        async (job) => {
+          // wrapper code here...
+          try {
+            return worker.worker(job);
+          } catch (e) {
+            console.error(e);
+            throw e;
+          }
+        },
+        { concurrency: worker.concurrency }
+      )
   );
 }
 
-// registerWorker<"runInVM">({
-//   name: "runInVM",
-//   worker: async (job) => {
-//     return {
-//       boof: "wer",
-//     };
-//   },
-// });
+export function runWorkers() {
+  return allWorkerFactories.map((fac) => fac());
+}

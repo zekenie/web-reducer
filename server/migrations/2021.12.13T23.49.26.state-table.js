@@ -24,7 +24,7 @@ exports.up = async ({ context: { connection, sql } }) => {
   `);
 
   await connection.query(sql`
-    CREATE UNIQUE INDEX "onlyOneVersionPublished" ON version ("workflowState", "hookId") WHERE ("workflowState" = 'published');
+    CREATE UNIQUE INDEX "onlyOneVersionPublished" ON version ("workflowState", "hookId") WHERE ("workflowState" = any('published'));
   `);
 
   await connection.query(sql`

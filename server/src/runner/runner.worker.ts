@@ -1,5 +1,5 @@
 import { registerNameMapper, registerQueue } from "../worker/queues";
-import registerWorker from "../worker/register-worker";
+import registerWorker from "../worker/workers";
 import { runHook } from "./runner.service";
 
 type WORKER_NAME = "run-hook";
@@ -23,7 +23,7 @@ declare global {
 const NUM_BUCKETS = 10;
 for (let i = 0; i < NUM_BUCKETS; i++) {
   registerQueue(queueName(i));
-  registerWorker(
+  registerWorker<WORKER_NAME>(
     {
       concurrency: 1,
       name: WORKER_NAME,
