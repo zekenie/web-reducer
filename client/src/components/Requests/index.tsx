@@ -70,27 +70,29 @@ export default function Requests() {
         </tr>
       </thead>
       <tbody>
-        {requests.map((r) => (
-          <tr key={r.id} className="odd:bg-canvas-100">
-            <td className="p-2">
-              <JsonPreview w={40}>{r.createdAt}</JsonPreview>
-            </td>
-            <td className="p-2 flex space-x-2 flex-row items-center">
-              <VisualHash input={r.hash} size={35} />
-              <JsonPreview w={56}>{r.body}</JsonPreview>
-            </td>
-            <td>
-              <JsonPreview w={56}>{fakeState}</JsonPreview>
-            </td>
-            <td>
-              <div className="flex flex-row justify-center space-x-1">
-                {r.effects.map((effect) => (
-                  <IconForEffect effect={effect} />
-                ))}
-              </div>
-            </td>
-          </tr>
-        ))}
+        {requests.map((r, i) => {
+          return (
+            <tr key={r.id} className="odd:bg-canvas-100">
+              <td className="p-2">
+                <JsonPreview w={40}>{r.createdAt}</JsonPreview>
+              </td>
+              <td className="p-2 flex space-x-2 flex-row items-center">
+                <VisualHash input={r.hash} size={35} />
+                <JsonPreview w={56}>{r.body}</JsonPreview>
+              </td>
+              <td>
+                <JsonPreview w={56}>{fakeState}</JsonPreview>
+              </td>
+              <td>
+                <div className="flex flex-row justify-center space-x-1">
+                  {r.effects.map((effect) => (
+                    <IconForEffect effect={effect} />
+                  ))}
+                </div>
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );

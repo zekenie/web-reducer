@@ -1,5 +1,5 @@
-import "./components/TestModal";
-import "./components/ConfirmModal";
+import "../components/TestModal";
+import "../components/ConfirmModal";
 
 type Keys<T> = keyof T;
 
