@@ -1,4 +1,9 @@
 import { registerModal } from "./ModalProvider";
+import {
+  CenteredModalContainer,
+  ModalBody,
+  ModalHeader,
+} from "../modals/Content";
 
 export {};
 type MODAL_NAME = "test";
@@ -18,7 +23,12 @@ declare global {
 type Props = { text: string };
 
 const TestModal = ({ text }: Props) => {
-  return <div>foobar! {text}</div>;
+  return (
+    <CenteredModalContainer>
+      <ModalHeader title="Are you sure you really want to" />
+      <ModalBody>foobar! {text}</ModalBody>
+    </CenteredModalContainer>
+  );
 };
 
 registerModal<MODAL_NAME>(MODAL_NAME, TestModal);

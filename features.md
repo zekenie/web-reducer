@@ -13,6 +13,7 @@
 - timed hooks
 - unlimited revokable read-keys and write-keys
 - idempotency keys
+- state and body encryption
 - use npm packages
 - websocket with latest state
 - publish your state updates to

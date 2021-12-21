@@ -81,8 +81,8 @@ function App() {
   const { pushModal } = useModals();
 
   return (
-    <div className="flex flex-col">
-      <header className="px-3 py-3 border-b grid grid-cols-3">
+    <div className="flex flex-col h-screen overflow-hidden">
+      <header className="px-3 flex-shrink-0 py-3 border-b grid grid-cols-3">
         <div className="flex flex-row items-center space-x-4">
           <button
             onClick={() =>
@@ -101,8 +101,8 @@ function App() {
         <div />
       </header>
 
-      <section className="flex-1 flex flex-row">
-        <div className="overflow-hidden flex-1">
+      <section className="flex-grow grid grid-cols-2 overflow-hidden">
+        <div className="flex-grow">
           <Editor
             options={{
               fontSize: "16px",
@@ -113,7 +113,7 @@ function App() {
           />
         </div>
 
-        <div className="border-l flex-1 flex-col flex overflow-y-auto">
+        <div className="border-l flex-grow flex-col flex flex-shrink-0 overflow-hidden">
           <Tabs>
             <Tab selected>Requests</Tab>
             <Tab>State</Tab>
@@ -122,7 +122,7 @@ function App() {
             <Tab>Config</Tab>
             <Tab>Docs</Tab>
           </Tabs>
-          <div className="overflow-y-scroll">
+          <div className="overflow-y-scroll flex-grow">
             <Requests />
           </div>
         </div>

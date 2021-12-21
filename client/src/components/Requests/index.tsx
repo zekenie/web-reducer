@@ -57,9 +57,12 @@ export default function Requests() {
     getRequests().then((reqs) => setRequests(reqs));
   }, []);
   return (
-    <table className="text-sm font-mono table-auto w-full">
-      <thead>
-        <tr className="border-b">
+    <table
+      style={{ borderCollapse: "separate", borderSpacing: "0" }}
+      className="text-sm font-mono table-auto w-full"
+    >
+      <thead className="">
+        <tr className="bg-white sticky top-0 drop-shadow-sm">
           <th className="text-left p-2">when</th>
           <th className="text-left p-2">body</th>
           <th className="text-left p-2">state</th>
@@ -68,7 +71,7 @@ export default function Requests() {
       </thead>
       <tbody>
         {requests.map((r) => (
-          <tr key={r.id} className="even:bg-canvas-100">
+          <tr key={r.id} className="odd:bg-canvas-100">
             <td className="p-2">
               <JsonPreview w={40}>{r.createdAt}</JsonPreview>
             </td>

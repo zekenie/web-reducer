@@ -1,4 +1,10 @@
 import { registerModal } from "./ModalProvider";
+import {
+  CenteredModalContainer,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from "../modals/Content";
 
 export {};
 type MODAL_NAME = "confirm";
@@ -18,7 +24,29 @@ declare global {
 type Props = { text: string; faz: string };
 
 const ConfirmModal = ({ text }: Props) => {
-  return <div>confirm! {text}</div>;
+  return (
+    <CenteredModalContainer>
+      <ModalHeader title="Are you sure you really want to" />
+      <ModalBody>
+        confirm! {text}
+        <p>test</p>
+        <p>test</p>
+        <p>test</p>
+        <p>test</p>
+        <p>test</p>
+        <p>test</p>
+        <p>test</p>
+        <p>test</p>
+        <p>test</p>
+        <p>test</p>
+        <p>test</p>
+      </ModalBody>
+      <ModalFooter>
+        <button className="rounded p-2 border">foo</button>
+        <button className="rounded p-2 border">bar</button>
+      </ModalFooter>
+    </CenteredModalContainer>
+  );
 };
 
 registerModal<MODAL_NAME>(MODAL_NAME, ConfirmModal);

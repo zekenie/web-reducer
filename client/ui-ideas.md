@@ -10,4 +10,7 @@
 ## component needs
 
 - [ ] modal
+  - [x] provider
+  - ui components
 - [ ] tooltip
+- [ ] button component

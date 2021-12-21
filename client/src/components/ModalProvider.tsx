@@ -5,6 +5,7 @@ import React, {
   ReactElement,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -13,11 +14,13 @@ import { ModalOpener } from "../modals";
 type ModalControls = {
   pushModal: (modalOpener: ModalOpener) => void;
   popModal: () => void;
+  closeModal: () => void;
 };
 
 const modalContext = createContext<ModalControls>({
   pushModal: () => {},
   popModal: () => {},
+  closeModal: () => {},
 });
 
 export function useModals() {
@@ -45,6 +48,10 @@ const ModalProvider: FC = ({ children }) => {
     [modals]
   );
 
+  const closeModal = useCallback(() => {
+    setModals([]);
+  }, []);
+
   const popModal = useCallback(() => {
     const [, ...nextModals] = [...modals].reverse();
     setModals(nextModals);
@@ -54,17 +61,38 @@ const ModalProvider: FC = ({ children }) => {
     return last(modals);
   }, [modals]);
 
+  useEffect(() => {
+    const close = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && modalToRender) {
+        closeModal();
+      }
+    };
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
+  }, [closeModal, modalToRender]);
+
   const ModalComponent = modalToRender
     ? possibleModals[modalToRender?.name]
     : undefined;
 
   return (
-    <modalContext.Provider value={{ pushModal, popModal }}>
+    <modalContext.Provider value={{ pushModal, popModal, closeModal }}>
       {modalToRender && (
         <>
-          <div className="w-screen h-screen bg-slate-700 opacity-20" />
-          {/* @ts-ignore */}
-          <ModalComponent {...modalToRender.props} />
+          <div
+            className="fixed inset-0 z-10"
+            aria-labelledby="modal-title"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div
+              aria-hidden="true"
+              onClick={closeModal}
+              className="bg-slate-700/75  fixed inset-0"
+            />
+            {/* @ts-ignore */}
+            <ModalComponent {...modalToRender.props} />
+          </div>
         </>
       )}
       {children}
