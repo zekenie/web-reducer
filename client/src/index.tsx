@@ -4,12 +4,16 @@ import App from "./App";
 import CommandPallet from "./command-pallet";
 import "./index.css";
 import reportWebVitals from "./reportWebVitals";
+import "./modals";
+import ModalProvider from "./components/ModalProvider";
 
 ReactDOM.render(
   <React.StrictMode>
-    <CommandPallet>
-      <App />
-    </CommandPallet>
+    <ModalProvider>
+      <CommandPallet>
+        <App />
+      </CommandPallet>
+    </ModalProvider>
   </React.StrictMode>,
   document.getElementById("root")
 );

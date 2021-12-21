@@ -2,6 +2,7 @@ import { MenuIcon } from "@heroicons/react/outline";
 import Editor from "@monaco-editor/react";
 import { useRegisterActions } from "kbar";
 import React from "react";
+import { useModals } from "./components/ModalProvider";
 import Requests from "./components/Requests";
 import ResourceBar from "./components/ResourceBar";
 import { Tab, Tabs } from "./components/Tabs";
@@ -77,11 +78,18 @@ function App() {
     },
   ]);
 
+  const { pushModal } = useModals();
+
   return (
     <div className="flex flex-col">
       <header className="px-3 py-3 border-b grid grid-cols-3">
         <div className="flex flex-row items-center space-x-4">
-          <button className="p-3 hover:bg-canvas-50 rounded-full">
+          <button
+            onClick={() =>
+              pushModal({ name: "confirm", props: { text: "foo", faz: "sdf" } })
+            }
+            className="p-3 hover:bg-canvas-50 rounded-full"
+          >
             <MenuIcon className="w-7 h-7 self-center" />
           </button>
 

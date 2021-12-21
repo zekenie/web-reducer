@@ -1,3 +1,6 @@
+import "./components/TestModal";
+import "./components/ConfirmModal";
+
 type Keys<T> = keyof T;
 
 // https://dev.to/safareli/pick-omit-and-union-types-in-typescript-4nd9
@@ -12,12 +15,12 @@ export type DistributiveOmit<
 > = T extends unknown ? Omit<T, Extract<keyof T, K>> : never;
 
 declare global {
-  namespace Queue {
-    interface WorkerTypes {}
+  namespace Modal {
+    interface ModalTypes {}
   }
 }
 
-export type JobDescription = DistributivePick<
-  Queue.WorkerTypes[keyof Queue.WorkerTypes],
-  "name" | "input"
+export type ModalOpener = DistributivePick<
+  Modal.ModalTypes[keyof Modal.ModalTypes],
+  "name" | "props"
 >;
