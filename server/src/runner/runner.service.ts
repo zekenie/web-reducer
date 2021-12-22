@@ -5,7 +5,6 @@ import { runCode } from "./vm.remote";
 
 export async function runHook(requestId: string): Promise<unknown> {
   const request = await getRequestToRun(requestId);
-  console.log({ request });
   const { versionId, hookId, code } = await getCodeByWriteKey(request.writeKey);
 
   const state = await fetchState({ hookId, versionId });
@@ -17,6 +16,7 @@ export async function runHook(requestId: string): Promise<unknown> {
   } = await runCode({
     code,
     request: {
+      id: requestId,
       body: request.body,
       headers: request.headers,
     },

@@ -1,0 +1,3 @@
+- wait, why can't I make any http requests?
+- what should i use this for?
+- is my data safe?

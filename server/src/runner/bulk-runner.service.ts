@@ -28,7 +28,7 @@ export async function runBulk(
 
     let currentState = lastStateRecord?.state || {};
     let processed = 0;
-    const cq = cargoQueue<WebhookRequest & { id: string }>(
+    const cq = cargoQueue<WebhookRequest>(
       async function (requests) {
         const runResults = await runCodeBulk({
           code: code.code,
