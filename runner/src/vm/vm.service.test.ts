@@ -49,6 +49,146 @@ it("works with state and event", () => {
   );
 });
 
+it("is authentic when no `isAuthentic` function is passed", () => {
+  const program = `
+    function reducer(state, { body }) {
+      return { number: state.number + body.number }
+    }
+  `;
+  expect(
+    runCode({
+      code: program,
+      requestsJSON: formatRequest({ body: { number: 3 } }),
+      state: JSON.stringify({ number: 4 }),
+    })
+  ).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: expect.any(String),
+        ms: expect.any(Number),
+        authentic: true,
+        error: null,
+        state: { number: 7 },
+      }),
+    ])
+  );
+});
+
+it("is not authentic when `isAuthentic` returns false", () => {
+  const program = `
+    function isAuthentic() { return false; }
+    function reducer(state, { body }) {
+      return { number: state.number + body.number }
+    }
+  `;
+  expect(
+    runCode({
+      code: program,
+      requestsJSON: formatRequest({ body: { number: 3 } }),
+      state: JSON.stringify({ number: 4 }),
+    })
+  ).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: expect.any(String),
+        ms: expect.any(Number),
+        authentic: false,
+        error: null,
+        state: { number: 7 },
+      }),
+    ])
+  );
+});
+
+it("is authentic when `isAuthentic` returns true", () => {
+  const program = `
+    function isAuthentic() { return true; }
+    function reducer(state, { body }) {
+      return { number: state.number + body.number }
+    }
+  `;
+  expect(
+    runCode({
+      code: program,
+      requestsJSON: formatRequest({ body: { number: 3 } }),
+      state: JSON.stringify({ number: 4 }),
+    })
+  ).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: expect.any(String),
+        ms: expect.any(Number),
+        authentic: true,
+        error: null,
+        state: { number: 7 },
+      }),
+    ])
+  );
+});
+
+it("is not authentic when `isAuthentic` throws", () => {
+  const program = `
+    function isAuthentic() { throw new Error() }
+    function reducer(state, { body }) {
+      return { number: state.number + body.number }
+    }
+  `;
+  expect(
+    runCode({
+      code: program,
+      requestsJSON: formatRequest({ body: { number: 3 } }),
+      state: JSON.stringify({ number: 4 }),
+    })
+  ).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: expect.any(String),
+        ms: expect.any(Number),
+        authentic: false,
+        error: {
+          message: "",
+          name: "Error",
+          stacktrace: expect.stringContaining("hook.js:2"),
+        },
+        state: { number: 4 },
+      }),
+    ])
+  );
+});
+
+it("finds idempotency tokens", () => {
+  const program = `
+
+    function getIdempotencyKey({ headers }) {
+      return headers["x-idempotency-token"]
+    }
+
+    function reducer(state, { body }) {
+      return { number: state.number + body.number }
+    }
+  `;
+  expect(
+    runCode({
+      code: program,
+      requestsJSON: formatRequest({
+        headers: { "x-idempotency-token": "foo" },
+        body: { number: 3 },
+      }),
+      state: JSON.stringify({ number: 4 }),
+    })
+  ).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: expect.any(String),
+        idempotencyKey: "foo",
+        ms: expect.any(Number),
+        error: null,
+        state: { number: 7 },
+      }),
+    ])
+  );
+});
+
 it("returns errors with stack and message", () => {
   const program = `                  // line 1
     function reducer(state, event) { // line 2

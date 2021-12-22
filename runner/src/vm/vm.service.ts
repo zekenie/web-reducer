@@ -51,6 +51,8 @@ class RequestArtifact {
   report({ filename, codeLength }: { filename: string; codeLength: number }) {
     return {
       id: this.id,
+      idempotencyKey: this.idempotencyKey,
+      authentic: this.authentic,
       state: this.state,
       error: formatError(this.error, { filename, codeLength }),
     };
@@ -145,6 +147,17 @@ export function runCode({
       const frame = artifacts.open(request.id);
       const head = acc[acc.length - 1] || { state: state };
       try {
+        if (typeof getIdempotencyKey !== "undefined") {
+          frame.setIdempotencyKey(getIdempotencyKey(request));
+        }
+        if (typeof isAuthentic !== "undefined") {
+          try {
+            frame.setAuthentic(isAuthentic(request));
+          } catch(e) {
+            frame.setAuthentic(false);
+            throw e;
+          }
+        }
         const nextState = reducer(head.state, request);
         frame.setState(nextState);
         return [...acc, { error: null, state: nextState }];
