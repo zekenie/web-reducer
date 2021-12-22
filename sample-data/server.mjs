@@ -5,10 +5,18 @@ import { Nilsimsa } from "nilsimsa";
 import lodash from "lodash";
 import cors from "cors";
 
-const formatter = Intl.DateTimeFormat("en-US", {
+const dayFormatter = Intl.DateTimeFormat("en-US", {
   year: "numeric",
   month: "numeric",
   day: "numeric",
+  // hour: "numeric",
+  // minute: "numeric",
+});
+
+const timeFormatter = Intl.DateTimeFormat("en-US", {
+  // year: "numeric",
+  // month: "numeric",
+  // day: "numeric",
   hour: "numeric",
   minute: "numeric",
 });
@@ -40,18 +48,20 @@ function randomDateAgo() {
 
 const dates = Array.from({ length: samplesFilenames.length }, () =>
   randomDateAgo()
-)
-  .sort((a, b) => a.getTime() - b.getTime())
-  .map((d) => formatter.format(d));
+).sort((a, b) => a.getTime() - b.getTime());
+// .map((d) => timeFormatter.format(d));
 
 const processedSamples = samplesFilenames.map((filename) => {
   const body = fs.readFileSync(filename).toString();
+  const createdAt = dates.pop();
   return {
     body,
     id: lodash.uniqueId(),
     filename: filename.split("/").join("-").split(".json").join(""),
     hash: new Nilsimsa(body).digest("hex"),
-    createdAt: dates.pop(),
+    createdAt,
+    createdAtFormattedTime: timeFormatter.format(createdAt),
+    createdAtFormattedDate: dayFormatter.format(createdAt),
     effects: getSideEffects(),
   };
 });
