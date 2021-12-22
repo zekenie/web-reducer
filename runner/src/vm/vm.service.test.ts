@@ -17,6 +17,7 @@ it("runs hello world", () => {
     expect.arrayContaining([
       expect.objectContaining({
         state: "hello world",
+        id: expect.any(String),
         ms: expect.any(Number),
         error: null,
       }),
@@ -39,6 +40,7 @@ it("works with state and event", () => {
   ).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        id: expect.any(String),
         ms: expect.any(Number),
         error: null,
         state: { number: 7 },
@@ -62,6 +64,7 @@ it("returns errors with stack and message", () => {
   ).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        id: expect.any(String),
         ms: expect.any(Number),
         error: {
           message: "oh no",
@@ -111,18 +114,18 @@ it("accepts multiple requests", () => {
     return { number: state.number + body.number }
   }
 `;
-  expect(
-    runCode({
-      code: program,
-      requestsJSON: formatRequests([
-        { body: { number: 3 } },
-        { body: { number: 3 } },
-      ]),
-      state: JSON.stringify({ number: 4 }),
-    })
-  ).toEqual(
+  const result = runCode({
+    code: program,
+    requestsJSON: formatRequests([
+      { body: { number: 3 } },
+      { body: { number: 3 } },
+    ]),
+    state: JSON.stringify({ number: 4 }),
+  });
+  expect(result).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        id: expect.any(String),
         ms: expect.any(Number),
         error: null,
         state: { number: 10 },

@@ -17,6 +17,8 @@ class RequestArtifact {
   private error?: Error | unknown | null;
   private authentic: boolean = true;
 
+  constructor(private readonly id: string) {}
+
   log(message: ConsoleMessage) {
     this.console.push(message);
   }
@@ -47,22 +49,12 @@ class RequestArtifact {
   }
 
   report({ filename, codeLength }: { filename: string; codeLength: number }) {
-    // ({
-    //   state: artifact.,
-    //   error: formatError(error, { filename, codeLength }),
-    //   ms: Math.round(ms / results.length),
-    // })
     return {
+      id: this.id,
       state: this.state,
       error: formatError(this.error, { filename, codeLength }),
     };
   }
-
-  // idempotency key
-  // state
-  // error
-  // is authentic
-  // tags?
 }
 
 class Artifacts {
@@ -99,7 +91,7 @@ class Artifacts {
   open(id: string) {
     // this.currentId = id;
     this.ids.push(id);
-    this.requestArtifacts[id] = new RequestArtifact();
+    this.requestArtifacts[id] = new RequestArtifact(id);
     return this.requestArtifacts[id];
   }
 }
