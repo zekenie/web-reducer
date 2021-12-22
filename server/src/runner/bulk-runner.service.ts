@@ -44,6 +44,7 @@ export async function runBulk(
             const request = requests[i];
             return {
               id: request.id,
+              idempotencyKey: result.idempotencyKey,
               executionTime: result.ms,
               state: result.state as {},
               error: result.error,

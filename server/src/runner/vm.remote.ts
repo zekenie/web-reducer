@@ -23,6 +23,9 @@ type CodeResponse = {
   ms: number;
   error?: RuntimeError;
   state: unknown;
+  id: string;
+  idempotencyKey?: string;
+  authentic: boolean;
 };
 
 export async function runCode({

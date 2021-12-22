@@ -12,6 +12,7 @@ export async function runHook(requestId: string): Promise<unknown> {
   const {
     state: newState,
     ms,
+    idempotencyKey,
     error,
   } = await runCode({
     code,
@@ -28,6 +29,7 @@ export async function runHook(requestId: string): Promise<unknown> {
     error,
     hookId,
     requestId,
+    idempotencyKey,
     versionId,
     executionTime: ms,
   });

@@ -25,6 +25,7 @@ export async function bulkCreateState({
   requests: {
     id: string;
     executionTime: number;
+    idempotencyKey?: string;
     state: {};
     error?: RuntimeError;
   }[];
@@ -54,6 +55,7 @@ export async function createState({
   error,
   hookId,
   requestId,
+  idempotencyKey,
   versionId,
   executionTime,
 }: {
@@ -61,17 +63,20 @@ export async function createState({
   error?: RuntimeError;
   hookId: string;
   requestId: string;
+  idempotencyKey?: string;
   versionId: string;
   executionTime: number;
 }): Promise<void> {
   const pool = getPool();
   await pool.anyFirst(sql`
       insert into state 
-      (state, error, "executionTime", "hookId", "requestId", "versionId")
+      (state, error, "executionTime", "hookId", "requestId", "idempotencyKey", "versionId")
       values
       (${state ? sql.json(state) : null}, ${
     error ? sql.json(error) : null
-  }, ${executionTime}, ${hookId}, ${requestId}, ${versionId})
+  }, ${executionTime}, ${hookId}, ${requestId}, ${
+    idempotencyKey || null
+  }, ${versionId})
     `);
 }
 
