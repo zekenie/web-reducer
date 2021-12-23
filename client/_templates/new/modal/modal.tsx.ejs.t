@@ -1,13 +1,16 @@
+---
+to: <%= absPath %>
+---
 import { registerModal } from "../modals/ModalProvider";
 import {
   CenteredModalContainer,
   ModalBody,
-  ModalFooter,
   ModalHeader,
+  ModalFooter
 } from "../modals/Content";
 
-type MODAL_NAME = "test";
-const MODAL_NAME: MODAL_NAME = "test";
+type MODAL_NAME = "<%= h.changeCase.param(modalName) %>";
+const MODAL_NAME: MODAL_NAME = "<%= h.changeCase.param(modalName) %>";
 
 declare global {
   namespace Modal {
@@ -20,16 +23,16 @@ declare global {
   }
 }
 
-type Props = { text: string };
+type Props = {};
 
-const TestModal = ({ text }: Props) => {
+const <%= h.changeCase.pascal(name) %> = ({}: Props) => {
   return (
     <CenteredModalContainer>
-      <ModalHeader title="Are you sure you really want to" />
-      <ModalBody>foobar! {text}</ModalBody>
+      <ModalHeader title="title goes here" />
+      <ModalBody>body goes here</ModalBody>
       <ModalFooter>Footer goes here</ModalFooter>
     </CenteredModalContainer>
   );
 };
 
-registerModal<MODAL_NAME>(MODAL_NAME, TestModal);
+registerModal<MODAL_NAME>(MODAL_NAME, <%= h.changeCase.pascal(name) %>);

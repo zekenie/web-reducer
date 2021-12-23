@@ -1,4 +1,4 @@
-import { registerModal } from "./ModalProvider";
+import { registerModal } from "../modals/ModalProvider";
 import {
   CenteredModalContainer,
   ModalBody,
@@ -6,7 +6,6 @@ import {
   ModalHeader,
 } from "../modals/Content";
 
-export {};
 type MODAL_NAME = "confirm";
 const MODAL_NAME: MODAL_NAME = "confirm";
 

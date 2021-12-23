@@ -5,7 +5,7 @@ import CommandPallet from "./command-pallet";
 import "./index.css";
 import reportWebVitals from "./reportWebVitals";
 import "./modals";
-import ModalProvider from "./components/ModalProvider";
+import ModalProvider from "./modals/ModalProvider";
 
 ReactDOM.render(
   <React.StrictMode>

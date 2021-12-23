@@ -9,7 +9,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { ModalOpener } from "../modals";
+import { ModalOpener } from ".";
 
 type ModalControls = {
   pushModal: (modalOpener: ModalOpener) => void;
