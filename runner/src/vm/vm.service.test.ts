@@ -11,6 +11,7 @@ it("runs hello world", () => {
     runCode({
       code: helloWorld,
       requestsJSON: formatRequest(),
+      invalidIdempotencyKeys: [],
       state: "{}",
     })
   ).toEqual(
@@ -35,6 +36,7 @@ it("works with state and event", () => {
     runCode({
       code: program,
       requestsJSON: formatRequest({ body: { number: 3 } }),
+      invalidIdempotencyKeys: [],
       state: JSON.stringify({ number: 4 }),
     })
   ).toEqual(
@@ -59,6 +61,7 @@ it("is authentic when no `isAuthentic` function is passed", () => {
     runCode({
       code: program,
       requestsJSON: formatRequest({ body: { number: 3 } }),
+      invalidIdempotencyKeys: [],
       state: JSON.stringify({ number: 4 }),
     })
   ).toEqual(
@@ -85,6 +88,7 @@ it("is not authentic when `isAuthentic` returns false", () => {
     runCode({
       code: program,
       requestsJSON: formatRequest({ body: { number: 3 } }),
+      invalidIdempotencyKeys: [],
       state: JSON.stringify({ number: 4 }),
     })
   ).toEqual(
@@ -94,7 +98,7 @@ it("is not authentic when `isAuthentic` returns false", () => {
         ms: expect.any(Number),
         authentic: false,
         error: null,
-        state: { number: 7 },
+        state: { number: 4 },
       }),
     ])
   );
@@ -111,6 +115,7 @@ it("is authentic when `isAuthentic` returns true", () => {
     runCode({
       code: program,
       requestsJSON: formatRequest({ body: { number: 3 } }),
+      invalidIdempotencyKeys: [],
       state: JSON.stringify({ number: 4 }),
     })
   ).toEqual(
@@ -137,6 +142,7 @@ it("is not authentic when `isAuthentic` throws", () => {
     runCode({
       code: program,
       requestsJSON: formatRequest({ body: { number: 3 } }),
+      invalidIdempotencyKeys: [],
       state: JSON.stringify({ number: 4 }),
     })
   ).toEqual(
@@ -174,6 +180,7 @@ it("finds idempotency tokens", () => {
         headers: { "x-idempotency-token": "foo" },
         body: { number: 3 },
       }),
+      invalidIdempotencyKeys: [],
       state: JSON.stringify({ number: 4 }),
     })
   ).toEqual(
@@ -199,6 +206,7 @@ it("returns errors with stack and message", () => {
     runCode({
       code: program,
       requestsJSON: formatRequest({ body: { number: 3 } }),
+      invalidIdempotencyKeys: [],
       state: JSON.stringify({ number: 4 }),
     })
   ).toEqual(
@@ -226,6 +234,7 @@ it("filters out our code from stacktraces", () => {
   const result = runCode({
     code: program,
     requestsJSON: formatRequest({ body: { number: 3 } }),
+    invalidIdempotencyKeys: [],
     state: JSON.stringify({ number: 4 }),
   });
   expect(JSON.stringify(result)).not.toContain("vm.service");
@@ -243,6 +252,7 @@ it("times out code that doesn't finish", () => {
     runCode({
       code: program,
       requestsJSON: formatRequest({ body: { number: 3 } }),
+      invalidIdempotencyKeys: [],
       state: JSON.stringify({ number: 4 }),
     });
   }).toThrow("Script execution timed out after 250ms");
@@ -260,6 +270,7 @@ it("accepts multiple requests", () => {
       { body: { number: 3 } },
       { body: { number: 3 } },
     ]),
+    invalidIdempotencyKeys: [],
     state: JSON.stringify({ number: 4 }),
   });
   expect(result).toEqual(

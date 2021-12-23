@@ -112,8 +112,8 @@ function formatError(
       stacktrace: formatStacktrace({
         error: error,
         programFile: context.filename,
-        lineNumberMap: (num) => num - 2,
-        lineNumberFilter: (line) => !line || line < context.codeLength + 2,
+        lineNumberMap: (num) => num - 4,
+        lineNumberFilter: (line) => !line || line < context.codeLength + 4,
       }),
     };
   } else {
@@ -125,39 +125,57 @@ export function runCode({
   code,
   state,
   timeout = 250,
+  invalidIdempotencyKeys,
   requestsJSON,
   filename = "hook.js",
-}: {
+}: Readonly<{
   code: string;
   requestsJSON: string;
   state?: string;
+  invalidIdempotencyKeys: string[];
   timeout?: number;
   filename?: string;
-}) {
+}>) {
   const codeLength = code.split("\n").length;
   const artifacts = new Artifacts();
-  const vm = new vm2.VM({ timeout, sandbox: { artifacts } });
+  const vm = new vm2.VM({
+    timeout,
+    sandbox: { artifacts, invalidIdempotencyKeys },
+  });
   const start = new Date();
-  let error: { message: string; name: string; stacktrace?: string } | null =
-    null;
   const codeWithRuntime = `(function(state, requests) {
     artifacts.expectLength(requests.length)
+    function isAuthentic() { return true; }
+    function getIdempotencyKey(request) { return request.id; }
     ${code}
     return requests.reduce((acc, request, i, requests) => {
       const frame = artifacts.open(request.id);
       const head = acc[acc.length - 1] || { state: state };
+
+      let isAuthenticResult = null;
+      let idempotencyKey = null;
+
       try {
-        if (typeof getIdempotencyKey !== "undefined") {
-          frame.setIdempotencyKey(getIdempotencyKey(request));
+      
+        try {
+          isAuthenticResult = isAuthentic(request)
+          frame.setAuthentic(isAuthenticResult);
+        } catch(e) {
+          frame.setAuthentic(false);
+          throw e;
         }
-        if (typeof isAuthentic !== "undefined") {
-          try {
-            frame.setAuthentic(isAuthentic(request));
-          } catch(e) {
-            frame.setAuthentic(false);
-            throw e;
-          }
+        
+        idempotencyKey = getIdempotencyKey(request);
+        frame.setIdempotencyKey(idempotencyKey);
+
+        const shouldIgnoreRequest = !isAuthenticResult
+          || invalidIdempotencyKeys.includes(idempotencyKey);
+
+        if (shouldIgnoreRequest) {
+          frame.setState(head.state);
+          return [...acc, { error: null, state: head.state }];
         }
+
         const nextState = reducer(head.state, request);
         frame.setState(nextState);
         return [...acc, { error: null, state: nextState }];

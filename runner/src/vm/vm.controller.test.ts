@@ -103,6 +103,7 @@ describe("bulk", () => {
       .post("/bulk")
       .send({
         code: `function reducer(state, { body }) { return { num: state.num + body.num } }`,
+        invalidIdempotencyKeys: [],
         requestsJson: JSON.stringify([
           { id: "1", body: { num: 4 }, headers: {} },
           { id: "2", body: { num: 4 }, headers: {} },

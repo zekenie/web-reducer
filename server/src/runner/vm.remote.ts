@@ -48,15 +48,18 @@ export async function runCode({
 export async function runCodeBulk({
   code,
   requests,
+  idempotencyKeysToIgnore,
   state,
 }: {
   code: string;
   requests: WebhookRequest[];
+  idempotencyKeysToIgnore: string[];
   state: unknown;
 }): Promise<CodeResponse[]> {
   const { data } = await client.post<CodeResponse[]>("/", {
     code,
     requestsJson: JSON.stringify(requests),
+    idempotencyKeysToIgnore,
     state: JSON.stringify(state),
   });
   return data;

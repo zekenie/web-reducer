@@ -11,6 +11,7 @@ export default Router()
       const [payload] = service.runCode({
         code: body.code,
         requestsJSON: `[${body.requestJson}]`,
+        invalidIdempotencyKeys: [],
         state: body.state,
       });
       res.json(payload);
@@ -27,6 +28,7 @@ export default Router()
         const payload = service.runCode({
           code: body.code,
           requestsJSON: body.requestsJson,
+          invalidIdempotencyKeys: body.invalidIdempotencyKeys,
           state: body.state,
         });
         res.json(payload);

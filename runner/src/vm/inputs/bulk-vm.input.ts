@@ -1,4 +1,10 @@
-import { IsJSON, IsString, MaxLength } from "class-validator";
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsJSON,
+  IsString,
+  MaxLength,
+} from "class-validator";
 
 export default class BulkVMInput {
   @IsString()
@@ -14,4 +20,10 @@ export default class BulkVMInput {
   @IsString()
   @MaxLength(250 * 1000)
   readonly requestsJson: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  @ArrayMaxSize(1000)
+  @MaxLength(255, { each: true })
+  readonly invalidIdempotencyKeys: string[];
 }

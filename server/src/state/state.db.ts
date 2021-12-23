@@ -31,7 +31,7 @@ export async function isIdempotencyKeyOk(
   return count === 0;
 }
 
-export async function requestIdsViolatingIdempotencyKeys(
+export async function checkValidityOfIdempotencyKeys(
   keys: string[],
   { hookId, versionId }: { hookId: string; versionId: string }
 ): Promise<string[]> {
@@ -47,7 +47,7 @@ export async function requestIdsViolatingIdempotencyKeys(
       and "versionId" = ${versionId}
       and "idempotencyKey" = any(${keys})
   `);
-  return rows.map((row) => row.requestId);
+  return rows.map((row) => row.idempotencyKey);
 }
 
 export async function bulkCreateState({
