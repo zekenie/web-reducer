@@ -1,4 +1,3 @@
-import { IncomingHttpHeaders } from "http";
 import { enqueue } from "../worker/queue.service";
 import { registerQueue } from "../worker/queues";
 import registerWorker from "../worker/workers";
@@ -47,5 +46,3 @@ registerWorker<WORKER_NAME>({
 });
 
 registerQueue(WORKER_NAME);
-
-export {};
