@@ -1,6 +1,6 @@
 import { getCodeByWriteKey } from "../hook/hook.db";
 import { getRequestToRun } from "../request/request.db";
-import { createState, fetchState } from "../state/state.db";
+import { createState, fetchState, isIdempotencyKeyOk } from "../state/state.db";
 import { runCode } from "./vm.remote";
 
 export async function runHook(requestId: string): Promise<unknown> {
@@ -23,6 +23,22 @@ export async function runHook(requestId: string): Promise<unknown> {
     },
     state: state?.state,
   });
+
+  if (idempotencyKey) {
+    const ok = await isIdempotencyKeyOk(idempotencyKey, { versionId, hookId });
+    if (!ok) {
+      return createState({
+        // leave old state as is because we have an idempotency violation
+        state: state as {},
+        error,
+        hookId,
+        requestId,
+        idempotencyKey,
+        versionId,
+        executionTime: ms,
+      });
+    }
+  }
 
   await createState({
     state: newState as {},

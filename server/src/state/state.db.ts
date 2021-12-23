@@ -17,6 +17,39 @@ export async function readState(readKey: string): Promise<unknown> {
   `);
 }
 
+export async function isIdempotencyKeyOk(
+  idempotencyKey: string,
+  { hookId, versionId }: { hookId: string; versionId: string }
+): Promise<boolean> {
+  const pool = getPool();
+  const { count } = await pool.one<{ count: number }>(sql`
+    select count(*) from state
+    where "hookId" = ${hookId}
+      and "versionId" = ${versionId}
+      and "idempotencyKey" = ${idempotencyKey}
+  `);
+  return count === 0;
+}
+
+export async function requestIdsViolatingIdempotencyKeys(
+  keys: string[],
+  { hookId, versionId }: { hookId: string; versionId: string }
+): Promise<string[]> {
+  const pool = getPool();
+  const rows = await pool.many<{
+    idempotencyKey: string;
+    requestId: string;
+  }>(sql`
+    select "idempotencyKey", "requestId"
+    from "state"
+    where
+      "hookId" = ${hookId}
+      and "versionId" = ${versionId}
+      and "idempotencyKey" = any(${keys})
+  `);
+  return rows.map((row) => row.requestId);
+}
+
 export async function bulkCreateState({
   requests,
   hookId,
