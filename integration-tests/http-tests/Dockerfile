@@ -6,4 +6,7 @@ RUN yarn install --immutable
 COPY tsconfig.json /usr/src/app/tsconfig.json
 COPY jest.config.js /usr/src/app/jest.config.js
 COPY src/ /usr/src/app/src/
-CMD ["yarn", "jest", "--bail"]
+COPY ./docker-entrypoint.sh /usr/src/app/docker-entrypoint.sh
+ENTRYPOINT ["./docker-entrypoint.sh"]
+
+CMD yarn jest --bail

@@ -1,4 +1,5 @@
 import { Queue } from "bullmq";
+import { connection } from "../redis";
 import { JobDescription } from "./types";
 const queues: { [key: string]: Queue } = {};
 
@@ -6,7 +7,10 @@ type Mapper = (job: JobDescription) => string;
 
 const mappers: { [key: string]: Mapper } = {};
 
-export function registerQueue(key: string, queue: Queue = new Queue(key)) {
+export function registerQueue(
+  key: string,
+  queue: Queue = new Queue(key, { connection })
+) {
   queues[key] = queue;
 }
 

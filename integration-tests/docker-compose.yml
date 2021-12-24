@@ -1,10 +1,19 @@
 version: "3"
+# This volume is used as communication mechanism between
+# the migrator and the test runner
+volumes:
+  shared-tmpfs:
+    driver: local
+    driver_opts:
+      type: "tmpfs"
+      device: "tmpfs"
+      o: "size=256m,uid=1000"
 services:
   db:
     image: supabase/postgres:13.3.0
     shm_size: 2g
     ports:
-      - "5433:5433"
+      - "5433:5432"
     environment:
       - POSTGRES_DB=hook
       - POSTGRES_USER=postgres
@@ -21,24 +30,34 @@ services:
       - 3002:3002
   migrator:
     build: ./migrator
+    volumes:
+      - shared-tmpfs:/tmp/shared
     environment:
-      DATABASE_URI: postgres://postgres:postgres@db:5433
+      DATABASE_URL: postgres://postgres:postgres@db:5432/hook
     depends_on:
       - db
+    restart: on-failure
   server:
     build: ../server
     ports:
       - 3001:3001
     environment:
-      DATABASE_URI: postgres://postgres:postgres@db:5433
+      DATABASE_URL: postgres://postgres:postgres@db:5432/hook
+      REDIS_URL: redis://redis:6379/0
       PORT: 3001
       RUNNER_URL: http://code_runner:3002
     depends_on:
-      migrator:
-        condition: service_completed_successfully
+      - redis
+      - migrator
   http_tests:
     build: ./http-tests
+    volumes:
+      - shared-tmpfs:/tmp/shared
     environment:
       SERVER_URL: http://server:3001
+      RUNNER_URL: http://code_runner:3002
+    # https://github.com/compose-spec/compose-spec/blob/master/spec.md#long-syntax-1
     depends_on:
       - server
+      - migrator
+      - code_runner

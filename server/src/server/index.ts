@@ -4,6 +4,8 @@ import makeRequestContextMiddleware from "./request-context.middleware";
 import requestController from "../request/request.controller";
 import bodyParserXml from "body-parser-xml";
 import workerController from "../worker/worker.controller";
+import { heartbeat } from "../db/heartbeat";
+import { connection as redisConnection } from "../redis";
 bodyParserXml(bodyParser);
 
 type Config = {};
@@ -17,7 +19,8 @@ export default function makeServer(config: Config) {
 
   app.use("/admin/queues", workerController);
 
-  app.get("/heartbeat", (req, res) => {
+  app.get("/heartbeat", async (req, res) => {
+    await Promise.all([heartbeat(), redisConnection.ping()]);
     res.json({ ok: true });
   });
 

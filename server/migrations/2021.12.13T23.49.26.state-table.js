@@ -2,12 +2,12 @@
 exports.up = async ({ context: { connection, sql } }) => {
   await connection.query(sql`
     alter table "hook"
-    drop "code"
+    drop column if exists "code" 
   `);
 
   await connection.query(sql`
     alter table "request"
-      drop "state"
+    drop column if exists "state"
   `);
 
   await connection.query(sql`
@@ -24,7 +24,7 @@ exports.up = async ({ context: { connection, sql } }) => {
   `);
 
   await connection.query(sql`
-    CREATE UNIQUE INDEX "onlyOneVersionPublished" ON version ("workflowState", "hookId") WHERE ("workflowState" = any('published'));
+    CREATE UNIQUE INDEX "onlyOneVersionPublished" ON version ("workflowState", "hookId") WHERE ("workflowState" = any(array['published']));
   `);
 
   await connection.query(sql`

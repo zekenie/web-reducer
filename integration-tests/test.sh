@@ -1,7 +1,5 @@
 #!/bin/sh
 
-rm -rf ./postgres-data
-
 rm -rf ./migrator/migrations
 
 cp -R ../server/migrations ./migrator/migrations

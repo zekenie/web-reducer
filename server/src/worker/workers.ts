@@ -1,8 +1,9 @@
 import { Job, Worker } from "bullmq";
 
 import { QueueEvents } from "bullmq";
+import { connection } from "../redis";
 
-const queueEvents = new QueueEvents("Paint");
+const queueEvents = new QueueEvents("Paint", { connection });
 
 queueEvents.on(
   "completed",
@@ -47,7 +48,7 @@ export default function registerWorker<T extends keyof Queue.WorkerTypes>(
             throw e;
           }
         },
-        { concurrency: worker.concurrency }
+        { concurrency: worker.concurrency, connection }
       )
   );
 }
