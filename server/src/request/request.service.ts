@@ -3,12 +3,10 @@ import { WebhookRequest } from "./types";
 
 export async function handleRequest({
   request,
-  requestId,
   contentType,
   writeKey,
 }: {
   request: WebhookRequest;
-  requestId: string;
   contentType: string;
   writeKey: string;
 }) {
@@ -16,7 +14,6 @@ export async function handleRequest({
     name: "request",
     input: {
       request,
-      requestId,
       contentType,
       writeKey,
     },

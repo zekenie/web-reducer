@@ -10,10 +10,10 @@ export default Router().post(
         request: {
           body: req.body,
           headers: req.headers,
+          id: getStore().id,
         },
         writeKey: req.params.writeKey,
         contentType: req.headers["content-type"]!,
-        requestId: getStore().id,
       });
       res.status(202);
       res.json({});

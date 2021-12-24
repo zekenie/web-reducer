@@ -1,0 +1,44 @@
+version: "3"
+services:
+  db:
+    image: supabase/postgres:13.3.0
+    shm_size: 2g
+    ports:
+      - "5433:5433"
+    environment:
+      - POSTGRES_DB=hook
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+  redis:
+    image: redis:6.2.6
+    ports:
+      - 6379:6379
+  code_runner:
+    build: ../runner
+    ports:
+      - 3002:3002
+  migrator:
+    build: ./migrator
+    environment:
+      DATABASE_URI: postgres://postgres:postgres@db:5433
+    depends_on:
+      - db
+  server:
+    build: ../server
+    ports:
+      - 3001:3001
+    environment:
+      DATABASE_URI: postgres://postgres:postgres@db:5433
+      PORT: 3001
+      RUNNER_URL: http://code_runner:3002
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+  http_tests:
+    build: ./http-tests
+    environment:
+      SERVER_URL: http://server:3001
+    depends_on:
+      - server

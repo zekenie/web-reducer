@@ -14,7 +14,6 @@ declare global {
         name: WORKER_NAME;
         output: void;
         input: {
-          requestId: string;
           contentType: string;
           request: WebhookRequest;
           writeKey: string;
@@ -29,7 +28,7 @@ registerWorker<WORKER_NAME>({
   name: WORKER_NAME,
   worker: async (j) => {
     const { requestId, hookId } = await captureRequest({
-      id: j.data.requestId,
+      id: j.data.request.id,
       contentType: j.data.contentType,
       request: j.data.request,
       writeKey: j.data.writeKey,

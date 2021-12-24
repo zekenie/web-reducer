@@ -1,0 +1,2 @@
+- `docker-compose up --exit-code-from test-runner`
+- https://blog.ramosly.com/controlling-how-docker-compose-exits-da17c000d0be

@@ -8,7 +8,7 @@ export default Router().put(
   validate(UpdateHook),
   async function updateHook(req, res, next) {
     try {
-      await service.updateHook(req.body);
+      await service.updateDraft(req.body);
       res.json({});
     } catch (e) {
       next(e);
