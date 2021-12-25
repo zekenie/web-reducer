@@ -3,7 +3,7 @@ FROM node@sha256:a9b9cb880fa429b0bea899cd3b1bc081ab7277cc97e6d2dcd84bd9753b2027e
 WORKDIR /usr/src/app
 COPY package.json /usr/src/app/package.json
 COPY yarn.lock /usr/src/app/yarn.lock
-RUN yarn install --immutable --production=true
+RUN yarn install --immutable
 
 
 

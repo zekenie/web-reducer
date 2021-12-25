@@ -4,7 +4,7 @@ WORKDIR /usr/src/app
 RUN apk update && apk add bash
 COPY package.json /usr/src/app/package.json
 COPY yarn.lock /usr/src/app/yarn.lock
-RUN yarn install --immutable --production=true
+RUN yarn install --immutable
 COPY migrations/ /usr/src/app/migrations
 COPY migrate.js /usr/src/app/migrate.js
 COPY ./wait-for.sh /usr/src/app/wait-for.sh

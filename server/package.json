@@ -37,10 +37,10 @@
     "slonik": "^25.1.3",
     "slonik-interceptor-query-logging": "^1.4.2",
     "typescript": "^4.5.2",
+    "@tsconfig/recommended": "^1.0.1",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@tsconfig/recommended": "^1.0.1",
     "hygen": "^6.1.0",
     "nodemon": "^2.0.15",
     "ts-node": "^10.4.0"
