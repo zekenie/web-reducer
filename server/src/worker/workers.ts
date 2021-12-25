@@ -1,25 +1,5 @@
 import { Job, Worker } from "bullmq";
-
-import { QueueEvents } from "bullmq";
 import { connection } from "../redis";
-
-const queueEvents = new QueueEvents("Paint", { connection });
-
-queueEvents.on(
-  "completed",
-  ({ jobId, returnvalue }: { jobId: string; returnvalue: any }) => {
-    console.log("failed", jobId, returnvalue);
-    // Called every time a job is completed in any worker.
-  }
-);
-
-queueEvents.on(
-  "failed",
-  ({ jobId, failedReason }: { jobId: string; failedReason: string }) => {
-    // jobId received a progress event
-    console.log("failed", jobId, failedReason);
-  }
-);
 
 type WorkerType<T extends keyof Queue.WorkerTypes> = {
   name: Queue.WorkerTypes[T]["name"];

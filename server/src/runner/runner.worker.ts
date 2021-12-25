@@ -28,7 +28,6 @@ for (let i = 0; i < NUM_BUCKETS; i++) {
       concurrency: 1,
       name: WORKER_NAME,
       worker: async (j) => {
-        console.log("running runner");
         await runHook(j.data.requestId);
       },
     },

@@ -2,7 +2,7 @@ import { uniqueId } from "lodash";
 import { sql } from "slonik";
 import { serverClient } from "./clients";
 import { getPool } from "./db";
-import { sleep } from "./utils";
+import { cleanup } from "./db/cleanup";
 
 const pool = getPool();
 
@@ -11,28 +11,6 @@ type Context = {
   hookId: string;
   versionId: string;
 };
-
-async function cleanup() {
-  await pool.any(sql`
-    delete from "state" cascade
-  `);
-
-  await pool.any(sql`
-    delete from "request" cascade
-  `);
-
-  await pool.any(sql`
-    delete from "version" cascade
-  `);
-
-  await pool.any(sql`
-    delete from "key" cascade
-  `);
-
-  await pool.any(sql`
-    delete from "hook" cascade
-  `);
-}
 
 describe("existing hooks", () => {
   let context: Context;
@@ -83,9 +61,12 @@ describe("existing hooks", () => {
 
   it("accepts requests and eventually modifies the state", async () => {
     await serverClient.post(`/${context.writeKey}`, { number: 4 });
-    await serverClient.post(`/${context.writeKey}`, { number: 3 });
+    const { data } = await serverClient.post<{ id: string }>(
+      `/${context.writeKey}`,
+      { number: 3 }
+    );
 
-    await sleep(250);
+    await serverClient.get(`/settled/${data.id}`);
 
     const { state } = await pool.one<{ state: unknown }>(sql`
       select state from state

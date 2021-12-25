@@ -2,9 +2,16 @@ import { Router } from "express";
 import * as service from "./request.service";
 import { getStore } from "../server/request-context.middleware";
 
-export default Router().post(
-  "/:writeKey",
-  async function handleRequest(req, res, next) {
+export default Router()
+  .get("/settled/:requestId", async (req, res, next) => {
+    try {
+      await service.resolveWhenJobSettled(req.params.requestId);
+      res.json({ jobId: req.params.requestId, settled: true });
+    } catch (e) {
+      next(e);
+    }
+  })
+  .post("/:writeKey", async function handleRequest(req, res, next) {
     try {
       await service.handleRequest({
         request: {
@@ -16,9 +23,8 @@ export default Router().post(
         contentType: req.headers["content-type"]!,
       });
       res.status(202);
-      res.json({});
+      res.json({ id: getStore().id });
     } catch (e) {
       next(e);
     }
-  }
-);
+  });

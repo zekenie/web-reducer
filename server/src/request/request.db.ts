@@ -60,7 +60,6 @@ export async function streamRequestsForHook(
 
 export function getRequestToRun(id: string): Promise<RequestToRun> {
   const pool = getPool();
-  console.log("finding request with", id);
   return pool.one<RequestToRun>(
     sql`
       select
