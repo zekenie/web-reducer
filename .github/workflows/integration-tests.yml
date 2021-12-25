@@ -1,0 +1,12 @@
+name: Integration
+on: push
+defaults:
+  run:
+    working-directory: integration-tests
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Tests
+        run: ./test.sh
