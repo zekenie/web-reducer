@@ -55,9 +55,11 @@ services:
       - shared-tmpfs:/tmp/shared
     environment:
       SERVER_URL: http://server:3001
+      DATABASE_URL: postgres://postgres:postgres@db:5432/hook
       RUNNER_URL: http://code_runner:3002
     # https://github.com/compose-spec/compose-spec/blob/master/spec.md#long-syntax-1
     depends_on:
       - server
+      - db
       - migrator
       - code_runner

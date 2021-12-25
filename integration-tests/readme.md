@@ -1,2 +1,4 @@
-- `docker-compose up --exit-code-from test-runner`
-- https://blog.ramosly.com/controlling-how-docker-compose-exits-da17c000d0be
+## Current issues that need help
+
+- [ ] cleanup tables in safe order
+- [ ] need to know when job queues are empty so we don't have to `sleep`
