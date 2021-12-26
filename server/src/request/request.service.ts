@@ -32,9 +32,12 @@ export async function handleRequest({
 export async function resolveWhenJobSettled(requestId: string): Promise<void> {
   const job = await getQueue(REQUEST_WORKER_NAME).getJob(requestId);
   if (!job) {
+    console.log(Date.now(), "no job found returning");
     return;
   }
   if (await job.isActive()) {
+    console.log(Date.now(), "job is active");
     await job.waitUntilFinished(getQueueEvents(REQUEST_WORKER_NAME));
+    console.log(Date.now(), "job is finished");
   }
 }

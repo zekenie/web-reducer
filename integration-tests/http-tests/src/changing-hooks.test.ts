@@ -1,5 +1,9 @@
+import { sql } from "slonik";
 import { serverClient } from "./clients";
+import { getPool } from "./db";
 import { cleanup } from "./db/cleanup";
+
+const pool = getPool();
 
 describe("changing hooks", () => {
   afterEach(() => {
@@ -15,5 +19,24 @@ describe("changing hooks", () => {
         writeKey: expect.any(String),
       })
     );
+  });
+
+  it("can update a hook", async () => {
+    const res = await serverClient.post("/hooks");
+    expect(res.status).toEqual(201);
+
+    const updateRes = await serverClient.put(`/hooks/${res.data.hookId}`, {
+      code: "function reducer() { console.log('foo'); }",
+    });
+
+    expect(updateRes.status).toEqual(200);
+
+    const draft = await pool.one(sql`
+      select * from version
+      where "hookId" = ${res.data.hookId}
+      and "workflowState" = 'draft'
+    `);
+
+    expect(draft.code).toEqual("function reducer() { console.log('foo'); }");
   });
 });

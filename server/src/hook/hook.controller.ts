@@ -14,7 +14,7 @@ export default Router()
   })
   .put("/:id", validate(UpdateHook), async function updateHook(req, res, next) {
     try {
-      await service.updateDraft(req.body);
+      await service.updateDraft(req.params.id, req.body);
       res.json({});
     } catch (e) {
       next(e);

@@ -13,8 +13,8 @@ export async function createHook() {
   });
 }
 
-export async function updateDraft(input: UpdateHook) {
-  await db.updateDraft(input);
+export async function updateDraft(hookId: string, input: UpdateHook) {
+  await db.updateDraft(hookId, input);
 }
 
 export async function publishDraft() {

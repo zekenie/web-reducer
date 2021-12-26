@@ -14,9 +14,7 @@ type Context = {
 
 describe("existing hooks", () => {
   let context: Context;
-  beforeEach(async () => {
-    await cleanup();
-  });
+
   beforeEach(async () => {
     const { id: hookId } = await pool.one<{ id: string }>(sql`
       insert into hook (id) values (default)

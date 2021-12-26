@@ -10,14 +10,16 @@ type CodeToRun = {
   hookId: string;
 };
 
-export async function updateDraft(input: UpdateHook): Promise<void> {
+export async function updateDraft(
+  id: string,
+  input: UpdateHook
+): Promise<void> {
   const pool = getPool();
   await pool.any(sql`
     update version
     set code = ${input.code}
     where "workflowState" = 'draft'
-      and "hookId" = ${input.hookId}
-    limit 1
+      and "hookId" = ${id}
   `);
 }
 
