@@ -6,6 +6,7 @@ import { useModals } from "./modals/ModalProvider";
 import Requests from "./components/Requests";
 import ResourceBar from "./components/ResourceBar";
 import { Tab, Tabs } from "./components/Tabs";
+import { MODAL_NAME } from "./Components/TestModal";
 
 const exampleCode = `function getIdempotencyKey({ headers }) {
   return headers["x-something"];

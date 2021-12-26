@@ -6,8 +6,8 @@ import {
   ModalHeader,
 } from "../modals/Content";
 
-type MODAL_NAME = "test";
-const MODAL_NAME: MODAL_NAME = "test";
+export type MODAL_NAME = "test";
+export const MODAL_NAME: MODAL_NAME = "test";
 
 declare global {
   namespace Modal {
@@ -15,6 +15,7 @@ declare global {
       [MODAL_NAME]: {
         name: MODAL_NAME;
         props: Props;
+        resolveValue: string;
       };
     }
   }

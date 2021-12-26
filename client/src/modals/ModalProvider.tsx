@@ -12,15 +12,26 @@ import React, {
 import { ModalOpener } from ".";
 
 type ModalControls = {
-  pushModal: (modalOpener: ModalOpener) => void;
-  popModal: () => void;
-  closeModal: () => void;
+  pushModal: <T extends keyof Modal.ModalTypes>(
+    modalOpener: ModalOpener
+  ) => Promise<Modal.ModalTypes[T]["resolveValue"]>;
+  popModal: <T extends keyof Modal.ModalTypes>(
+    resolveValue?: Modal.ModalTypes[T]["resolveValue"]
+  ) => void;
+  closeModal: <T extends keyof Modal.ModalTypes>(
+    resolveValue?: Modal.ModalTypes[T]["resolveValue"]
+  ) => void;
 };
 
 const modalContext = createContext<ModalControls>({
-  pushModal: () => {},
-  popModal: () => {},
-  closeModal: () => {},
+  // @ts-ignore
+  pushModal: () => Promise.resolve(),
+  popModal: <T extends keyof Modal.ModalTypes>(
+    resolveValue?: Modal.ModalTypes[T]["resolveValue"]
+  ) => {},
+  closeModal: <T extends keyof Modal.ModalTypes>(
+    resolveValue?: Modal.ModalTypes[T]["resolveValue"]
+  ) => {},
 });
 
 export function useModals() {
@@ -39,27 +50,50 @@ export function registerModal<T extends keyof Modal.ModalTypes>(
 }
 
 const ModalProvider: FC = ({ children }) => {
-  const [modals, setModals] = useState<ModalOpener[]>([]);
-
-  const pushModal = useCallback(
-    (modalOpener: ModalOpener) => {
-      setModals([...modals, modalOpener]);
-    },
-    [modals]
+  const [modalStack, setModalStack] = useState<ModalOpener[]>([]);
+  const [resolveStack, setResolveStack] = useState<((value: any) => unknown)[]>(
+    []
   );
 
-  const closeModal = useCallback(() => {
-    setModals([]);
-  }, []);
+  const pushModal = useCallback(
+    <T extends keyof Modal.ModalTypes>(modalOpener: ModalOpener) => {
+      setModalStack([...modalStack, modalOpener]);
+      return new Promise<Modal.ModalTypes[T]["resolveValue"]>((resolve) => {
+        setResolveStack([...resolveStack, resolve]);
+      });
+    },
+    [modalStack]
+  );
 
-  const popModal = useCallback(() => {
-    const [, ...nextModals] = [...modals].reverse();
-    setModals(nextModals);
-  }, [modals]);
+  const lastResolve = useMemo(() => last(resolveStack)!, []);
+
+  const closeModal = useCallback(
+    <T extends keyof Modal.ModalTypes>(
+      resolveValue?: Modal.ModalTypes[T]["resolveValue"]
+    ) => {
+      lastResolve(resolveValue);
+      setModalStack([]);
+      setResolveStack([]);
+    },
+    [lastResolve]
+  );
+
+  const popModal = useCallback(
+    <T extends keyof Modal.ModalTypes>(
+      resolveValue?: Modal.ModalTypes[T]["resolveValue"]
+    ) => {
+      lastResolve(resolveValue);
+      const [, ...nextModals] = [...modalStack].reverse();
+      const [, ...nextResolveStack] = [...resolveStack].reverse();
+      setModalStack(nextModals);
+      setResolveStack(nextResolveStack);
+    },
+    [modalStack, resolveStack]
+  );
 
   const modalToRender = useMemo(() => {
-    return last(modals);
-  }, [modals]);
+    return last(modalStack);
+  }, [modalStack]);
 
   useEffect(() => {
     const close = (e: KeyboardEvent) => {
@@ -87,7 +121,7 @@ const ModalProvider: FC = ({ children }) => {
           >
             <div
               aria-hidden="true"
-              onClick={closeModal}
+              onClick={() => closeModal()}
               className="bg-slate-700/75  fixed inset-0"
             />
             {/* @ts-ignore */}

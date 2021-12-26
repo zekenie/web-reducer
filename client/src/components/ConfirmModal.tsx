@@ -15,6 +15,7 @@ declare global {
       [MODAL_NAME]: {
         name: MODAL_NAME;
         props: Props;
+        resolveValue: number;
       };
     }
   }

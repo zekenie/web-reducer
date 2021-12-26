@@ -9,8 +9,8 @@ import {
   ModalFooter
 } from "../modals/Content";
 
-type MODAL_NAME = "<%= h.changeCase.param(modalName) %>";
-const MODAL_NAME: MODAL_NAME = "<%= h.changeCase.param(modalName) %>";
+export type MODAL_NAME = "<%= h.changeCase.param(modalName) %>";
+export const MODAL_NAME: MODAL_NAME = "<%= h.changeCase.param(modalName) %>";
 
 declare global {
   namespace Modal {
@@ -18,6 +18,7 @@ declare global {
       [MODAL_NAME]: {
         name: MODAL_NAME;
         props: Props;
+        resolveValue: unknown;
       };
     }
   }
