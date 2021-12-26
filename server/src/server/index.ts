@@ -2,6 +2,7 @@ import bodyParser from "body-parser";
 import express from "express";
 import makeRequestContextMiddleware from "./request-context.middleware";
 import requestController from "../request/request.controller";
+import hookController from "../hook/hook.controller";
 import bodyParserXml from "body-parser-xml";
 import workerController from "../worker/worker.controller";
 import { heartbeat } from "../db/heartbeat";
@@ -24,6 +25,7 @@ export default function makeServer(config: Config) {
     res.json({ ok: true });
   });
 
+  app.use("/hooks", hookController);
   app.use("/", requestController);
 
   return app;

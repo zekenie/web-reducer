@@ -2,11 +2,10 @@ import { MenuIcon } from "@heroicons/react/outline";
 import Editor from "@monaco-editor/react";
 import { useRegisterActions } from "kbar";
 import React from "react";
-import { useModals } from "./modals/ModalProvider";
 import Requests from "./components/Requests";
 import ResourceBar from "./components/ResourceBar";
 import { Tab, Tabs } from "./components/Tabs";
-import { MODAL_NAME } from "./Components/TestModal";
+import { useModals } from "./modals/ModalProvider";
 
 const exampleCode = `function getIdempotencyKey({ headers }) {
   return headers["x-something"];

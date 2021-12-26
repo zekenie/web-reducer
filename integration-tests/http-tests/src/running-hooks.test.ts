@@ -16,6 +16,8 @@ describe("existing hooks", () => {
   let context: Context;
   beforeEach(async () => {
     await cleanup();
+  });
+  beforeEach(async () => {
     const { id: hookId } = await pool.one<{ id: string }>(sql`
       insert into hook (id) values (default)
       returning id
@@ -60,13 +62,24 @@ describe("existing hooks", () => {
   });
 
   it("accepts requests and eventually modifies the state", async () => {
-    await serverClient.post(`/${context.writeKey}`, { number: 4 });
-    const { data } = await serverClient.post<{ id: string }>(
+    const res = await serverClient.post(`/${context.writeKey}`, { number: 4 });
+    const res2 = await serverClient.post<{ id: string }>(
       `/${context.writeKey}`,
       { number: 3 }
     );
 
-    await serverClient.get(`/settled/${data.id}`);
+    expect(res.status).toEqual(202);
+    expect(res2.status).toEqual(202);
+
+    await serverClient.get(`/settled/${res2.data.id}`);
+
+    const all = await pool.many<{ state: unknown }>(sql`
+      select state from state
+      where "versionId" = ${context.versionId}
+      order by "createdAt" desc
+    `);
+
+    console.log(all);
 
     const { state } = await pool.one<{ state: unknown }>(sql`
       select state from state

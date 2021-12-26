@@ -1,6 +1,7 @@
 import { sql } from "slonik";
 import { getPool } from "../db";
 import { createKey } from "../key/key.db";
+import UpdateHook from "./inputs/update-hook.input";
 import { HookWorkflowState } from "./types";
 
 type CodeToRun = {
@@ -8,6 +9,17 @@ type CodeToRun = {
   code: string;
   hookId: string;
 };
+
+export async function updateDraft(input: UpdateHook): Promise<void> {
+  const pool = getPool();
+  await pool.any(sql`
+    update version
+    set code = ${input.code}
+    where "workflowState" = 'draft'
+      and "hookId" = ${input.hookId}
+    limit 1
+  `);
+}
 
 export async function createHook() {
   const pool = getPool();

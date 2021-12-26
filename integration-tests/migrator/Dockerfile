@@ -9,6 +9,8 @@ COPY migrations/ /usr/src/app/migrations
 COPY migrate.js /usr/src/app/migrate.js
 COPY ./wait-for.sh /usr/src/app/wait-for.sh
 COPY ./docker-entrypoint.sh /usr/src/app/docker-entrypoint.sh
+# Do not give container root access
+USER node
 ENTRYPOINT ["./docker-entrypoint.sh"]
 
 CMD node migrate up && node migrate executed && node migrate pending && sleep infinity
