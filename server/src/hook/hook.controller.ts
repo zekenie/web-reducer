@@ -12,6 +12,14 @@ export default Router()
       next(e);
     }
   })
+  .get("/:id", async function (req, res, next) {
+    try {
+      const { draft, published } = await service.readHook(req.params.id);
+      res.json({ draft, published });
+    } catch (e) {
+      next(e);
+    }
+  })
   .put("/:id", validate(UpdateHook), async function updateHook(req, res, next) {
     try {
       await service.updateDraft(req.params.id, req.body);

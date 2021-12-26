@@ -3,6 +3,10 @@ import UpdateHook from "./inputs/update-hook.input";
 import * as db from "./hook.db";
 import { createKey } from "../key/key.db";
 
+export async function readHook(id: string) {
+  return db.getDraftAndPublishedCode(id);
+}
+
 export async function createHook() {
   const pool = getPool();
   return pool.transaction(async () => {

@@ -58,9 +58,9 @@ export async function streamRequestsForHook(
   );
 }
 
-export function getRequestToRun(id: string): Promise<RequestToRun> {
+export function getRequestToRun(id: string): Promise<RequestToRun | null> {
   const pool = getPool();
-  return pool.one<RequestToRun>(
+  return pool.maybeOne<RequestToRun>(
     sql`
       select
         "writeKey",

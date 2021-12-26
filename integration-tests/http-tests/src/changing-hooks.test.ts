@@ -31,12 +31,11 @@ describe("changing hooks", () => {
 
     expect(updateRes.status).toEqual(200);
 
-    const draft = await pool.one(sql`
-      select * from version
-      where "hookId" = ${res.data.hookId}
-      and "workflowState" = 'draft'
-    `);
+    const readReq = await serverClient.get(`/hooks/${res.data.hookId}`);
 
-    expect(draft.code).toEqual("function reducer() { console.log('foo'); }");
+    expect(readReq.data.draft).toEqual(
+      "function reducer() { console.log('foo'); }"
+    );
+    expect(readReq.data.published).toBeUndefined();
   });
 });

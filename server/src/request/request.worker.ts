@@ -1,5 +1,6 @@
+import { getRunnerJobIdForRequestId } from "../runner/runner.service";
 import { enqueue } from "../worker/queue.service";
-import { getQueueEvents, registerQueue } from "../worker/queues";
+import { getQueue, getQueueEvents, registerQueue } from "../worker/queues";
 import registerWorker from "../worker/workers";
 import { captureRequest } from "./request.db";
 import { WebhookRequest } from "./types";
@@ -34,19 +35,15 @@ registerWorker<WORKER_NAME>({
       writeKey: j.data.writeKey,
     });
 
-    const runnerJob = await enqueue({
-      name: "run-hook",
-      input: {
-        requestId,
-        hookId,
+    await enqueue(
+      {
+        name: "run-hook",
+        input: {
+          requestId,
+          hookId,
+        },
       },
-    });
-
-    // we will expose a route that waits for this job to end
-    // so, make this job hold until the runner is done
-    await runnerJob.waitUntilFinished(
-      getQueueEvents(runnerJob.queueName),
-      30000
+      getRunnerJobIdForRequestId(requestId)
     );
   },
 });

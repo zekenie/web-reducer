@@ -2,6 +2,26 @@ import { sql } from "slonik";
 import { getPool } from "../db";
 import { RuntimeError } from "../runner/types";
 
+export async function doesStateExist({
+  hookId,
+  requestId,
+  versionId,
+}: {
+  versionId: string;
+  requestId: string;
+  hookId: string;
+}): Promise<boolean> {
+  const pool = getPool();
+  const stateRecord = await pool.maybeOne(sql`
+    select id from "state"
+    where "hookId" = ${hookId} and
+    "requestId" = ${requestId} and
+    "versionId" = ${versionId}
+  `);
+
+  return !!stateRecord;
+}
+
 export async function readState(readKey: string): Promise<unknown> {
   const pool = getPool();
   return pool.maybeOne(sql`

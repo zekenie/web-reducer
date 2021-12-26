@@ -1,7 +1,7 @@
 import { cargoQueue } from "async";
 import { last } from "lodash";
 import { getPool } from "../db";
-import { getCodeByHook } from "../hook/hook.db";
+import { getPublishedCodeByHook } from "../hook/hook.db";
 import {
   countRequestsForHook,
   streamRequestsForHook,
@@ -20,7 +20,7 @@ export async function runBulk(
 ): Promise<void> {
   const pool = getPool();
   await pool.transaction(async () => {
-    const code = await getCodeByHook(hookId);
+    const code = await getPublishedCodeByHook(hookId);
     const lastStateRecord = await fetchState({
       hookId,
       versionId: code.versionId,

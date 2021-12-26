@@ -38,3 +38,7 @@ const defaultMapper: Mapper = (job) => job.name;
 export function getMapper(name: string): Mapper {
   return mappers[name] || defaultMapper;
 }
+
+export function debug() {
+  console.log({ mappers, queues, queueEvents });
+}

@@ -69,15 +69,14 @@ describe("existing hooks", () => {
     expect(res.status).toEqual(202);
     expect(res2.status).toEqual(202);
 
-    await serverClient.get(`/settled/${res2.data.id}`);
+    const settleRes = await serverClient.get(`/settled/${res2.data.id}`);
+    console.log({ settleRes: settleRes.data });
 
     const all = await pool.many<{ state: unknown }>(sql`
       select state from state
       where "versionId" = ${context.versionId}
       order by "createdAt" desc
     `);
-
-    console.log(all);
 
     const { state } = await pool.one<{ state: unknown }>(sql`
       select state from state

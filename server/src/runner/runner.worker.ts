@@ -1,9 +1,12 @@
 import { registerNameMapper, registerQueue } from "../worker/queues";
 import registerWorker from "../worker/workers";
-import { runHook } from "./runner.service";
-
-type WORKER_NAME = "run-hook";
-const WORKER_NAME: WORKER_NAME = "run-hook";
+import {
+  NUM_BUCKETS,
+  queueNameForBucket,
+  queueNameForHookId,
+  runHook,
+} from "./runner.service";
+import { WORKER_NAME } from "./types";
 
 declare global {
   namespace Queue {
@@ -20,9 +23,9 @@ declare global {
   }
 }
 
-const NUM_BUCKETS = 10;
 for (let i = 0; i < NUM_BUCKETS; i++) {
-  registerQueue(queueName(i));
+  console.log("registering", queueNameForBucket(i));
+  registerQueue(queueNameForBucket(i));
   registerWorker<WORKER_NAME>(
     {
       concurrency: 1,
@@ -31,7 +34,7 @@ for (let i = 0; i < NUM_BUCKETS; i++) {
         await runHook(j.data.requestId);
       },
     },
-    queueName(i)
+    queueNameForBucket(i)
   );
 }
 
@@ -41,18 +44,5 @@ registerNameMapper(WORKER_NAME, (job) => {
   if (job.name !== WORKER_NAME) {
     throw new Error("Mapper being used in wrong queue");
   }
-  const bucket = hashStringToNumber(job.input.hookId, NUM_BUCKETS);
-  return queueName(bucket);
+  return queueNameForHookId(job.input.hookId);
 });
-
-function queueName(bucket: number) {
-  return `${WORKER_NAME}-${bucket}`;
-}
-
-function hashStringToNumber(str: string, numBuckets: number): number {
-  let num = 0;
-  for (let i = 0; i < str.length; i++) {
-    num += str.charCodeAt(i);
-  }
-  return num % numBuckets;
-}
