@@ -7,6 +7,7 @@ import bodyParserXml from "body-parser-xml";
 import workerController from "../worker/worker.controller";
 import { heartbeat } from "../db/heartbeat";
 import { connection as redisConnection } from "../redis";
+import stateController from "../state/state.controller";
 bodyParserXml(bodyParser);
 
 type Config = {};
@@ -27,6 +28,7 @@ export default function makeServer(config: Config) {
 
   app.use("/hooks", hookController);
   app.use("/", requestController);
+  app.use("/", stateController);
 
   return app;
 }

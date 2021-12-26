@@ -8,6 +8,7 @@ const pool = getPool();
 
 type Context = {
   writeKey: string;
+  readKey: string;
   hookId: string;
   versionId: string;
 };
@@ -34,10 +35,17 @@ describe("existing hooks", () => {
       ('write', ${uniqueId("rand2")}, ${hookId})
       returning key
     `);
+    const { key: readKey } = await pool.one<{ key: string }>(sql`
+    insert into key (type, key, "hookId")
+    values
+    ('read', ${uniqueId("rand2")}, ${hookId})
+    returning key
+  `);
     context = {
       hookId,
       versionId,
       writeKey,
+      readKey,
     };
   });
 
@@ -55,6 +63,7 @@ describe("existing hooks", () => {
         hookId: expect.any(String),
         versionId: expect.any(String),
         writeKey: expect.any(String),
+        readKey: expect.any(String),
       })
     );
   });
@@ -69,21 +78,9 @@ describe("existing hooks", () => {
     expect(res.status).toEqual(202);
     expect(res2.status).toEqual(202);
 
-    const settleRes = await serverClient.get(`/settled/${res2.data.id}`);
-    console.log({ settleRes: settleRes.data });
+    await serverClient.get(`/settled/${res2.data.id}`);
 
-    const all = await pool.many<{ state: unknown }>(sql`
-      select state from state
-      where "versionId" = ${context.versionId}
-      order by "createdAt" desc
-    `);
-
-    const { state } = await pool.one<{ state: unknown }>(sql`
-      select state from state
-      where "versionId" = ${context.versionId}
-      order by "createdAt" desc
-      limit 1
-    `);
+    const { data: state } = await serverClient.get(`/${context.readKey}`);
 
     expect(state).toEqual({ number: 7 });
   });

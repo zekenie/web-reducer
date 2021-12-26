@@ -24,7 +24,6 @@ declare global {
 }
 
 for (let i = 0; i < NUM_BUCKETS; i++) {
-  console.log("registering", queueNameForBucket(i));
   registerQueue(queueNameForBucket(i));
   registerWorker<WORKER_NAME>(
     {

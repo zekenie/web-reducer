@@ -22,9 +22,11 @@ export async function doesStateExist({
   return !!stateRecord;
 }
 
-export async function readState(readKey: string): Promise<unknown> {
+export async function readState(
+  readKey: string
+): Promise<{ state: unknown } | null> {
   const pool = getPool();
-  return pool.maybeOne(sql`
+  return pool.maybeOne<{ state: unknown }>(sql`
     select state.state
     from state
     join "key"

@@ -1,4 +1,3 @@
-import { sql } from "slonik";
 import { serverClient } from "./clients";
 import { getPool } from "./db";
 import { cleanup } from "./db/cleanup";
@@ -9,6 +8,7 @@ describe("changing hooks", () => {
   afterEach(() => {
     return cleanup();
   });
+  afterAll(() => pool.end());
   it("successfully creates a hook", async () => {
     const res = await serverClient.post("/hooks");
     expect(res.status).toEqual(201);

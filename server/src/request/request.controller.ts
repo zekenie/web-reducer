@@ -5,7 +5,6 @@ import { getStore } from "../server/request-context.middleware";
 export default Router()
   .get("/settled/:requestId", async (req, res, next) => {
     try {
-      console.log("going to wait for settled", req.params.requestId);
       await service.resolveWhenJobSettled(req.params.requestId);
       res.json({ jobId: req.params.requestId, settled: true });
     } catch (e) {
