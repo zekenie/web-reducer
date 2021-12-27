@@ -284,3 +284,62 @@ it("accepts multiple requests", () => {
     ])
   );
 });
+
+describe("console", () => {
+  it("reports console artifacts", () => {
+    const program = `
+      function reducer(state, { body }) {
+        console.log('log')
+        console.info('info')
+        console.error('error')
+        console.warn('warn')
+        console.trace('trace')
+        return { number: state.number + body.number }
+      }
+    `;
+    expect(
+      runCode({
+        code: program,
+        requestsJSON: formatRequest({ body: { number: 3 } }),
+        invalidIdempotencyKeys: [],
+        state: JSON.stringify({ number: 4 }),
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+          ms: expect.any(Number),
+          error: null,
+          state: { number: 7 },
+          consoleMessages: expect.arrayContaining([
+            expect.objectContaining({
+              timestamp: expect.any(Number),
+              messages: expect.arrayContaining(["log"]),
+              level: "log",
+            }),
+            expect.objectContaining({
+              timestamp: expect.any(Number),
+              messages: expect.arrayContaining(["info"]),
+              level: "info",
+            }),
+            expect.objectContaining({
+              timestamp: expect.any(Number),
+              messages: expect.arrayContaining(["error"]),
+              level: "error",
+            }),
+            expect.objectContaining({
+              timestamp: expect.any(Number),
+              messages: expect.arrayContaining(["warn"]),
+              level: "warn",
+            }),
+            expect.objectContaining({
+              timestamp: expect.any(Number),
+              messages: expect.arrayContaining(["trace"]),
+              level: "trace",
+            }),
+          ]),
+        }),
+      ])
+    );
+  });
+});

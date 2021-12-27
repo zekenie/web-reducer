@@ -2,9 +2,9 @@ import { last } from "lodash";
 import vm2 from "vm2";
 import { formatStacktrace } from "../stacktrace/stacktrace.service";
 
-type LogLevels = "warn" | "log" | "trace" | "debug" | "info";
+type LogLevels = "warn" | "error" | "log" | "trace" | "debug" | "info";
 
-const levels = ["warn", "log", "trace", "debug", "info"] as Readonly<
+const levels = ["warn", "error", "log", "trace", "debug", "info"] as Readonly<
   LogLevels[]
 >;
 
@@ -17,6 +17,7 @@ type ConsoleMessage = {
 };
 
 class VMConsole {
+  error: MessageLogger;
   warn: MessageLogger;
   log: MessageLogger;
   trace: MessageLogger;
@@ -38,7 +39,7 @@ class VMConsole {
 
 class RequestArtifact {
   private open: boolean = true;
-  private consoleMessages: ConsoleMessage[];
+  private consoleMessages: ConsoleMessage[] = [];
 
   private idempotencyKey?: string;
   private state?: unknown;
@@ -182,7 +183,7 @@ export function runCode({
   });
   const start = new Date();
   const codeWithRuntime = `(function(state, requests) {
-    artifacts.expectLength(r equests.length);
+    artifacts.expectLength(requests.length);
     function isAuthentic() { return true; }
     function getIdempotencyKey(request) { return request.id; }
     ${code}
