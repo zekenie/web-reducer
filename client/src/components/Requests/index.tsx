@@ -1,3 +1,10 @@
+import {
+  DuplicateIcon,
+  ExclamationCircleIcon,
+  TerminalIcon,
+} from "@heroicons/react/outline";
+import axios from "axios";
+import { toSvg } from "jdenticon";
 import React, {
   FC,
   RefObject,
@@ -6,14 +13,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { uniqueId } from "lodash";
-import { toSvg } from "jdenticon";
-import axios from "axios";
-import {
-  DuplicateIcon,
-  ExclamationCircleIcon,
-  TerminalIcon,
-} from "@heroicons/react/outline";
 
 type Effect = "stdout" | "errors" | "noIdempotencyKey";
 

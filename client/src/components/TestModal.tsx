@@ -1,10 +1,10 @@
-import { registerModal } from "../modals/ModalProvider";
 import {
   CenteredModalContainer,
   ModalBody,
   ModalFooter,
   ModalHeader,
 } from "../modals/Content";
+import { registerModal } from "../modals/ModalProvider";
 
 export type MODAL_NAME = "test";
 export const MODAL_NAME: MODAL_NAME = "test";

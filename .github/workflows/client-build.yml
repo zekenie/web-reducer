@@ -32,5 +32,7 @@ jobs:
         run: yarn
 
       # Finally, run our tests
-      - name: Run the tests
+      - name: Build
         run: yarn build
+        env:
+          CI: false

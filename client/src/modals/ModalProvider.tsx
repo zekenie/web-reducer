@@ -2,7 +2,6 @@ import last from "lodash/last";
 import React, {
   createContext,
   FC,
-  ReactElement,
   useCallback,
   useContext,
   useEffect,
@@ -62,10 +61,10 @@ const ModalProvider: FC = ({ children }) => {
         setResolveStack([...resolveStack, resolve]);
       });
     },
-    [modalStack]
+    [modalStack, resolveStack]
   );
 
-  const lastResolve = useMemo(() => last(resolveStack)!, []);
+  const lastResolve = useMemo(() => last(resolveStack)!, [resolveStack]);
 
   const closeModal = useCallback(
     <T extends keyof Modal.ModalTypes>(
@@ -88,7 +87,7 @@ const ModalProvider: FC = ({ children }) => {
       setModalStack(nextModals);
       setResolveStack(nextResolveStack);
     },
-    [modalStack, resolveStack]
+    [lastResolve, modalStack, resolveStack]
   );
 
   const modalToRender = useMemo(() => {
