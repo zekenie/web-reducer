@@ -12,7 +12,10 @@ export const ModalHeader: FC<{ title: string }> = ({ title }) => {
       <div className="w-8" />
       <div className="truncate font-semibold">{title}</div>
       <div className="w-8 flex justify-center">
-        <button onClick={closeModal} className="hover:bg-slate-200 p-1 rounded">
+        <button
+          onClick={() => closeModal()}
+          className="hover:bg-slate-200 p-1 rounded"
+        >
           <XIcon className="w-h h-5" />
         </button>
       </div>
