@@ -10,6 +10,7 @@
 ## pro
 
 - take your data with you (we delete event data on non-pro plans every so often)
+- side effects function that returns data about the effects the state change should have on the world (email, slack, webhook)
 - timed hooks
 - unlimited revokable read-keys and write-keys
 - idempotency keys

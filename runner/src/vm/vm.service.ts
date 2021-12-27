@@ -1,16 +1,44 @@
+import { last } from "lodash";
 import vm2 from "vm2";
 import { formatStacktrace } from "../stacktrace/stacktrace.service";
 
+type LogLevels = "warn" | "log" | "trace" | "debug" | "info";
+
+const levels = ["warn", "log", "trace", "debug", "info"] as Readonly<
+  LogLevels[]
+>;
+
+type MessageLogger = (...messages: string[]) => void;
+
 type ConsoleMessage = {
-  level: "warn" | "log" | "trace" | "debug" | "info";
-  message: string | string[];
+  level: LogLevels;
+  messages: string[];
   timestamp: number;
 };
 
+class VMConsole {
+  warn: MessageLogger;
+  log: MessageLogger;
+  trace: MessageLogger;
+  debug: MessageLogger;
+  info: MessageLogger;
+  constructor(private artifacts: Artifacts) {
+    for (const level of levels) {
+      this[level] = (...messages: string[]) => {
+        if (this.artifacts.latestArtifact)
+          this.artifacts.latestArtifact.log({
+            level,
+            messages,
+            timestamp: Date.now(),
+          });
+      };
+    }
+  }
+}
+
 class RequestArtifact {
   private open: boolean = true;
-  private console: ConsoleMessage[];
-  // console
+  private consoleMessages: ConsoleMessage[];
 
   private idempotencyKey?: string;
   private state?: unknown;
@@ -20,7 +48,7 @@ class RequestArtifact {
   constructor(private readonly id: string) {}
 
   log(message: ConsoleMessage) {
-    this.console.push(message);
+    this.consoleMessages.push(message);
   }
 
   isOpen() {
@@ -54,12 +82,14 @@ class RequestArtifact {
       idempotencyKey: this.idempotencyKey,
       authentic: this.authentic,
       state: this.state,
+      consoleMessages: this.consoleMessages,
       error: formatError(this.error, { filename, codeLength }),
     };
   }
 }
 
 class Artifacts {
+  public console: VMConsole = new VMConsole(this);
   private requestArtifacts: { [id: string]: RequestArtifact } = {};
   // for order
   private ids: string[] = [];
@@ -88,6 +118,14 @@ class Artifacts {
 
   expectLength(len: number) {
     this.expectedLength = len;
+  }
+
+  get latestArtifact() {
+    const lastId = last(this.ids);
+    if (lastId) {
+      return this.requestArtifacts[lastId];
+    }
+    return null;
   }
 
   open(id: string) {
@@ -140,11 +178,11 @@ export function runCode({
   const artifacts = new Artifacts();
   const vm = new vm2.VM({
     timeout,
-    sandbox: { artifacts, invalidIdempotencyKeys },
+    sandbox: { artifacts, invalidIdempotencyKeys, console: artifacts.console },
   });
   const start = new Date();
   const codeWithRuntime = `(function(state, requests) {
-    artifacts.expectLength(requests.length)
+    artifacts.expectLength(r equests.length);
     function isAuthentic() { return true; }
     function getIdempotencyKey(request) { return request.id; }
     ${code}
