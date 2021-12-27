@@ -22,3 +22,10 @@
   - something similar to above with calendar
   - my internet quality idea
   - my sleep tracker idea
+
+## Maintenance
+
+- [ ] Upgrade packages in every js project
+- [ ] For docker images
+  - [ ] `docker pull node:lts-alpine`
+  - [ ] Take out the digest and put it in the [docker](./runner/Dockerfile) [files](./server/Dockerfile)
