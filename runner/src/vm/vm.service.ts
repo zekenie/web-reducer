@@ -29,10 +29,23 @@ class VMConsole {
         if (this.artifacts.latestArtifact)
           this.artifacts.latestArtifact.log({
             level,
-            messages,
+            messages: messages.map(this.formatMessage),
             timestamp: Date.now(),
           });
       };
+    }
+  }
+
+  private formatMessage(message: any) {
+    if (typeof message === "object") {
+      try {
+        return JSON.stringify(message, null, 2);
+      } catch (e) {
+        return "[Unserializable object]";
+      }
+    }
+    if (message.toString) {
+      return message.toString();
     }
   }
 }

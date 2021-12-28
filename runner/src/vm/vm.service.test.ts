@@ -342,4 +342,53 @@ describe("console", () => {
       ])
     );
   });
+
+  it("has the correct artifacts upon multiple runs", () => {
+    const program = `
+      function reducer(state, { body }) {
+        console.log(state.number + body.number)
+        return { number: state.number + body.number }
+      }
+    `;
+    expect(
+      runCode({
+        code: program,
+        requestsJSON: formatRequests([
+          { body: { number: 3 } },
+          { body: { number: 3 } },
+        ]),
+        invalidIdempotencyKeys: [],
+        state: JSON.stringify({ number: 4 }),
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+          ms: expect.any(Number),
+          error: null,
+          state: { number: 7 },
+          consoleMessages: expect.arrayContaining([
+            expect.objectContaining({
+              timestamp: expect.any(Number),
+              messages: expect.arrayContaining(["7"]),
+              level: "log",
+            }),
+          ]),
+        }),
+        expect.objectContaining({
+          id: expect.any(String),
+          ms: expect.any(Number),
+          error: null,
+          state: { number: 10 },
+          consoleMessages: expect.arrayContaining([
+            expect.objectContaining({
+              timestamp: expect.any(Number),
+              messages: expect.arrayContaining(["10"]),
+              level: "log",
+            }),
+          ]),
+        }),
+      ])
+    );
+  });
 });
