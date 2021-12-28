@@ -311,7 +311,7 @@ describe("console", () => {
           ms: expect.any(Number),
           error: null,
           state: { number: 7 },
-          consoleMessages: expect.arrayContaining([
+          console: expect.arrayContaining([
             expect.objectContaining({
               timestamp: expect.any(Number),
               messages: expect.arrayContaining(["log"]),
@@ -367,7 +367,7 @@ describe("console", () => {
           ms: expect.any(Number),
           error: null,
           state: { number: 7 },
-          consoleMessages: expect.arrayContaining([
+          console: expect.arrayContaining([
             expect.objectContaining({
               timestamp: expect.any(Number),
               messages: expect.arrayContaining(["7"]),
@@ -380,7 +380,7 @@ describe("console", () => {
           ms: expect.any(Number),
           error: null,
           state: { number: 10 },
-          consoleMessages: expect.arrayContaining([
+          console: expect.arrayContaining([
             expect.objectContaining({
               timestamp: expect.any(Number),
               messages: expect.arrayContaining(["10"]),

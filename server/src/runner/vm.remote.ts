@@ -1,6 +1,6 @@
 import axios from "axios";
 import { WebhookRequest } from "../request/types";
-import { RuntimeError } from "./types";
+import { ConsoleMessage, RuntimeError } from "./types";
 
 const client = axios.create({
   baseURL: process.env.RUNNER_URL,
@@ -26,6 +26,7 @@ type CodeResponse = {
   id: string;
   idempotencyKey?: string;
   authentic: boolean;
+  console: ConsoleMessage[];
 };
 
 export async function runCode({

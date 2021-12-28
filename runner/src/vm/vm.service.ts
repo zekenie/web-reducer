@@ -52,7 +52,7 @@ class VMConsole {
 
 class RequestArtifact {
   private open: boolean = true;
-  private consoleMessages: ConsoleMessage[] = [];
+  private console: ConsoleMessage[] = [];
 
   private idempotencyKey?: string;
   private state?: unknown;
@@ -62,7 +62,7 @@ class RequestArtifact {
   constructor(private readonly id: string) {}
 
   log(message: ConsoleMessage) {
-    this.consoleMessages.push(message);
+    this.console.push(message);
   }
 
   isOpen() {
@@ -96,7 +96,7 @@ class RequestArtifact {
       idempotencyKey: this.idempotencyKey,
       authentic: this.authentic,
       state: this.state,
-      consoleMessages: this.consoleMessages,
+      console: this.console,
       error: formatError(this.error, { filename, codeLength }),
     };
   }

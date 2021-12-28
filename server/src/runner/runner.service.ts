@@ -40,6 +40,7 @@ export async function runHook(requestId: string): Promise<unknown> {
     state: newState,
     ms,
     idempotencyKey,
+    console,
     error,
   } = await runCode({
     code,
@@ -60,6 +61,7 @@ export async function runHook(requestId: string): Promise<unknown> {
         error,
         hookId,
         requestId,
+        console,
         idempotencyKey,
         versionId,
         executionTime: ms,
@@ -72,6 +74,7 @@ export async function runHook(requestId: string): Promise<unknown> {
     error,
     hookId,
     requestId,
+    console,
     idempotencyKey,
     versionId,
     executionTime: ms,

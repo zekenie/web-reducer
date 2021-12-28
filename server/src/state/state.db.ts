@@ -1,6 +1,6 @@
 import { sql } from "slonik";
 import { getPool } from "../db";
-import { RuntimeError } from "../runner/types";
+import { ConsoleMessage, RuntimeError } from "../runner/types";
 
 export async function doesStateExist({
   hookId,
@@ -80,6 +80,7 @@ export async function bulkCreateState({
   requests: {
     id: string;
     executionTime: number;
+    console: ConsoleMessage[];
     idempotencyKey?: string;
     state: {};
     error?: RuntimeError;
@@ -90,17 +91,18 @@ export async function bulkCreateState({
   const pool = getPool();
   await pool.maybeOne(sql`
     insert into state
-    (state, error, "executionTime", "hookId", "requestId", "versionId")
+    (state, error, console, "executionTime", "hookId", "requestId", "versionId")
     select * from ${sql.unnest(
       requests.map((request) => [
         sql.json(request.state),
         sql.json(request.error as {}),
+        sql.json(request.console),
         request.executionTime,
         hookId,
         request.id,
         versionId,
       ]),
-      ["jsonb", "jsonb", "int4", "uuid", "uuid", "uuid"]
+      ["jsonb", "jsonb", "jsonb", "int4", "uuid", "uuid", "uuid"]
     )}
   `);
 }
@@ -110,12 +112,14 @@ export async function createState({
   error,
   hookId,
   requestId,
+  console,
   idempotencyKey,
   versionId,
   executionTime,
 }: {
   state: {};
   error?: RuntimeError;
+  console: ConsoleMessage[];
   hookId: string;
   requestId: string;
   idempotencyKey?: string;
@@ -125,11 +129,11 @@ export async function createState({
   const pool = getPool();
   await pool.anyFirst(sql`
       insert into state 
-      (state, error, "executionTime", "hookId", "requestId", "idempotencyKey", "versionId")
+      (state, error, console, "executionTime", "hookId", "requestId", "idempotencyKey", "versionId")
       values
       (${state ? sql.json(state) : null}, ${
     error ? sql.json(error) : null
-  }, ${executionTime}, ${hookId}, ${requestId}, ${
+  }, ${sql.json(console)}, ${executionTime}, ${hookId}, ${requestId}, ${
     idempotencyKey || null
   }, ${versionId})
     `);
