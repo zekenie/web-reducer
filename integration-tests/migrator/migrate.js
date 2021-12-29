@@ -10,8 +10,8 @@ const migrator = new SlonikMigrator({
   slonik,
 });
 
-migrator.pending().then(() => {
-  console.log("Migrated pending");
+migrator.up().then(() => {
+  console.log("Migrated up");
   // just to keep process going
   setInterval(() => {}, 100);
 });

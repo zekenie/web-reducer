@@ -59,7 +59,7 @@ export async function getStateHistory(
     and ${sql.identifier(["state", paginationArgs.afterColumn])} < ${
     paginationArgs.after
   }
-    order by "state"."createdAt" desc
+    order by "request"."createdAt" desc
     limit ${paginationArgs.pageSize}
   `);
 
