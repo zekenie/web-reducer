@@ -87,12 +87,12 @@ export const captureRequest = async ({
   writeKey: string;
 }) => {
   const pool = getPool();
-  const key = await pool.one<{ hookId: string }>(
+  const key = await pool.maybeOne<{ hookId: string }>(
     sql`select "hookId" from "key" where type = 'write' and key = ${writeKey}`
   );
 
   if (!key) {
-    throw new Error("invalid write key");
+    throw new Error(`invalid write key: ${writeKey}`);
   }
 
   const query = sql`

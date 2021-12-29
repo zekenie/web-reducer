@@ -40,7 +40,7 @@ export async function getStateHistory(
 ): Promise<PaginatedResponse<StateHistory>> {
   const pool = getPool();
 
-  const records = await pool.many<StateHistory & { fullCount: number }>(sql`
+  const records = await pool.any<StateHistory & { fullCount: number }>(sql`
     select
       "requestId",
       state,
@@ -114,7 +114,7 @@ export async function checkValidityOfIdempotencyKeys(
   { hookId, versionId }: { hookId: string; versionId: string }
 ): Promise<string[]> {
   const pool = getPool();
-  const rows = await pool.many<{
+  const rows = await pool.any<{
     idempotencyKey: string;
     requestId: string;
   }>(sql`

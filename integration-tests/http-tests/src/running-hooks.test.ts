@@ -1,54 +1,11 @@
-import { uniqueId } from "lodash";
-import { sql } from "slonik";
 import { serverClient } from "./clients";
 import { getPool } from "./db";
 import { cleanup } from "./db/cleanup";
+import { buildHook } from "./hook-builder";
 
 const pool = getPool();
 
-type Context = {
-  writeKey: string;
-  readKey: string;
-  hookId: string;
-  versionId: string;
-};
-
 describe("existing hooks", () => {
-  let context: Context;
-
-  beforeEach(async () => {
-    const { id: hookId } = await pool.one<{ id: string }>(sql`
-      insert into hook (id) values (default)
-      returning id
-    `);
-    const code =
-      "function reducer (oldState = { number: 0 }, req) { return { number: oldState.number + req.body.number } }";
-    const { id: versionId } = await pool.one<{ id: string }>(sql`
-      INSERT INTO "version" ("code","workflowState","createdAt","updatedAt","hookId")
-      VALUES
-      (${code}, 'published', NOW(), NOW() , ${hookId})
-      returning id
-    `);
-    const { key: writeKey } = await pool.one<{ key: string }>(sql`
-      insert into key (type, key, "hookId")
-      values
-      ('write', ${uniqueId("rand2")}, ${hookId})
-      returning key
-    `);
-    const { key: readKey } = await pool.one<{ key: string }>(sql`
-    insert into key (type, key, "hookId")
-    values
-    ('read', ${uniqueId("rand2")}, ${hookId})
-    returning key
-  `);
-    context = {
-      hookId,
-      versionId,
-      writeKey,
-      readKey,
-    };
-  });
-
   afterEach(async () => {
     await cleanup();
   });
@@ -57,7 +14,8 @@ describe("existing hooks", () => {
     return pool.end();
   });
 
-  it("has a context", () => {
+  it("has a context", async () => {
+    const { context } = await buildHook();
     expect(context).toEqual(
       expect.objectContaining({
         hookId: expect.any(String),
@@ -68,7 +26,8 @@ describe("existing hooks", () => {
     );
   });
 
-  it("accepts requests and eventually modifies the state", async () => {
+  it("enqueues", async () => {
+    const { context, api } = await buildHook();
     const body1 = { number: 4 };
     const body2 = { number: 3 };
     const res = await serverClient.post(`/${context.writeKey}`, body1);
@@ -79,21 +38,30 @@ describe("existing hooks", () => {
 
     expect(res.status).toEqual(202);
     expect(res2.status).toEqual(202);
+    await api.settled(res2.data.id);
+  });
 
-    await serverClient.get(`/settled/${res2.data.id}`);
+  it("accepts requests and eventually modifies the state", async () => {
+    const body1 = { number: 4 };
+    const body2 = { number: 3 };
+    const { api } = await buildHook([body1, body2]);
 
-    const { data: state } = await serverClient.get(`/${context.readKey}`);
+    await api.settled(body2);
+
+    const state = await api.read();
 
     expect(state).toEqual({ number: 7 });
+  });
 
-    const { data: stateHistory } = await serverClient.get(
-      `/hooks/${context.hookId}/history`
-    );
+  it("saves history", async () => {
+    const body1 = { number: 4 };
+    const body2 = { number: 3 };
+    const { api } = await buildHook([body1, body2]);
+    await api.settled(body2);
+    const stateHistory = await api.history();
 
     expect(stateHistory.hasNext).toBe(false);
     expect(stateHistory.objects).toHaveLength(2);
-
-    console.log(stateHistory.objects);
 
     const [state1, state2] = stateHistory.objects;
 
