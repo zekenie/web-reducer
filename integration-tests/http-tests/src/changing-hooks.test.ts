@@ -5,7 +5,7 @@ import { cleanup } from "./db/cleanup";
 const pool = getPool();
 
 describe("changing hooks", () => {
-  afterEach(() => {
+  afterEach(async () => {
     return cleanup();
   });
   afterAll(() => pool.end());

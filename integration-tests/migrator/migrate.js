@@ -10,4 +10,20 @@ const migrator = new SlonikMigrator({
   slonik,
 });
 
-migrator.runAsCLI();
+migrator.pending().then(() => {
+  console.log("Migrated pending");
+  // just to keep process going
+  setInterval(() => {}, 100);
+});
+
+function closeGracefully(signal) {
+  console.log(`*^!@4=> Received signal to terminate: ${signal}`);
+
+  server.close(() => {
+    // await db.close() if we have a db connection in this app
+    // await other things we should cleanup nicely
+    process.exit();
+  });
+}
+process.on("SIGINT", closeGracefully);
+process.on("SIGTERM", closeGracefully);

@@ -8,6 +8,12 @@ type Mapper = (job: JobDescription) => string;
 
 const mappers: { [key: string]: Mapper } = {};
 
+function setupLogging(queueEventsInstance: QueueEvents) {
+  queueEventsInstance.on("failed", ({ jobId, failedReason }) => {
+    console.error(jobId, "failed", failedReason);
+  });
+}
+
 export function registerQueue(
   key: string,
   queue: Queue = new Queue(key, { connection }),
@@ -15,6 +21,7 @@ export function registerQueue(
 ) {
   queues[key] = queue;
   queueEvents[key] = queueEventsInstance;
+  setupLogging(queueEventsInstance);
 }
 
 export function getQueue(key: string) {

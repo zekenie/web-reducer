@@ -1,4 +1,12 @@
-import { readState as readStateDb } from "./state.db";
+import { PaginationQueryArgs } from "../pagination/types";
+import * as stateDb from "./state.db";
 export async function readState(readKey: string) {
-  return readStateDb(readKey);
+  return stateDb.readState(readKey);
+}
+
+export async function readStateHistory(
+  hookId: string,
+  paginationArgs: PaginationQueryArgs
+) {
+  return stateDb.getStateHistory(hookId, paginationArgs);
 }

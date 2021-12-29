@@ -13,4 +13,4 @@ COPY ./docker-entrypoint.sh /usr/src/app/docker-entrypoint.sh
 USER node
 ENTRYPOINT ["./docker-entrypoint.sh"]
 
-CMD node migrate up && node migrate executed && node migrate pending && sleep infinity
+CMD node migrate

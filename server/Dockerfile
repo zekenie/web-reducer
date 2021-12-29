@@ -25,4 +25,4 @@ RUN rm -rf src
 # Do not give container root access
 USER node
 
-CMD ["dumb-init", "node", "dist/index.js"]
+CMD ["dumb-init", "node", "dist/index.js", "|", "yarn", "roarr", "pretty-print"]

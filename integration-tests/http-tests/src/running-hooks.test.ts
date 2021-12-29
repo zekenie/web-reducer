@@ -69,10 +69,12 @@ describe("existing hooks", () => {
   });
 
   it("accepts requests and eventually modifies the state", async () => {
-    const res = await serverClient.post(`/${context.writeKey}`, { number: 4 });
+    const body1 = { number: 4 };
+    const body2 = { number: 3 };
+    const res = await serverClient.post(`/${context.writeKey}`, body1);
     const res2 = await serverClient.post<{ id: string }>(
       `/${context.writeKey}`,
-      { number: 3 }
+      body2
     );
 
     expect(res.status).toEqual(202);
@@ -83,5 +85,23 @@ describe("existing hooks", () => {
     const { data: state } = await serverClient.get(`/${context.readKey}`);
 
     expect(state).toEqual({ number: 7 });
+
+    const { data: stateHistory } = await serverClient.get(
+      `/hooks/${context.hookId}/history`
+    );
+
+    expect(stateHistory.hasNext).toBe(false);
+    expect(stateHistory.objects).toHaveLength(2);
+
+    console.log(stateHistory.objects);
+
+    const [state1, state2] = stateHistory.objects;
+
+    expect(state1.state).toEqual({ number: 7 });
+    expect(state1.body).toEqual(body2);
+    expect(state2.state).toEqual({ number: 4 });
+    expect(state2.body).toEqual(body1);
+
+    expect(state1.createdAt).toBeGreaterThan(state2.createdAt);
   });
 });

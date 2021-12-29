@@ -8,3 +8,4 @@ Dockerfile
 *.env
 .npmrc
 **/*.test.ts
+.git

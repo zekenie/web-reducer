@@ -1,6 +1,18 @@
+import { omit } from "lodash";
 import { sql } from "slonik";
 import { getPool } from "../db";
+import { HookWorkflowState } from "../hook/types";
+import { PaginatedResponse, PaginationQueryArgs } from "../pagination/types";
 import { ConsoleMessage, RuntimeError } from "../runner/types";
+
+type StateHistory = {
+  requestId: string;
+  state: unknown;
+  body: unknown;
+  error: RuntimeError;
+  console: ConsoleMessage;
+  createdAt: Date;
+};
 
 export async function doesStateExist({
   hookId,
@@ -20,6 +32,50 @@ export async function doesStateExist({
   `);
 
   return !!stateRecord;
+}
+
+export async function getStateHistory(
+  hookId: string,
+  paginationArgs: PaginationQueryArgs
+): Promise<PaginatedResponse<StateHistory>> {
+  const pool = getPool();
+
+  const records = await pool.many<StateHistory & { fullCount: number }>(sql`
+    select
+      "requestId",
+      state,
+      request."body",
+      error,
+      console,
+      "request"."createdAt",
+      count(*) OVER() AS "fullCount"
+    from state
+    join version
+      on version."hookId" = state."hookId"
+    join request
+      on request.id = state."requestId"
+    where "state"."hookId" = ${hookId}
+    and version."workflowState" = ${HookWorkflowState.PUBLISHED}
+    and ${sql.identifier(["state", paginationArgs.afterColumn])} < ${
+    paginationArgs.after
+  }
+    order by "state"."createdAt" desc
+    limit ${paginationArgs.pageSize}
+  `);
+
+  if (!records.length) {
+    return {
+      hasNext: false,
+      objects: [],
+    };
+  }
+  const [{ fullCount }] = records;
+  const hasNext = fullCount > paginationArgs.pageSize;
+
+  return {
+    hasNext,
+    objects: records.map((record) => omit(record, "fullCount")),
+  };
 }
 
 export async function readState(
