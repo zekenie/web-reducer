@@ -96,7 +96,7 @@ export async function buildHook<PostBody, State>({
   if (bodies) {
     for (const body of bodies) {
       await api.write(body);
-      await sleep(25);
+      await sleep(30);
     }
   }
 
