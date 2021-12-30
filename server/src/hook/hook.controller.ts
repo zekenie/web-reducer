@@ -3,6 +3,7 @@ import validate from "../middleware/validate.middleware";
 import * as service from "./hook.service";
 import UpdateHook from "./inputs/update-hook.input";
 import * as stateService from "../state/state.service";
+import { last } from "lodash";
 
 export default Router()
   .post("/", async (req, res, next) => {
@@ -26,8 +27,7 @@ export default Router()
       const stateHistoryPage = await stateService.readStateHistory(
         req.params.id,
         {
-          afterColumn: "createdAt",
-          after: (req.query.after as string) || new Date().toISOString(),
+          token: req.query.token as string,
           pageSize: 40,
         }
       );

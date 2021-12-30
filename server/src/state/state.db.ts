@@ -2,17 +2,13 @@ import { omit } from "lodash";
 import { sql } from "slonik";
 import { getPool } from "../db";
 import { HookWorkflowState } from "../hook/types";
-import { PaginatedResponse, PaginationQueryArgs } from "../pagination/types";
+import {
+  PaginatedTokenResponse,
+  PaginationQueryArgs,
+} from "../pagination/types";
 import { ConsoleMessage, RuntimeError } from "../runner/types";
-
-type StateHistory = {
-  requestId: string;
-  state: unknown;
-  body: unknown;
-  error: RuntimeError;
-  console: ConsoleMessage;
-  createdAt: Date;
-};
+import { generateNextToken, parseNextToken } from "./tokens";
+import { StateHistory } from "./types";
 
 export async function doesStateExist({
   hookId,
@@ -34,11 +30,22 @@ export async function doesStateExist({
   return !!stateRecord;
 }
 
+function generateSqlFilterExpressionForToken(token?: string) {
+  if (!token) {
+    return sql` and "request"."createdAt" < ${new Date().toISOString()} `;
+  }
+  const { requestId, createdAt } = parseNextToken(token);
+
+  return sql` and ("request"."createdAt", "requestId") < (${createdAt.toISOString()}, ${requestId}) `;
+}
+
 export async function getStateHistory(
   hookId: string,
   paginationArgs: PaginationQueryArgs
-): Promise<PaginatedResponse<StateHistory>> {
+): Promise<PaginatedTokenResponse<StateHistory>> {
   const pool = getPool();
+
+  // how does this work with page 1???
 
   const records = await pool.any<StateHistory & { fullCount: number }>(sql`
     select
@@ -56,25 +63,25 @@ export async function getStateHistory(
       on request.id = state."requestId"
     where "state"."hookId" = ${hookId}
     and version."workflowState" = ${HookWorkflowState.PUBLISHED}
-    and ${sql.identifier(["state", paginationArgs.afterColumn])} < ${
-    paginationArgs.after
-  }
+    ${generateSqlFilterExpressionForToken(paginationArgs.token)}
     order by "request"."createdAt" desc
     limit ${paginationArgs.pageSize}
   `);
 
   if (!records.length) {
     return {
-      hasNext: false,
+      nextToken: null,
       objects: [],
     };
   }
   const [{ fullCount }] = records;
   const hasNext = fullCount > paginationArgs.pageSize;
 
+  const objects = records.map((record) => omit(record, "fullCount"));
+
   return {
-    hasNext,
-    objects: records.map((record) => omit(record, "fullCount")),
+    nextToken: generateNextToken({ hasNext, objects }),
+    objects,
   };
 }
 

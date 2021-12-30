@@ -1,5 +1,6 @@
 import { PaginationQueryArgs } from "../pagination/types";
 import * as stateDb from "./state.db";
+
 export async function readState(readKey: string) {
   return stateDb.readState(readKey);
 }

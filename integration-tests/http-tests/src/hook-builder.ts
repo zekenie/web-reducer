@@ -10,8 +10,14 @@ type Context = {
   versionId: string;
 };
 
+type PaginatedHookHistory<PostBody, State> = {
+  nextToken: string | null;
+  objects: { state: State; body: PostBody; createdAt: number }[];
+};
+
 function buildApi<PostBody, State>(context: Context) {
   const bodyToIdMap = new Map<PostBody, String>();
+  let nextToken: string | undefined | null;
   return {
     async write(body: PostBody): Promise<string> {
       const { data } = await serverClient.post<{ id: string }>(
@@ -37,26 +43,29 @@ function buildApi<PostBody, State>(context: Context) {
       const { data } = await serverClient.get<State>(`/${context.readKey}`);
       return data;
     },
-    async history(): Promise<{
-      hasNext: boolean;
-      objects: { state: State; body: Body; createdAt: number }[];
-    }> {
-      const { data } = await serverClient.get(
-        `/hooks/${context.hookId}/history`
-      );
+    async history(): Promise<PaginatedHookHistory<PostBody, State>> {
+      const { data } = await serverClient.get<
+        PaginatedHookHistory<PostBody, State>
+      >(`/hooks/${context.hookId}/history`, { params: { token: nextToken } });
+
+      nextToken = data.nextToken;
       return data;
     },
   };
 }
 
-export async function buildHook<PostBody, State>(bodies?: PostBody[]) {
+export async function buildHook<PostBody, State>({
+  bodies,
+  code = "function reducer (oldState = { number: 0 }, req) { return { number: oldState.number + req.body.number } }",
+}: {
+  bodies?: PostBody[];
+  code?: string;
+} = {}) {
   const pool = getPool();
   const { id: hookId } = await pool.one<{ id: string }>(sql`
     insert into hook (id) values (default)
     returning id
   `);
-  const code =
-    "function reducer (oldState = { number: 0 }, req) { return { number: oldState.number + req.body.number } }";
   const { id: versionId } = await pool.one<{ id: string }>(sql`
     INSERT INTO "version" ("code","workflowState","createdAt","updatedAt","hookId")
     VALUES
@@ -66,13 +75,13 @@ export async function buildHook<PostBody, State>(bodies?: PostBody[]) {
   const { key: writeKey } = await pool.one<{ key: string }>(sql`
   insert into key (type, key, "hookId")
     values
-    ('write', ${uniqueId("rand2")}, ${hookId})
+    ('write', ${uniqueId("rand")}, ${hookId})
     returning key
   `);
   const { key: readKey } = await pool.one<{ key: string }>(sql`
     insert into key (type, key, "hookId")
     values
-    ('read', ${uniqueId("rand2")}, ${hookId})
+    ('read', ${uniqueId("rand")}, ${hookId})
     returning key
   `);
   const context: Context = {
@@ -87,8 +96,13 @@ export async function buildHook<PostBody, State>(bodies?: PostBody[]) {
   if (bodies) {
     for (const body of bodies) {
       await api.write(body);
+      await sleep(20);
     }
   }
 
   return { context, api };
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

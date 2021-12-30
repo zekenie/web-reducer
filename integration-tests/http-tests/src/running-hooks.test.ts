@@ -44,32 +44,12 @@ describe("existing hooks", () => {
   it("accepts requests and eventually modifies the state", async () => {
     const body1 = { number: 4 };
     const body2 = { number: 3 };
-    const { api } = await buildHook([body1, body2]);
+    const { api } = await buildHook({ bodies: [body1, body2] });
 
     await api.settled(body2);
 
     const state = await api.read();
 
     expect(state).toEqual({ number: 7 });
-  });
-
-  it("saves history", async () => {
-    const body1 = { number: 4 };
-    const body2 = { number: 3 };
-    const { api } = await buildHook([body1, body2]);
-    await api.settled(body2);
-    const stateHistory = await api.history();
-
-    expect(stateHistory.hasNext).toBe(false);
-    expect(stateHistory.objects).toHaveLength(2);
-
-    const [state1, state2] = stateHistory.objects;
-
-    expect(state1.state).toEqual({ number: 7 });
-    expect(state1.body).toEqual(body2);
-    expect(state2.state).toEqual({ number: 4 });
-    expect(state2.body).toEqual(body1);
-
-    expect(state1.createdAt).toBeGreaterThan(state2.createdAt);
   });
 });
