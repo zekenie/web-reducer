@@ -1,22 +1,25 @@
 import bodyParser from "body-parser";
-import express from "express";
-import makeRequestContextMiddleware from "./request-context.middleware";
-import requestController from "../request/request.controller";
-import hookController from "../hook/hook.controller";
 import bodyParserXml from "body-parser-xml";
-import workerController from "../worker/worker.controller";
+import express from "express";
 import { heartbeat } from "../db/heartbeat";
+import hookController from "../hook/hook.controller";
 import { connection as redisConnection } from "../redis";
+import requestController from "../request/request.controller";
 import stateController from "../state/state.controller";
+import workerController from "../worker/worker.controller";
+import makeRequestContextMiddleware from "./request-context.middleware";
+
 bodyParserXml(bodyParser);
 
 type Config = {};
 
 export default function makeServer(config: Config) {
   const app = express();
+
   app.use(bodyParser.json());
   app.use(bodyParser.xml());
   app.use(bodyParser.urlencoded({ extended: true }));
+
   app.use(makeRequestContextMiddleware());
 
   app.use("/admin/queues", workerController);
