@@ -157,9 +157,9 @@ export async function bulkCreateState({
     (state, error, console, "executionTime", "hookId", "requestId", "versionId")
     select * from ${sql.unnest(
       requests.map((request) => [
-        sql.json(request.state),
-        sql.json(request.error as {}),
-        sql.json(request.console),
+        JSON.stringify(request.state),
+        JSON.stringify(request.error as {}),
+        JSON.stringify(request.console),
         request.executionTime,
         hookId,
         request.id,

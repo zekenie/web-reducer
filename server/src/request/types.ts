@@ -5,3 +5,7 @@ export type WebhookRequest = {
   body: {};
   headers: IncomingHttpHeaders | Record<string, string>;
 };
+
+export type WORKER_NAME = "request";
+export const WORKER_NAME: WORKER_NAME = "request";
+export const NUM_BUCKETS = 15;

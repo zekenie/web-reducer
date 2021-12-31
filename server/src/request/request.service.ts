@@ -1,17 +1,28 @@
 import { enqueue } from "../worker/queue.service";
 import { getQueue, getQueueEvents } from "../worker/queues";
-import {
-  WORKER_NAME as REQUEST_WORKER_NAME,
-  WORKER_NAME,
-} from "./request.worker";
-import { WebhookRequest } from "./types";
 import * as requestDb from "./request.db";
-import * as stateDb from "../state/state.db";
+import { WebhookRequest, WORKER_NAME } from "./types";
+import { queueNameForWriteKey } from "./request-hash.helper";
 import * as hookDb from "../hook/hook.db";
+import * as stateDb from "../state/state.db";
 import {
   getRunnerJobIdForRequestId,
-  queueNameForHookId,
-} from "../runner/runner.service";
+  queueNameForHookId as runnerQueueNameForHookId,
+} from "../runner/runner-hash.helper";
+
+export async function captureRequest(params: requestDb.CaptureRequest) {
+  const { requestId, hookId } = await requestDb.captureRequest(params);
+  await enqueue(
+    {
+      name: "run-hook",
+      input: {
+        requestId,
+        hookId,
+      },
+    },
+    getRunnerJobIdForRequestId(requestId)
+  );
+}
 
 export async function handleRequest({
   request,
@@ -44,25 +55,23 @@ export function getRequestJobIdForRequestId(requestId: string): string {
  * has been fully processed
  */
 export async function resolveWhenJobSettled(
-  requestId: string
+  requestId: string,
+  writeKey: string
 ): Promise<"settled"> {
+  const requestQueue = getQueue(queueNameForWriteKey(writeKey));
+  const requestQueueEvents = getQueueEvents(queueNameForWriteKey(writeKey));
   const request = await requestDb.getRequestToRun(requestId);
   if (!request) {
-    const captureRequestJob = await getQueue(WORKER_NAME).getJob(
+    const captureRequestJob = await requestQueue.getJob(
       getRequestJobIdForRequestId(requestId)
     );
     if (!captureRequestJob) {
-      throw new Error("no request found");
+      throw new Error("no request found on req queue or db");
     }
-    await captureRequestJob.waitUntilFinished(getQueueEvents(WORKER_NAME));
+    await captureRequestJob.waitUntilFinished(requestQueueEvents);
   }
-  const secondRequestCheck = await requestDb.getRequestToRun(requestId);
-  if (!secondRequestCheck) {
-    throw new Error("no request found after second request check");
-  }
-  const { versionId, hookId } = await hookDb.getCodeByWriteKey(
-    secondRequestCheck.writeKey
-  );
+
+  const { versionId, hookId } = await hookDb.getCodeByWriteKey(writeKey);
   const stateExists = await stateDb.doesStateExist({
     requestId,
     versionId,
@@ -71,7 +80,7 @@ export async function resolveWhenJobSettled(
   if (stateExists) {
     return "settled";
   }
-  const queueName = queueNameForHookId(hookId);
+  const queueName = runnerQueueNameForHookId(hookId);
   const job = await getQueue(queueName).getJob(
     getRunnerJobIdForRequestId(requestId)
   );

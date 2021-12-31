@@ -9,8 +9,8 @@ import {
 import { WebhookRequest } from "../request/types";
 import {
   bulkCreateState,
-  fetchState,
   checkValidityOfIdempotencyKeys,
+  fetchState,
 } from "../state/state.db";
 import { runCodeBulk } from "./vm.remote";
 
@@ -33,7 +33,7 @@ export async function runBulk(
     let currentState = lastStateRecord?.state || {};
     let processed = 0;
     const cq = cargoQueue<WebhookRequest>(
-      async function (requests) {
+      async function (requests, done) {
         async function _runChunk(
           invalidIdempotencyKeys: string[] = []
         ): Promise<void> {
@@ -63,7 +63,8 @@ export async function runBulk(
                 }
               );
               if (invalidKeys.length) {
-                return _runChunk(invalidKeys);
+                await _runChunk(invalidKeys);
+                return done();
               }
             }
           }
@@ -91,6 +92,7 @@ export async function runBulk(
 
         processed += requests.length;
         onProgress(processed / totalRequests);
+        done();
       },
       1,
       100

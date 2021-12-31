@@ -30,14 +30,16 @@ function buildApi<PostBody, State>(context: Context) {
 
     async settled(requestIdOrPostBody: string | PostBody): Promise<void> {
       if (typeof requestIdOrPostBody === "string") {
-        await serverClient.get(`/settled/${requestIdOrPostBody}`);
+        await serverClient.get(
+          `${context.writeKey}/settled/${requestIdOrPostBody}`
+        );
         return;
       }
       const id = bodyToIdMap.get(requestIdOrPostBody);
       if (!id) {
         throw new Error("post body not recognized");
       }
-      await serverClient.get(`/settled/${id}`);
+      await serverClient.get(`${context.writeKey}/settled/${id}`);
     },
     async read(): Promise<State> {
       const { data } = await serverClient.get<State>(`/${context.readKey}`);
@@ -96,13 +98,8 @@ export async function buildHook<PostBody, State>({
   if (bodies) {
     for (const body of bodies) {
       await api.write(body);
-      await sleep(30);
     }
   }
 
   return { context, api };
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }

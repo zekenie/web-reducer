@@ -15,9 +15,12 @@ const limiter = rateLimit({
 });
 
 export default Router()
-  .get("/settled/:requestId", async (req, res, next) => {
+  .get("/:writeKey/settled/:requestId", async (req, res, next) => {
     try {
-      await service.resolveWhenJobSettled(req.params.requestId);
+      await service.resolveWhenJobSettled(
+        req.params.requestId,
+        req.params.writeKey
+      );
       res.json({ jobId: req.params.requestId, settled: true });
     } catch (e) {
       next(e);

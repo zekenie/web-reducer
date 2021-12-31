@@ -6,7 +6,7 @@ import { buildHook } from "./hook-builder";
 const pool = getPool();
 
 describe("existing hooks", () => {
-  afterEach(async () => {
+  beforeEach(async () => {
     await cleanup();
   });
 

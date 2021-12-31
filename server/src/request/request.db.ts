@@ -2,6 +2,7 @@ import { IncomingHttpHeaders } from "http";
 import { sql } from "slonik";
 import { getPool } from "../db";
 import { WebhookRequest } from "./types";
+import { cargoQueue } from "async";
 
 type RequestToRun = WebhookRequest & {
   writeKey: string;
@@ -72,12 +73,7 @@ export function getRequestToRun(id: string): Promise<RequestToRun | null> {
   );
 }
 
-export const captureRequest = async ({
-  id,
-  contentType,
-  request,
-  writeKey,
-}: {
+export type CaptureRequest = {
   id: string;
   contentType: string;
   request: {
@@ -85,7 +81,52 @@ export const captureRequest = async ({
     headers: IncomingHttpHeaders | Record<string, string>;
   };
   writeKey: string;
-}) => {
+};
+
+const insertRequestCargo = cargoQueue<CaptureRequest & { hookId: string }>(
+  async (requestCaptures, done) => {
+    try {
+      const query = sql`
+        insert into request
+        ("id", "contentType", "body", "headers", "writeKey", "hookId")
+        select * from
+        ${sql.unnest(
+          requestCaptures.map(
+            ({ id, contentType, request, writeKey, hookId }) => {
+              return [
+                id,
+                contentType,
+                JSON.stringify(request.body),
+                JSON.stringify(request.headers),
+                writeKey,
+                hookId,
+              ];
+            }
+          ),
+          ["uuid", "varchar", "jsonb", "jsonb", "varchar", "uuid"]
+        )}
+      `;
+      const pool = getPool();
+      await pool.query(query);
+      done();
+    } catch (e) {
+      done(e as Error);
+    }
+  },
+  2,
+  100
+);
+
+insertRequestCargo.error((err, task) => {
+  console.error("error with cargo queue", err, task);
+});
+
+export const captureRequest = async ({
+  id,
+  contentType,
+  request,
+  writeKey,
+}: CaptureRequest) => {
   const pool = getPool();
   const key = await pool.maybeOne<{ hookId: string }>(
     sql`select "hookId" from "key" where type = 'write' and key = ${writeKey}`
@@ -95,17 +136,13 @@ export const captureRequest = async ({
     throw new Error(`invalid write key: ${writeKey}`);
   }
 
-  const query = sql`
-    insert into request
-    ("id", "contentType", "body", "headers", "writeKey", "hookId", "createdAt")
-    values
-    (${id}, ${contentType}, ${sql.json(request.body)}, ${sql.json(
-    request.headers
-  )}, ${writeKey}, ${key.hookId}, NOW())
-    returning id
-  `;
+  await insertRequestCargo.pushAsync({
+    hookId: key.hookId,
+    contentType,
+    id,
+    writeKey,
+    request,
+  });
 
-  const { id: requestId } = await pool.one<{ id: string }>(query);
-
-  return { hookId: key.hookId, requestId };
+  return { hookId: key.hookId, requestId: id };
 };

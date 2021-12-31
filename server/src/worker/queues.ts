@@ -47,5 +47,11 @@ export function getMapper(name: string): Mapper {
 }
 
 export function debug() {
-  console.log({ mappers, queues, queueEvents });
+  console.log({
+    mappers,
+    queues: Object.keys(queues),
+    queueEvents: Object.keys(queueEvents),
+  });
 }
+
+setTimeout(debug, 100);

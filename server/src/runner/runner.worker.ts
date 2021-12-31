@@ -4,8 +4,8 @@ import {
   NUM_BUCKETS,
   queueNameForBucket,
   queueNameForHookId,
-  runHook,
-} from "./runner.service";
+} from "./runner-hash.helper";
+import { runHook } from "./runner.service";
 import { WORKER_NAME } from "./types";
 
 declare global {
