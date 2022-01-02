@@ -19,3 +19,7 @@ services:
     build: ./runner
     ports:
       - 3002:3002
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - 9411:9411

@@ -1,6 +1,7 @@
-import { Job, Queue as BullQueue } from "bullmq";
+import { Job } from "bullmq";
 import "../request/request.worker";
 import "../runner/runner.worker";
+import { serializeCurrentSpan, tracingEvent } from "../tracing";
 import { debug, getMapper, getQueue } from "./queues";
 import { JobDescription } from "./types";
 
@@ -16,7 +17,16 @@ export async function enqueue(
     console.error(mapper(job));
     debug();
   }
-  return queue.add(job.name, job.input, { jobId });
+  const enqueued = await queue.add(
+    job.name,
+    { ...job.input, _spanCarrier: serializeCurrentSpan() },
+    { jobId }
+  );
+  tracingEvent("hr.job.enqueued", {
+    queue: enqueued.queueName,
+    id: enqueued.id!,
+  });
+  return enqueued;
 }
 
 // enqueue({ name: "runInVM", input: { code: "asfd", state: "asdf" } });

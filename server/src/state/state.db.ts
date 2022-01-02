@@ -175,14 +175,14 @@ export async function createState({
   error,
   hookId,
   requestId,
-  console,
+  console: theirConsole = [],
   idempotencyKey,
   versionId,
   executionTime,
 }: {
   state: {};
   error?: RuntimeError;
-  console: ConsoleMessage[];
+  console?: ConsoleMessage[];
   hookId: string;
   requestId: string;
   idempotencyKey?: string;
@@ -194,9 +194,9 @@ export async function createState({
       insert into state 
       (state, error, console, "executionTime", "hookId", "requestId", "idempotencyKey", "versionId")
       values
-      (${state ? sql.json(state) : null}, ${
-    error ? sql.json(error) : null
-  }, ${sql.json(console)}, ${executionTime}, ${hookId}, ${requestId}, ${
+      (${state ? sql.json(state) : null}, ${error ? sql.json(error) : null}, ${
+    theirConsole?.length ? sql.json(theirConsole) : sql.json([])
+  }, ${executionTime}, ${hookId}, ${requestId}, ${
     idempotencyKey || null
   }, ${versionId})
     `);

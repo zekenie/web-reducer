@@ -1,6 +1,7 @@
 import { Job, Worker } from "bullmq";
 import { connection } from "../redis";
-
+import { startActiveChildSpanFromRemoteParent } from "../tracing";
+import { SpanContext } from "@opentelemetry/api";
 type WorkerType<T extends keyof Queue.WorkerTypes> = {
   name: Queue.WorkerTypes[T]["name"];
   concurrency: number;
@@ -20,13 +21,19 @@ export default function registerWorker<T extends keyof Queue.WorkerTypes>(
       new Worker<Queue.WorkerTypes[T]["input"], Queue.WorkerTypes[T]["output"]>(
         name,
         async (job) => {
-          // wrapper code here...
-          try {
-            return worker.worker(job);
-          } catch (e) {
-            console.error(e);
-            throw e;
-          }
+          startActiveChildSpanFromRemoteParent(
+            name,
+            // @ts-expect-error
+            job.data["_spanCarrier"],
+            async () => {
+              try {
+                return worker.worker(job);
+              } catch (e) {
+                console.error(e);
+                throw e;
+              }
+            }
+          );
         },
         { concurrency: worker.concurrency, connection }
       )

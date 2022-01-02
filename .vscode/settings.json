@@ -5,6 +5,7 @@
     "idempotency",
     "roarr",
     "slonik",
-    "sunglo"
+    "sunglo",
+    "Zipkin"
   ]
 }
