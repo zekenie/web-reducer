@@ -21,7 +21,7 @@ export default function registerWorker<T extends keyof Queue.WorkerTypes>(
       new Worker<Queue.WorkerTypes[T]["input"], Queue.WorkerTypes[T]["output"]>(
         name,
         async (job) => {
-          startActiveChildSpanFromRemoteParent(
+          await startActiveChildSpanFromRemoteParent(
             name,
             // @ts-expect-error
             job.data["_spanCarrier"],

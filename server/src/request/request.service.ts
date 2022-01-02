@@ -56,8 +56,12 @@ export function getRequestJobIdForRequestId(requestId: string): string {
  */
 export async function resolveWhenJobSettled(
   requestId: string,
-  writeKey: string
+  writeKey: string,
+  attempt: number = 0
 ): Promise<"settled"> {
+  if (attempt >= 3) {
+    throw new Error("state does not exist after runner job has completed");
+  }
   const requestQueue = getQueue(queueNameForWriteKey(writeKey));
   const requestQueueEvents = getQueueEvents(queueNameForWriteKey(writeKey));
   const request = await requestDb.getRequestToRun(requestId);
@@ -88,13 +92,5 @@ export async function resolveWhenJobSettled(
     throw new Error("neither in db or enqueued... possible dropped request");
   }
   await job.waitUntilFinished(getQueueEvents(queueName));
-  const stateExistsAgain = await stateDb.doesStateExist({
-    requestId,
-    versionId,
-    hookId,
-  });
-  if (stateExistsAgain) {
-    return "settled";
-  }
-  throw new Error("state does not exist after runner job has completed");
+  return resolveWhenJobSettled(requestId, writeKey, attempt + 1);
 }
