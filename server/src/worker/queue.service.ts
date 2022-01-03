@@ -4,6 +4,7 @@ import "../runner/runner.worker";
 import { serializeCurrentSpan, tracingEvent } from "../tracing";
 import { debug, getMapper, getQueue } from "./queues";
 import { JobDescription } from "./types";
+import { forWorkerType } from "./worker.metrics";
 
 // need queues
 export async function enqueue(
@@ -22,7 +23,10 @@ export async function enqueue(
     { ...job.input, _spanCarrier: serializeCurrentSpan() },
     { jobId }
   );
-  tracingEvent("hr.job.enqueued", {
+  forWorkerType("all").size.add(1);
+  forWorkerType(job.name).size.add(1);
+  forWorkerType(enqueued.queueName).size.add(1);
+  tracingEvent("wr.job.enqueued", {
     queue: enqueued.queueName,
     id: enqueued.id!,
   });

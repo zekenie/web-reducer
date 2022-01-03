@@ -78,6 +78,15 @@
   dependencies:
     "@opentelemetry/semantic-conventions" "1.0.1"
 
+"@opentelemetry/exporter-prometheus@^0.27.0":
+  version "0.27.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/exporter-prometheus/-/exporter-prometheus-0.27.0.tgz#12d00aedb75ebcfd24d2b151504b2a7c4d51f0f4"
+  integrity sha512-fbdV+iQAv/WNhiv57C6+9Lwyhc6yJuDy3eyYSyPSVPgCyclGS3fvyTaWNwPbrkE53W8zZHPm+88rAaeQgEjo0w==
+  dependencies:
+    "@opentelemetry/api-metrics" "0.27.0"
+    "@opentelemetry/core" "1.0.1"
+    "@opentelemetry/sdk-metrics-base" "0.27.0"
+
 "@opentelemetry/exporter-zipkin@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@opentelemetry/exporter-zipkin/-/exporter-zipkin-1.0.1.tgz#c120aae33dadd02fbac890c907143bd112ecfc1b"

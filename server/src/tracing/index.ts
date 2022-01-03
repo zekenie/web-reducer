@@ -9,14 +9,16 @@ import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentation
 import { W3CTraceContextPropagator } from "@opentelemetry/core";
 import { ZipkinExporter } from "@opentelemetry/exporter-zipkin";
 import { Resource } from "@opentelemetry/resources";
-import { NodeSDK } from "@opentelemetry/sdk-node";
+import { metrics, NodeSDK } from "@opentelemetry/sdk-node";
 import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions";
+
+export const resource = new Resource({
+  [SemanticResourceAttributes.SERVICE_NAME]: "backend",
+});
 
 const sdk = new NodeSDK({
   // resource: new Resource
-  resource: new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: "backend",
-  }),
+  resource,
   // traceExporter: new tracing.ConsoleSpanExporter(),
   traceExporter: new ZipkinExporter({
     url: process.env.ZIPKIN_URL,
@@ -28,12 +30,12 @@ const sdk = new NodeSDK({
 
 export default sdk;
 
-export function setSpanAttribute(key: `hr.${string}`, value: string) {
+export function setSpanAttribute(key: `wr.${string}`, value: string) {
   trace.getSpan(context.active())?.setAttribute(key, value);
 }
 
 export function tracingEvent(
-  name: `hr.${string}`,
+  name: `wr.${string}`,
   value: Record<string, string>
 ) {
   trace.getSpan(context.active())?.addEvent(name, value);

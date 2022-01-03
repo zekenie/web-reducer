@@ -3,6 +3,7 @@ import { sql } from "slonik";
 import { getPool } from "../db";
 import { WebhookRequest } from "./types";
 import { cargoQueue } from "async";
+import { captureBatchSize } from "./request.metrics";
 
 type RequestToRun = WebhookRequest & {
   writeKey: string;
@@ -86,6 +87,7 @@ export type CaptureRequest = {
 const insertRequestCargo = cargoQueue<CaptureRequest & { hookId: string }>(
   async (requestCaptures, done) => {
     try {
+      captureBatchSize.record(requestCaptures.length);
       const query = sql`
         insert into request
         ("id", "contentType", "body", "headers", "writeKey", "hookId")

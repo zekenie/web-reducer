@@ -8,6 +8,7 @@ import requestController from "../request/request.controller";
 import stateController from "../state/state.controller";
 import workerController from "../worker/worker.controller";
 import makeRequestContextMiddleware from "./request-context.middleware";
+import { duration, forStatusCode, requests } from "./server.metrics";
 
 bodyParserXml(bodyParser);
 
@@ -16,6 +17,24 @@ type Config = {};
 export default function makeServer(config: Config) {
   const app = express();
 
+  app.get("/heartbeat", async (req, res) => {
+    await Promise.all([heartbeat(), redisConnection.ping()]);
+    res.json({ ok: true });
+  });
+
+  app.use((req, res, next) => {
+    const start = Date.now();
+    requests.add(1);
+    res.on("finish", () => {
+      const end = Date.now();
+      const reqDuration = end - start;
+      duration.record(reqDuration);
+      const digit = Math.floor(res.statusCode / 100);
+      forStatusCode(`${digit}xx`).add(1);
+    });
+    next();
+  });
+
   app.use(bodyParser.json());
   app.use(bodyParser.xml());
   app.use(bodyParser.urlencoded({ extended: true }));
@@ -23,11 +42,6 @@ export default function makeServer(config: Config) {
   app.use(makeRequestContextMiddleware());
 
   app.use("/admin/queues", workerController);
-
-  app.get("/heartbeat", async (req, res) => {
-    await Promise.all([heartbeat(), redisConnection.ping()]);
-    res.json({ ok: true });
-  });
 
   app.use("/hooks", hookController);
   app.use("/", requestController);

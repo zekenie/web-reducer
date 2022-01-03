@@ -3,6 +3,7 @@ import rateLimit from "express-rate-limit";
 import RedisStore from "rate-limit-redis";
 import { connection as redisConnection } from "../redis";
 import { getStore } from "../server/request-context.middleware";
+import { writeKeyCounter } from "./request.metrics";
 import * as service from "./request.service";
 
 const limiter = rateLimit({
@@ -28,6 +29,7 @@ export default Router()
   })
   .post("/:writeKey", limiter, async function handleRequest(req, res, next) {
     try {
+      writeKeyCounter.add(1);
       await service.handleRequest({
         request: {
           body: req.body,

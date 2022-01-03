@@ -17,7 +17,7 @@ export default function makeRequestContextMiddleware(): RequestHandler {
   return function requestContextMiddleware(req, res, next) {
     const context = new RequestContext();
     requestStorage.run(context, () => {
-      setSpanAttribute("hr.request.id", context.id);
+      setSpanAttribute("wr.request.id", context.id);
       Roarr.adopt(
         () => {
           next();
