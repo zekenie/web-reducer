@@ -19,7 +19,59 @@ services:
     build: ./runner
     ports:
       - 3002:3002
-  zipkin:
-    image: openzipkin/zipkin
+  # zipkin:
+  #   image: openzipkin/zipkin
+  #   ports:
+  #     - 9411:9411
+
+  timescale_db:
+    volumes:
+      - ./timescale-data:/var/lib/postgresql/data
+    image: timescaledev/timescaledb-ha:pg12-latest
     ports:
+      - 2345:5432/tcp
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: postgres
+
+  prom:
+    image: prom/prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--log.level=debug"
+
+  promscale:
+    image: timescale/promscale:0.7
+    ports:
+      - 9201:9201/tcp
+      - 9202:9202
+    # restart: on-failure
+    depends_on:
+      - timescale_db
+    restart: on-failure
+    command:
+      ["-enable-feature=tracing", "-otlp-grpc-server-listen-address=:9202"]
+    environment:
+      PROMSCALE_DB_CONNECT_RETRIES: 10
+      PROMSCALE_WEB_TELEMETRY_PATH: /metrics-text
+      PROMSCALE_DB_URI: postgres://postgres:password@timescale_db:5432/postgres?sslmode=allow
+
+  otel_collecter:
+    platform: linux/x86_64
+    image: otel/opentelemetry-collector:0.41.0
+    ports:
+      - 13133:13133
+      - 14250:14250
+      - 14268:14268
+      - 55678-55679:55678-55679
+      - 4317:4317
+      - 4318:4318
+      - 8888:8888
       - 9411:9411
+    volumes:
+      - ./otel-config.yaml:/otel-local-config.yaml
+    command: ["--config=/otel-local-config.yaml"]

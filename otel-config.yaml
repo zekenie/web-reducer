@@ -1,0 +1,34 @@
+receivers:
+  jaeger:
+    protocols:
+      grpc:
+      thrift_http:
+
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+  zipkin:
+
+exporters:
+  logging:
+  otlp:
+    endpoint: "promscale:9202"
+    tls:
+      insecure: true
+
+processors:
+  batch:
+    send_batch_size: 4
+    send_batch_max_size: 8
+
+service:
+  telemetry:
+    logs:
+      level: "debug"
+  pipelines:
+    traces:
+      receivers: [jaeger, otlp, zipkin]
+      exporters: [otlp, logging]
+      processors: [batch]

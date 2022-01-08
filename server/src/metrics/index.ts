@@ -5,7 +5,11 @@ import { resource } from "../tracing";
 
 const meter = new metrics.MeterProvider({
   resource: resource,
-  exporter: new PrometheusExporter({ port: 9090 }),
+  exporter: new PrometheusExporter({}, () => {
+    console.log(
+      `prometheus scrape endpoint: http://localhost:${PrometheusExporter.DEFAULT_OPTIONS.port}${PrometheusExporter.DEFAULT_OPTIONS.endpoint}`
+    );
+  }),
 }).getMeter("metrics");
 
 type CounterArgs = Parameters<typeof meter.createCounter>;

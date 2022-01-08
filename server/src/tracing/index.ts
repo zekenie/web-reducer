@@ -7,10 +7,10 @@ import {
 } from "@opentelemetry/api";
 import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
 import { W3CTraceContextPropagator } from "@opentelemetry/core";
-import { ZipkinExporter } from "@opentelemetry/exporter-zipkin";
 import { Resource } from "@opentelemetry/resources";
-import { metrics, NodeSDK } from "@opentelemetry/sdk-node";
+import { NodeSDK } from "@opentelemetry/sdk-node";
 import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 
 export const resource = new Resource({
   [SemanticResourceAttributes.SERVICE_NAME]: "backend",
@@ -20,9 +20,10 @@ const sdk = new NodeSDK({
   // resource: new Resource
   resource,
   // traceExporter: new tracing.ConsoleSpanExporter(),
-  traceExporter: new ZipkinExporter({
-    url: process.env.ZIPKIN_URL,
+  traceExporter: new OTLPTraceExporter({
+    url: process.env.OTEL_COLLECTOR_URL,
   }),
+
   instrumentations: [getNodeAutoInstrumentations()],
 });
 
