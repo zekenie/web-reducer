@@ -25,7 +25,7 @@ export async function enqueue(
   );
   forWorkerType("all").size.add(1);
   forWorkerType(job.name).size.add(1);
-  forWorkerType(enqueued.queueName).size.add(1);
+  // forWorkerType(enqueued.queueName).size.add(1);
   tracingEvent("wr.job.enqueued", {
     queue: enqueued.queueName,
     id: enqueued.id!,

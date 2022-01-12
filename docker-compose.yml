@@ -34,15 +34,15 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_USER: postgres
 
-  prom:
-    image: prom/prometheus
-    ports:
-      - 9090:9090
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--log.level=debug"
+  # prom:
+  #   image: prom/prometheus
+  #   ports:
+  #     - 9090:9090
+  #   volumes:
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  #   command:
+  #     - "--config.file=/etc/prometheus/prometheus.yml"
+  # - "--log.level=debug"
 
   promscale:
     image: timescale/promscale:0.7

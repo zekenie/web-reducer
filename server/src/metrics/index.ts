@@ -4,6 +4,7 @@ import { memoize } from "lodash";
 import { resource } from "../tracing";
 
 const meter = new metrics.MeterProvider({
+  interval: 100,
   resource: resource,
   exporter: new PrometheusExporter({}, () => {
     console.log(

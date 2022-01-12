@@ -1,0 +1,58 @@
+# HELP wr_worker_all_size description missing
+# TYPE wr_worker_all_size gauge
+wr_worker_all_size 0 1641663484495
+# HELP wr_request_writeKey_total new request received on a web reducer
+# TYPE wr_request_writeKey_total counter
+wr_request_writeKey_total 2 1641663484420
+# HELP wr_request_duration description missing
+# TYPE wr_request_duration histogram
+wr_request_duration_count 2 1641663484425
+wr_request_duration_sum 30 1641663484425
+wr_request_duration_bucket{le="+Inf"} 2 1641663484425
+# HELP wr_request_count_total description missing
+# TYPE wr_request_count_total counter
+wr_request_count_total 2 1641663484412
+# HELP wr_worker_request_size description missing
+# TYPE wr_worker_request_size gauge
+wr_worker_request_size 2 1641663484423
+# HELP wr_request_2xx_total description missing
+# TYPE wr_request_2xx_total counter
+wr_request_2xx_total 2 1641663484425
+# HELP wr_request_captureBatchSize description missing
+# TYPE wr_request_captureBatchSize histogram
+wr_request_captureBatchSize_count 2 1641663484438
+wr_request_captureBatchSize_sum 2 1641663484438
+wr_request_captureBatchSize_bucket{le="+Inf"} 2 1641663484438
+# HELP wr_worker_all_succeeded_total description missing
+# TYPE wr_worker_all_succeeded_total counter
+wr_worker_all_succeeded_total 4 1641663484495
+# HELP wr_worker_all_duration description missing
+# TYPE wr_worker_all_duration histogram
+wr_worker_all_duration_count 4 1641663484495
+wr_worker_all_duration_sum 352 1641663484495
+wr_worker_all_duration_bucket{le="+Inf"} 4 1641663484495
+# HELP wr_worker_run_hook_size description missing
+# TYPE wr_worker_run_hook_size gauge
+wr_worker_run_hook_size 2 1641663484449
+# HELP wr_worker_request_12_succeeded_total description missing
+# TYPE wr_worker_request_12_succeeded_total counter
+wr_worker_request_12_succeeded_total 2 1641663484449
+# HELP wr_worker_request_12_size description missing
+# TYPE wr_worker_request_12_size gauge
+wr_worker_request_12_size -2 1641663484449
+# HELP wr_worker_request_12_duration description missing
+# TYPE wr_worker_request_12_duration histogram
+wr_worker_request_12_duration_count 2 1641663484449
+wr_worker_request_12_duration_sum 219 1641663484449
+wr_worker_request_12_duration_bucket{le="+Inf"} 2 1641663484449
+# HELP wr_worker_run_hook_9_succeeded_total description missing
+# TYPE wr_worker_run_hook_9_succeeded_total counter
+wr_worker_run_hook_9_succeeded_total 2 1641663484495
+# HELP wr_worker_run_hook_9_size description missing
+# TYPE wr_worker_run_hook_9_size gauge
+wr_worker_run_hook_9_size -2 1641663484495
+# HELP wr_worker_run_hook_9_duration description missing
+# TYPE wr_worker_run_hook_9_duration histogram
+wr_worker_run_hook_9_duration_count 2 1641663484495
+wr_worker_run_hook_9_duration_sum 133 1641663484495
+wr_worker_run_hook_9_duration_bucket{le="+Inf"} 2 1641663484495
