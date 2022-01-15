@@ -41,6 +41,7 @@ services:
     build: ../server
     ports:
       - 3001:3001
+      - 9464:9464
     environment:
       DATABASE_URL: postgres://postgres:postgres@db:5432/hook
       REDIS_URL: redis://redis:6379/0

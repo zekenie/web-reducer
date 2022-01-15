@@ -9,7 +9,6 @@ const client = axios.create({
 
 client.interceptors.response.use(
   (r) => {
-    console.log(`success from runner`, r.data);
     return r;
   },
   (err) => {
