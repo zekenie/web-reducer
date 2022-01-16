@@ -34,7 +34,6 @@ services:
       - SECRET_KEY_BASE=foobarq
       - HTTP_AUTH_PASSWORD=admin
       - HTTP_AUTH_USERNAME=admin
-      - GITHUB_OAUTH_CREDENTIALS=Iv1.9d7918856dacd8a3:57132675057c026b3896c53ab380f0d341647406
     depends_on:
       - redis
       - db
