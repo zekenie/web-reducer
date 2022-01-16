@@ -11,6 +11,16 @@ export const getStore = () => {
 
 export class RequestContext {
   public readonly id: string = uuid();
+
+  private _userId: string;
+
+  public get userId() {
+    return this._userId;
+  }
+
+  setUserId(id: string) {
+    this._userId = id;
+  }
 }
 
 export default function makeRequestContextMiddleware(): RequestHandler {

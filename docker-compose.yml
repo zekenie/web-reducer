@@ -15,14 +15,34 @@ services:
     image: redis:6.2.6
     ports:
       - 6379:6379
+
+  authn:
+    image: keratin/authn-server:1.13.0
+    ports:
+      - "8765:3003"
+    command: >
+      /bin/sh -c "
+        sleep 6;
+        ./authn migrate;
+        ./authn server;
+      "
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/hook
+      - REDIS_URL=redis://redis:6379/1
+      - AUTHN_URL=http://authn:3003
+      - APP_DOMAINS=localhost
+      - SECRET_KEY_BASE=foobarq
+      - HTTP_AUTH_PASSWORD=admin
+      - HTTP_AUTH_USERNAME=admin
+      - GITHUB_OAUTH_CREDENTIALS=Iv1.9d7918856dacd8a3:57132675057c026b3896c53ab380f0d341647406
+    depends_on:
+      - redis
+      - db
+
   code_runner:
     build: ./runner
     ports:
       - 3002:3002
-  # zipkin:
-  #   image: openzipkin/zipkin
-  #   ports:
-  #     - 9411:9411
 
   timescale_db:
     volumes:
@@ -33,16 +53,6 @@ services:
     environment:
       POSTGRES_PASSWORD: password
       POSTGRES_USER: postgres
-
-  # prom:
-  #   image: prom/prometheus
-  #   ports:
-  #     - 9090:9090
-  #   volumes:
-  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
-  #   command:
-  #     - "--config.file=/etc/prometheus/prometheus.yml"
-  # - "--log.level=debug"
 
   promscale:
     image: timescale/promscale:0.7

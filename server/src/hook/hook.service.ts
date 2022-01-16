@@ -2,15 +2,17 @@ import { getPool } from "../db";
 import UpdateHook from "./inputs/update-hook.input";
 import * as db from "./hook.db";
 import { createKey } from "../key/key.db";
+import { provisionAccess } from "../access/access.db";
 
 export async function readHook(id: string) {
   return db.getDraftAndPublishedCode(id);
 }
 
-export async function createHook() {
+export async function createHook({ userId }: { userId: string }) {
   const pool = getPool();
   return pool.transaction(async () => {
     const hookId = await db.createHook();
+    await provisionAccess({ hookId, userId });
     const writeKey = await createKey({ type: "write", hookId });
     const readKey = await createKey({ type: "read", hookId });
     return { hookId, writeKey, readKey };

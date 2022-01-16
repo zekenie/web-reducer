@@ -4,16 +4,27 @@ import * as service from "./hook.service";
 import UpdateHook from "./inputs/update-hook.input";
 import * as stateService from "../state/state.service";
 import { last } from "lodash";
+import { makeAccessMiddleware } from "../access/access.middleware";
+import { makeAuthMiddleware } from "../auth/auth.middleware";
+import { getStore } from "../server/request-context.middleware";
 
 export default Router()
+  .use(makeAuthMiddleware())
   .post("/", async (req, res, next) => {
     try {
-      const { hookId, writeKey, readKey } = await service.createHook();
+      const { userId } = getStore();
+      const { hookId, writeKey, readKey } = await service.createHook({
+        userId,
+      });
       res.status(201).json({ hookId, writeKey, readKey });
     } catch (e) {
       next(e);
     }
   })
+  .use(
+    "/:id",
+    makeAccessMiddleware((req) => req.params.id)
+  )
   .get("/:id", async function (req, res, next) {
     try {
       const { draft, published } = await service.readHook(req.params.id);
