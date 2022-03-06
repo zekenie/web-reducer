@@ -29,3 +29,32 @@
 - [ ] For docker images
   - [ ] `docker pull node:lts-alpine`
   - [ ] Take out the digest and put it in the [docker](./runner/Dockerfile) [files](./server/Dockerfile)
+
+## 2/27/22
+
+- Auth should not be in authn
+- we should use our own stuff
+- every request sends a auth header
+  - auth header is base64 encoded json
+  - it contains
+    - a visitor id
+    - conditionally a jwt.
+  - many routes will be able to be hit w/ just a visitor id
+  - upon authentication, everything the visitor owns will be merged with the prior user
+  - modeling visitors
+    - maybe a user with type = visitor? <-- that one
+    - maybe its own table, with a userid column
+  - authentication happens via email
+    - we sign a jwt when we see a req with a preapproved code
+    - that code is sent via email
+    - modeling login tokens
+      - table for login tokens
+      - expiry = 1h
+    - able to set a pin on acct if you want
+  - req.user will always be defined, even if there's no jwt
+  - when you login with an email link, you get a jwt, and your visitor id is updated
+  - if you try to use a uuid that is a non-visitor id (already tied to an account), but you don't have a jwt, you are denied
+- Capabilities we need
+  - reading and writing auth header
+  - sending email
+  - storing login tokens
