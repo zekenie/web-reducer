@@ -47,6 +47,7 @@ services:
       REDIS_URL: redis://redis:6379/0
       PORT: 3001
       RUNNER_URL: http://code_runner:3002
+      JWT_KEY: asdf
     depends_on:
       - redis
       - migrator

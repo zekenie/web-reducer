@@ -5,11 +5,10 @@ import UpdateHook from "./inputs/update-hook.input";
 import * as stateService from "../state/state.service";
 import { last } from "lodash";
 import { makeAccessMiddleware } from "../access/access.middleware";
-import { makeAuthMiddleware } from "../auth/auth.middleware";
 import { getStore } from "../server/request-context.middleware";
 
 export default Router()
-  .use(makeAuthMiddleware())
+  // .use(makeAuthMiddleware())
   .post("/", async (req, res, next) => {
     try {
       const { userId } = getStore();
@@ -21,10 +20,10 @@ export default Router()
       next(e);
     }
   })
-  .use(
-    "/:id",
-    makeAccessMiddleware((req) => req.params.id)
-  )
+  // .use(
+  // "/:id"
+  //makeAccessMiddleware((req) => req.params.id)
+  // )
   .get("/:id", async function (req, res, next) {
     try {
       const { draft, published } = await service.readHook(req.params.id);

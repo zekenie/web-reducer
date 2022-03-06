@@ -1,52 +1,33 @@
-import jwksClient from "jwks-rsa";
 import jwt from "jsonwebtoken";
-import * as db from "./auth.db";
+import { isUUID } from "class-validator";
 
-const client = jwksClient({
-  jwksUri: `${process.env.AUTHN_URL}/jwks`,
-  cache: true,
-});
-
-export async function getUserIdByAuthNId(authNId: string): Promise<string> {
-  return db.getUserIdByAuthNId(authNId);
-}
-
-export async function validateAndDecodeJwt<T>(
-  token: string
-): Promise<{ isValid: boolean; payload: T }> {
-  try {
-    const payload = await verify(token);
-
-    return {
-      isValid: true,
-      payload,
-    };
-  } catch (e) {
-    const decodedFailedToken = jwt.decode(token);
-    return { isValid: false, payload: decodedFailedToken as T };
+export function validateAndDecodeJwt(token: string): {
+  isSigned: boolean;
+  userId: string;
+} {
+  const decodedJwt = jwt.decode(token, { complete: true });
+  if (!decodedJwt) {
+    throw new Error("unable to decode jwt");
   }
-}
+  const isUnsigned = decodedJwt.header?.alg === "none";
 
-async function verify(token: string): Promise<any> {
-  return new Promise((resolve, reject) => {
-    jwt.verify(
-      token,
-      (header, callback) => {
-        client.getSigningKey(header.kid, function (err, key) {
-          if (err) {
-            return callback(err);
-          }
-          const signingKey = key.getPublicKey(); //key["publicKey"] || key["rsaPublicKey"];
-          callback(null, signingKey);
-        });
-      },
-      {},
-      (err, decoded) => {
-        if (err) {
-          reject(err);
-        }
-        resolve(decoded);
-      }
-    );
+  if (!isUUID(decodedJwt.payload.sub)) {
+    throw new Error("jwt sub is not uuid");
+  }
+
+  if (isUnsigned) {
+    if (typeof decodedJwt.payload.sub !== "string") {
+      throw new Error("invalid jwt subject");
+    }
+    return { isSigned: false, userId: decodedJwt.payload.sub };
+  }
+
+  const payload = jwt.verify(token, process.env.JWT_SECRET!, {
+    complete: true,
   });
+
+  return {
+    isSigned: true,
+    userId: payload.payload.sub as string,
+  };
 }

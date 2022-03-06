@@ -12,7 +12,9 @@ tracing.start().then(async () => {
 
   const { default: makeServer } = await import("./server");
 
-  const server = makeServer({}).listen(process.env.PORT!);
+  const server = makeServer({}).listen(process.env.PORT!, () => {
+    console.log("server listening on port", process.env.PORT!);
+  });
 
   function closeGracefully(signal: string) {
     try {

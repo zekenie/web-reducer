@@ -25,11 +25,11 @@ export async function provisionAccess({
   userId: string;
   hookId: string;
 }) {
-  const pool = getPool();
-  await pool.query(sql`
-    insert into "access"
-    ("hookId", "userId")
-    values
-    (${hookId}, ${userId})
-  `);
+  // const pool = getPool();
+  // await pool.query(sql`
+  //   insert into "access"
+  //   ("hookId", "userId")
+  //   values
+  //   (${hookId}, ${userId})
+  // `);
 }

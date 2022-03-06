@@ -47,7 +47,7 @@ export async function getStateHistory(
 
   // how does this work with page 1???
 
-  const records = await pool.any<StateHistory & { fullCount: number }>(sql`
+  const records = await pool.many<StateHistory & { fullCount: number }>(sql`
     select
       "requestId",
       state,

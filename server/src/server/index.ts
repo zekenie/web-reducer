@@ -9,6 +9,7 @@ import stateController from "../state/state.controller";
 import workerController from "../worker/worker.controller";
 import makeRequestContextMiddleware from "./request-context.middleware";
 import { duration, forStatusCode, requests } from "./server.metrics";
+import morgan from "morgan";
 
 bodyParserXml(bodyParser);
 
@@ -16,6 +17,8 @@ type Config = {};
 
 export default function makeServer(config: Config) {
   const app = express();
+
+  app.use(morgan("dev"));
 
   app.get("/heartbeat", async (req, res) => {
     await Promise.all([heartbeat(), redisConnection.ping()]);

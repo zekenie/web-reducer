@@ -22,6 +22,7 @@ describe("existing hooks", () => {
     const { api } = await buildHook({ bodies: [body1, body2] });
     await api.settled(body1);
     await api.settled(body2);
+
     const stateHistory = await api.history();
 
     expect(stateHistory.nextToken).toBeFalsy();

@@ -28,7 +28,7 @@ export const runnerClient = axios.create({
 runnerClient.interceptors.response.use(
   (r) => r,
   (err) => {
-    const ourErr = new HttpClientErr("server client error");
+    const ourErr = new HttpClientErr("runner client error");
     ourErr.originalError = err;
     throw ourErr;
   }
