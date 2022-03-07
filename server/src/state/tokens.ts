@@ -1,5 +1,5 @@
 import { last } from "lodash";
-import { StateHistory } from "./types";
+import { StateHistory } from "./state.types";
 
 export function parseNextToken(token: string): {
   requestId: string;

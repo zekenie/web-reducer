@@ -33,14 +33,14 @@ describe("auth service", () => {
     it("correctly identifies a signed token", () => {
       const token = makeSignedJwt(userId);
       const auth = validateAndDecodeJwt(token);
-      expect(auth.isSigned).toBe(true);
+      expect(auth.isSignedIn).toBe(true);
       expect(auth.userId).toBe(userId);
     });
 
     it("correctly identifies an unsigned token", () => {
       const token = makeUnsignedToken(userId);
       const auth = validateAndDecodeJwt(token);
-      expect(auth.isSigned).toBe(false);
+      expect(auth.isSignedIn).toBe(false);
       expect(auth.userId).toBe(userId);
     });
 

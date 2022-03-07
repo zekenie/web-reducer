@@ -6,7 +6,7 @@ import {
   queueNameForHookId,
 } from "./runner-hash.helper";
 import { runHook } from "./runner.service";
-import { WORKER_NAME } from "./types";
+import { WORKER_NAME } from "./runner.types";
 
 declare global {
   namespace Queue {

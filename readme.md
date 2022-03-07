@@ -58,3 +58,7 @@
   - reading and writing auth header
   - sending email
   - storing login tokens
+
+## 3/6/22 state dump
+
+- [ ] email queue system (https://github.com/forwardemail/email-templates)

@@ -3,7 +3,7 @@ import { sql } from "slonik";
 import { getPool } from "../db";
 import { createKey } from "../key/key.db";
 import UpdateHook from "./inputs/update-hook.input";
-import { HookWorkflowState } from "./types";
+import { HookWorkflowState } from "./hook.types";
 
 type CodeToRun = {
   versionId: string;

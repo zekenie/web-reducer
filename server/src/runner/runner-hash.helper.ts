@@ -1,4 +1,4 @@
-import { WORKER_NAME } from "./types";
+import { WORKER_NAME } from "./runner.types";
 
 export const NUM_BUCKETS = 10;
 

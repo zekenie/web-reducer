@@ -1,4 +1,4 @@
-import { ConsoleMessage, RuntimeError } from "../runner/types";
+import { ConsoleMessage, RuntimeError } from "../runner/runner.types";
 
 export type StateHistory = {
   requestId: string;
