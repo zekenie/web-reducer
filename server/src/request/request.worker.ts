@@ -1,7 +1,7 @@
 import { registerNameMapper, registerQueue } from "../worker/queues";
 import registerWorker from "../worker/workers";
 import { captureRequest } from "./request.service";
-import { NUM_BUCKETS, WebhookRequest, WORKER_NAME } from "./types";
+import { NUM_BUCKETS, WebhookRequest, WORKER_NAME } from "./request.types";
 import {
   queueNameForBucket,
   queueNameForWriteKey,

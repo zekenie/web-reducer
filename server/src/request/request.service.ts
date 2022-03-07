@@ -1,7 +1,7 @@
 import { enqueue } from "../worker/queue.service";
 import { getQueue, getQueueEvents } from "../worker/queues";
 import * as requestDb from "./request.db";
-import { WebhookRequest, WORKER_NAME } from "./types";
+import { WebhookRequest, WORKER_NAME } from "./request.types";
 import { queueNameForWriteKey } from "./request-hash.helper";
 import * as hookDb from "../hook/hook.db";
 import * as stateDb from "../state/state.db";

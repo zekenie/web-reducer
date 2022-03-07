@@ -1,6 +1,6 @@
 import axios from "axios";
-import { WebhookRequest } from "../request/types";
-import { ConsoleMessage, RuntimeError } from "./types";
+import { WebhookRequest } from "../request/request.types";
+import { ConsoleMessage, RuntimeError } from "./runner.types";
 
 const client = axios.create({
   baseURL: process.env.RUNNER_URL,

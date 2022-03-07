@@ -1,7 +1,7 @@
 import { IncomingHttpHeaders } from "http";
 import { sql } from "slonik";
 import { getPool } from "../db";
-import { WebhookRequest } from "./types";
+import { WebhookRequest } from "./request.types";
 import { cargoQueue } from "async";
 import { captureBatchSize } from "./request.metrics";
 

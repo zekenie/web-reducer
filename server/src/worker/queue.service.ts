@@ -3,7 +3,7 @@ import "../request/request.worker";
 import "../runner/runner.worker";
 import { serializeCurrentSpan, tracingEvent } from "../tracing";
 import { debug, getMapper, getQueue } from "./queues";
-import { JobDescription } from "./types";
+import { JobDescription } from "./worker.types";
 import { forWorkerType } from "./worker.metrics";
 
 // need queues

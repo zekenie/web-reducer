@@ -1,4 +1,4 @@
-import { NUM_BUCKETS, WORKER_NAME } from "./types";
+import { NUM_BUCKETS, WORKER_NAME } from "./request.types";
 
 export function hashWriteKeyToNumber(str: string): number {
   let num = 0;

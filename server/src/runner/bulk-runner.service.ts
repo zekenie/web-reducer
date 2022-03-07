@@ -6,7 +6,7 @@ import {
   countRequestsForHook,
   streamRequestsForHook,
 } from "../request/request.db";
-import { WebhookRequest } from "../request/types";
+import { WebhookRequest } from "../request/request.types";
 import {
   bulkCreateState,
   checkValidityOfIdempotencyKeys,

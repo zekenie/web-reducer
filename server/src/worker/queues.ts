@@ -1,6 +1,6 @@
 import { Queue, QueueEvents } from "bullmq";
 import { connection } from "../redis";
-import { JobDescription } from "./types";
+import { JobDescription } from "./worker.types";
 const queues: { [key: string]: Queue } = {};
 const queueEvents: { [key: string]: QueueEvents } = {};
 

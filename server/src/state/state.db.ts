@@ -1,14 +1,14 @@
 import { omit } from "lodash";
 import { sql } from "slonik";
 import { getPool } from "../db";
-import { HookWorkflowState } from "../hook/types";
+import { HookWorkflowState } from "../hook/hook.types";
 import {
   PaginatedTokenResponse,
   PaginationQueryArgs,
-} from "../pagination/types";
-import { ConsoleMessage, RuntimeError } from "../runner/types";
+} from "../pagination/pagination.types";
+import { ConsoleMessage, RuntimeError } from "../runner/runner.types";
 import { generateNextToken, parseNextToken } from "./tokens";
-import { StateHistory } from "./types";
+import { StateHistory } from "./state.types";
 
 export async function doesStateExist({
   hookId,
