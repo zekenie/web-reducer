@@ -23,6 +23,12 @@
   - my internet quality idea
   - my sleep tracker idea
 
+## Hygen templates
+
+```sh
+$ hygen new worker|email|etc
+```
+
 ## Maintenance
 
 - [ ] Upgrade packages in every js project
