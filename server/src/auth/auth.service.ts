@@ -1,8 +1,9 @@
 import jwt from "jsonwebtoken";
 import { isUUID } from "class-validator";
 import { createUser, getUserByEmail } from "../user/user.db";
-import { getPool } from "../db";
 import { createSigninToken } from "../signin-token/signin-token.db";
+import { sendMail } from "../email/email.service";
+import { validateTokenAndGetUserIdThenDeleteToken as validateTokenAndGetUserIdThenDeleteTokenDb } from "../signin-token/signin-token.db";
 
 export function validateAndDecodeJwt(token: string): {
   isSignedIn: boolean;
@@ -41,25 +42,32 @@ export function signJwt(userId: string): string {
   });
 }
 
-export async function validateSigninToken(
+export async function validateTokenAndSignJwt(
   signinToken: string
 ): Promise<string> {
-  return "the user id for the token";
+  const userId = await validateTokenAndGetUserIdThenDeleteTokenDb(signinToken);
+  return signJwt(userId);
 }
 
 export async function initiateSignin(email: string) {
   const user = await getUserByEmail(email);
-  const signinToken = await getPool().transaction(async () => {
-    let userIdToSignin: string;
-    if (!user) {
-      const { id } = await createUser(email);
-      userIdToSignin = id;
-    } else {
-      userIdToSignin = user.id;
-    }
-    // if no user, create user
-    // create signin token
-    return createSigninToken(userIdToSignin);
-  });
+
+  let userIdToSignin: string;
+  if (!user) {
+    const { id } = await createUser(email);
+    userIdToSignin = id;
+  } else {
+    userIdToSignin = user.id;
+  }
+  // if no user, create user
+  // create signin token
+  const signinToken = await createSigninToken(userIdToSignin);
+
   // send user an email
+  await sendMail({
+    to: email,
+    from: "zeke@webreducer.dev",
+    locals: { link: `webreeducer.com/${signinToken}` },
+    name: "signin",
+  });
 }
