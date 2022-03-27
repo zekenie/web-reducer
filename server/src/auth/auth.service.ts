@@ -4,26 +4,18 @@ import { createUser, getUserByEmail } from "../user/user.db";
 import { createSigninToken } from "../signin-token/signin-token.db";
 import { sendMail } from "../email/email.service";
 import { validateTokenAndGetUserIdThenDeleteToken as validateTokenAndGetUserIdThenDeleteTokenDb } from "../signin-token/signin-token.db";
+import { mergeAccess } from "../access/access.service";
 
 export function validateAndDecodeJwt(token: string): {
-  isSignedIn: boolean;
   userId: string;
 } {
   const decodedJwt = jwt.decode(token, { complete: true });
   if (!decodedJwt) {
     throw new Error("unable to decode jwt");
   }
-  const isUnsigned = decodedJwt.header?.alg === "none";
 
   if (!isUUID(decodedJwt.payload.sub)) {
     throw new Error("jwt sub is not uuid");
-  }
-
-  if (isUnsigned) {
-    if (typeof decodedJwt.payload.sub !== "string") {
-      throw new Error("invalid jwt subject");
-    }
-    return { isSignedIn: false, userId: decodedJwt.payload.sub };
   }
 
   const payload = jwt.verify(token, process.env.JWT_SECRET!, {
@@ -31,7 +23,6 @@ export function validateAndDecodeJwt(token: string): {
   });
 
   return {
-    isSignedIn: true,
     userId: payload.payload.sub as string,
   };
 }
@@ -45,11 +36,24 @@ export function signJwt(userId: string): string {
 export async function validateTokenAndSignJwt(
   signinToken: string
 ): Promise<string> {
-  const userId = await validateTokenAndGetUserIdThenDeleteTokenDb(signinToken);
+  const { userId, guestUserId } =
+    await validateTokenAndGetUserIdThenDeleteTokenDb(signinToken);
+  await mergeAccess({ oldUserId: guestUserId, newUserId: userId });
   return signJwt(userId);
 }
 
-export async function initiateSignin(email: string) {
+export async function initiateGuestUser() {
+  const user = await createUser();
+  return signJwt(user.id);
+}
+
+export async function initiateSignin({
+  email,
+  guestUserId,
+}: {
+  email: string;
+  guestUserId: string;
+}) {
   const user = await getUserByEmail(email);
 
   let userIdToSignin: string;
@@ -61,7 +65,10 @@ export async function initiateSignin(email: string) {
   }
   // if no user, create user
   // create signin token
-  const signinToken = await createSigninToken(userIdToSignin);
+  const signinToken = await createSigninToken({
+    userId: userIdToSignin,
+    guestUserId,
+  });
 
   // send user an email
   await sendMail({

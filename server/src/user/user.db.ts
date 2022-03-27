@@ -12,12 +12,12 @@ export async function getUserByEmail(email: string): Promise<User | null> {
   return user;
 }
 
-export async function createUser(email: string): Promise<User> {
+export async function createUser(email?: string): Promise<User> {
   const user = await getPool().one<User>(sql`
     insert into "user"
     (email)
     values
-    (${email.toLowerCase()})
+    (${email ? email.toLowerCase() : null})
     returning id, email
   `);
 

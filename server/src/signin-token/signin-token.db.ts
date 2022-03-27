@@ -2,13 +2,19 @@ import { sql } from "slonik";
 import { getPool } from "../db";
 import { nanoid } from "nanoid";
 
-export async function createSigninToken(userId: string): Promise<string> {
+export async function createSigninToken({
+  userId,
+  guestUserId,
+}: {
+  userId: string;
+  guestUserId: string;
+}): Promise<string> {
   const token = nanoid();
   await getPool().any(sql`
     insert into "signinToken"
-    ("userId", "token", "createdAt")
+    ("userId", "guestUserId", "token", "createdAt")
     values
-    (${userId}, ${token}, NOW())
+    (${userId}, ${guestUserId}, ${token}, NOW())
   `);
 
   return token;
@@ -16,16 +22,27 @@ export async function createSigninToken(userId: string): Promise<string> {
 
 export async function validateTokenAndGetUserIdThenDeleteToken(
   token: string
-): Promise<string> {
-  const res = await getPool().maybeOne<{ userId: string }>(sql`
-    update "signinToken"
-    set "validatedAt" = NOW()
-    where token = ${token}
-    and NOW() - "createdAt" < "1 hour"::interval
-    returning "userId"
-  `);
-  if (res) {
-    return res.userId;
-  }
-  throw new Error(`token ${token} is no longer valid`);
+): Promise<{ userId: string; guestUserId: string }> {
+  return getPool().transaction(async () => {
+    const res = await getPool().maybeOne<{
+      userId: string;
+      guestUserId: string;
+    }>(sql`
+      update "signinToken"
+      set "validatedAt" = NOW()
+      where token = ${token}
+      and NOW() - "createdAt" < "1 hour"::interval
+      returning "userId", "guestUserId"
+    `);
+    if (!res) {
+      throw new Error(`token ${token} is no longer valid`);
+    }
+    await getPool().any(sql`
+      insert into "singin"
+      ("userId", "token", "createdAt")
+      values
+      (${res.userId}, ${token}, NOW())
+    `);
+    return res;
+  });
 }

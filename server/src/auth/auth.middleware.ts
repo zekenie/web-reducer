@@ -14,11 +14,9 @@ export function makeAuthMiddleware() {
       if (!req.headers.authorization) {
         throw new httpErrors.Forbidden("No authorization header");
       }
-      const { isSignedIn, userId } = validateAndDecodeJwt(
-        req.headers.authorization
-      );
+      const { userId } = validateAndDecodeJwt(req.headers.authorization);
       const requestStore = getStore();
-      requestStore.setUser({ id: userId, isSignedIn });
+      requestStore.setUser({ id: userId });
       return next();
     } catch (e) {
       next(e);

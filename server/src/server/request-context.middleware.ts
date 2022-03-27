@@ -13,15 +13,13 @@ export class RequestContext {
   public readonly id: string = uuid();
 
   private _userId: string;
-  private _isSignedIn: boolean;
 
   public get userId() {
     return this._userId;
   }
 
-  setUser({ id, isSignedIn }: { id: string; isSignedIn: boolean }) {
+  setUser({ id }: { id: string }) {
     this._userId = id;
-    this._isSignedIn = isSignedIn;
   }
 }
 

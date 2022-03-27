@@ -10,13 +10,6 @@ function makeSignedJwt(id: string, secret = process.env.JWT_SECRET!) {
   });
 }
 
-function makeUnsignedToken(id: string) {
-  return sign({}, "", {
-    subject: id,
-    algorithm: "none",
-  });
-}
-
 describe("auth service", () => {
   let userId: string;
 
@@ -33,14 +26,6 @@ describe("auth service", () => {
     it("correctly identifies a signed token", () => {
       const token = makeSignedJwt(userId);
       const auth = validateAndDecodeJwt(token);
-      expect(auth.isSignedIn).toBe(true);
-      expect(auth.userId).toBe(userId);
-    });
-
-    it("correctly identifies an unsigned token", () => {
-      const token = makeUnsignedToken(userId);
-      const auth = validateAndDecodeJwt(token);
-      expect(auth.isSignedIn).toBe(false);
       expect(auth.userId).toBe(userId);
     });
 

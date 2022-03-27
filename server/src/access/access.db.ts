@@ -18,6 +18,20 @@ export async function hasAccess({
   return Number(count) > 0;
 }
 
+export async function mergeAccess({
+  oldUserId,
+  newUserId,
+}: {
+  oldUserId: string;
+  newUserId: string;
+}) {
+  await getPool().any(sql`
+    update "access"
+    set "userId" = ${newUserId}
+    where "userId" = ${oldUserId}
+  `);
+}
+
 export async function provisionAccess({
   userId,
   hookId,
