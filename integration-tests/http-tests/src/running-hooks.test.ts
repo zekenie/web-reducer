@@ -1,4 +1,4 @@
-import { serverClient } from "./clients";
+import { unauthenticatedServerClient } from "./clients";
 import { getPool } from "./db";
 import { cleanup } from "./db/cleanup";
 import { buildHook } from "./hook-builder";
@@ -30,8 +30,11 @@ describe("existing hooks", () => {
     const { context, api } = await buildHook();
     const body1 = { number: 4 };
     const body2 = { number: 3 };
-    const res = await serverClient.post(`/${context.writeKey}`, body1);
-    const res2 = await serverClient.post<{ id: string }>(
+    const res = await unauthenticatedServerClient.post(
+      `/${context.writeKey}`,
+      body1
+    );
+    const res2 = await unauthenticatedServerClient.post<{ id: string }>(
       `/${context.writeKey}`,
       body2
     );

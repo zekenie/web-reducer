@@ -5,6 +5,7 @@ import { createSigninToken } from "../signin-token/signin-token.db";
 import { sendMail } from "../email/email.service";
 import { validateTokenAndGetUserIdThenDeleteToken as validateTokenAndGetUserIdThenDeleteTokenDb } from "../signin-token/signin-token.db";
 import { mergeAccess } from "../access/access.service";
+import { transaction } from "../db";
 
 export function validateAndDecodeJwt(token: string): {
   userId: string;
@@ -36,10 +37,12 @@ export function signJwt(userId: string): string {
 export async function validateTokenAndSignJwt(
   signinToken: string
 ): Promise<string> {
-  const { userId, guestUserId } =
-    await validateTokenAndGetUserIdThenDeleteTokenDb(signinToken);
-  await mergeAccess({ oldUserId: guestUserId, newUserId: userId });
-  return signJwt(userId);
+  return transaction(async () => {
+    const { userId, guestUserId } =
+      await validateTokenAndGetUserIdThenDeleteTokenDb(signinToken);
+    await mergeAccess({ oldUserId: guestUserId, newUserId: userId });
+    return signJwt(userId);
+  });
 }
 
 export async function initiateGuestUser() {

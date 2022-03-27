@@ -1,8 +1,8 @@
-import { serverClient, runnerClient } from "./clients";
+import { unauthenticatedServerClient, runnerClient } from "./clients";
 
 describe("server", () => {
   it("has heartbeat", async () => {
-    const res = await serverClient.get("/heartbeat");
+    const res = await unauthenticatedServerClient.get("/heartbeat");
     expect(res.data).toEqual({ ok: true });
   });
 });

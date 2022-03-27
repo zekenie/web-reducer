@@ -7,11 +7,11 @@ class HttpClientErr extends Error {
   }
 }
 
-export const serverClient = axios.create({
+export const unauthenticatedServerClient = axios.create({
   baseURL: process.env.SERVER_URL,
 });
 
-serverClient.interceptors.response.use(
+unauthenticatedServerClient.interceptors.response.use(
   (r) => r,
   (err) => {
     const ourErr = new HttpClientErr("server client error");
@@ -20,6 +20,27 @@ serverClient.interceptors.response.use(
     throw ourErr;
   }
 );
+
+export const makeAuthenticatedServerClient = ({ jwt }: { jwt: string }) => {
+  const client = axios.create({
+    baseURL: process.env.SERVER_URL,
+    headers: {
+      authorization: jwt,
+    },
+  });
+
+  client.interceptors.response.use(
+    (r) => r,
+    (err) => {
+      const ourErr = new HttpClientErr("authenticated server client error");
+      console.error(err);
+      ourErr.originalError = err;
+      throw ourErr;
+    }
+  );
+
+  return client;
+};
 
 export const runnerClient = axios.create({
   baseURL: process.env.RUNNER_URL,

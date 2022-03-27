@@ -1,6 +1,6 @@
 import { last } from "lodash";
 import { sql } from "slonik";
-import { serverClient } from "./clients";
+import { unauthenticatedServerClient } from "./clients";
 import { getPool } from "./db";
 import { cleanup } from "./db/cleanup";
 import { buildHook } from "./hook-builder";

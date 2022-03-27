@@ -1,9 +1,14 @@
 import { uniqueId } from "lodash";
 import { sql } from "slonik";
-import { serverClient } from "./clients";
+import {
+  makeAuthenticatedServerClient,
+  unauthenticatedServerClient,
+} from "./clients";
 import { getPool } from "./db";
+import jwtLib from "jsonwebtoken";
 
 type Context = {
+  jwt: string;
   writeKey: string;
   readKey: string;
   hookId: string;
@@ -15,12 +20,52 @@ type PaginatedHookHistory<PostBody, State> = {
   objects: { state: State; body: PostBody; createdAt: number }[];
 };
 
+export async function buildAuthenticatedApi(jwt?: string) {
+  if (!jwt) {
+    const pool = getPool();
+    const { id: userId } = await pool.one<{ id: string }>(sql`
+      insert into "user" (email) values ('test@test.com')
+      returning id
+    `);
+
+    jwt = jwtLib.sign({}, process.env.JWT_SECRET!, {
+      subject: userId,
+    });
+  }
+  const authenticatedClient = makeAuthenticatedServerClient({
+    jwt,
+  });
+
+  return {
+    hook: {
+      async updateHook(id: string, updates: Record<string, any>) {
+        return authenticatedClient.put(`/hooks/${id}`, updates);
+      },
+      async createHook() {
+        return authenticatedClient.post<{
+          hookId: string;
+          readKey: string;
+          writeKey: string;
+        }>(`/hooks`);
+      },
+      async readHook(id: string) {
+        return authenticatedClient.get(`/hooks/${id}`);
+      },
+    },
+  };
+}
+
 function buildApi<PostBody, State>(context: Context) {
   const bodyToIdMap = new Map<PostBody, String>();
   let nextToken: string | undefined | null;
+
+  const authenticatedClient = makeAuthenticatedServerClient({
+    jwt: context.jwt,
+  });
+
   return {
     async write(body: PostBody): Promise<string> {
-      const { data } = await serverClient.post<{ id: string }>(
+      const { data } = await unauthenticatedServerClient.post<{ id: string }>(
         `/${context.writeKey}`,
         body
       );
@@ -30,7 +75,7 @@ function buildApi<PostBody, State>(context: Context) {
 
     async settled(requestIdOrPostBody: string | PostBody): Promise<void> {
       if (typeof requestIdOrPostBody === "string") {
-        await serverClient.get(
+        await unauthenticatedServerClient.get(
           `${context.writeKey}/settled/${requestIdOrPostBody}`
         );
         return;
@@ -39,14 +84,18 @@ function buildApi<PostBody, State>(context: Context) {
       if (!id) {
         throw new Error("post body not recognized");
       }
-      await serverClient.get(`${context.writeKey}/settled/${id}`);
+      await unauthenticatedServerClient.get(
+        `${context.writeKey}/settled/${id}`
+      );
     },
     async read(): Promise<State> {
-      const { data } = await serverClient.get<State>(`/${context.readKey}`);
+      const { data } = await unauthenticatedServerClient.get<State>(
+        `/${context.readKey}`
+      );
       return data;
     },
     async history(): Promise<PaginatedHookHistory<PostBody, State>> {
-      const { data } = await serverClient.get<
+      const { data } = await authenticatedClient.get<
         PaginatedHookHistory<PostBody, State>
       >(`/hooks/${context.hookId}/history`, { params: { token: nextToken } });
 
@@ -59,15 +108,34 @@ function buildApi<PostBody, State>(context: Context) {
 export async function buildHook<PostBody, State>({
   bodies,
   code = "function reducer (oldState = { number: 0 }, req) { return { number: oldState.number + req.body.number } }",
+  email = "email@test.com",
 }: {
   bodies?: PostBody[];
   code?: string;
+  email?: string;
 } = {}) {
   const pool = getPool();
+  const { id: userId } = await pool.one<{ id: string }>(sql`
+    insert into "user" (email) values (${email})
+    returning id
+  `);
+
+  const jwt = jwtLib.sign({}, process.env.JWT_SECRET!, {
+    subject: userId,
+  });
+
   const { id: hookId } = await pool.one<{ id: string }>(sql`
     insert into hook (id) values (default)
     returning id
   `);
+
+  await pool.any(sql`
+    insert into "access"
+    ("hookId", "userId")
+    values
+    (${hookId}, ${userId})
+  `);
+
   const { id: versionId } = await pool.one<{ id: string }>(sql`
     INSERT INTO "version" ("code","workflowState","createdAt","updatedAt","hookId")
     VALUES
@@ -87,6 +155,7 @@ export async function buildHook<PostBody, State>({
     returning key
   `);
   const context: Context = {
+    jwt,
     hookId,
     versionId,
     writeKey,

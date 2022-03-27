@@ -1,6 +1,7 @@
-import { serverClient } from "./clients";
+import { unauthenticatedServerClient } from "./clients";
 import { getPool } from "./db";
 import { cleanup } from "./db/cleanup";
+import { buildAuthenticatedApi } from "./hook-builder";
 
 const pool = getPool();
 
@@ -10,7 +11,8 @@ describe("changing hooks", () => {
   });
   afterAll(() => pool.end());
   it("successfully creates a hook", async () => {
-    const res = await serverClient.post("/hooks");
+    const authedApi = await buildAuthenticatedApi();
+    const res = await authedApi.hook.createHook();
     expect(res.status).toEqual(201);
     expect(res.data).toEqual(
       expect.objectContaining({
@@ -22,16 +24,17 @@ describe("changing hooks", () => {
   });
 
   it("can update a hook", async () => {
-    const res = await serverClient.post("/hooks");
+    const authedApi = await buildAuthenticatedApi();
+    const res = await authedApi.hook.createHook();
     expect(res.status).toEqual(201);
 
-    const updateRes = await serverClient.put(`/hooks/${res.data.hookId}`, {
+    const updateRes = await authedApi.hook.updateHook(res.data.hookId, {
       code: "function reducer() { console.log('foo'); }",
     });
 
     expect(updateRes.status).toEqual(200);
 
-    const readReq = await serverClient.get(`/hooks/${res.data.hookId}`);
+    const readReq = await authedApi.hook.readHook(res.data.hookId);
 
     expect(readReq.data.draft).toEqual(
       "function reducer() { console.log('foo'); }"

@@ -9,7 +9,6 @@ export function makeAuthMiddleware() {
     res: Response,
     next: NextFunction
   ) {
-    next();
     try {
       if (!req.headers.authorization) {
         throw new httpErrors.Forbidden("No authorization header");

@@ -6,9 +6,10 @@ import * as stateService from "../state/state.service";
 import { last } from "lodash";
 import { makeAccessMiddleware } from "../access/access.middleware";
 import { getStore } from "../server/request-context.middleware";
+import { makeAuthMiddleware } from "../auth/auth.middleware";
 
 export default Router()
-  // .use(makeAuthMiddleware())
+  .use(makeAuthMiddleware())
   .post("/", async (req, res, next) => {
     try {
       const { userId } = getStore();

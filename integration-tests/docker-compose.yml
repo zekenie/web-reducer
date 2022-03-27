@@ -47,7 +47,7 @@ services:
       REDIS_URL: redis://redis:6379/0
       PORT: 3001
       RUNNER_URL: http://code_runner:3002
-      JWT_KEY: asdf
+      JWT_SECRET: asdf
     depends_on:
       - redis
       - migrator
@@ -57,6 +57,7 @@ services:
       - shared-tmpfs:/tmp/shared
     environment:
       SERVER_URL: http://server:3001
+      JWT_SECRET: asdf
       DATABASE_URL: postgres://postgres:postgres@db:5432/hook
       RUNNER_URL: http://code_runner:3002
     # https://github.com/compose-spec/compose-spec/blob/master/spec.md#long-syntax-1
