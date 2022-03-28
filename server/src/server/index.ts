@@ -1,6 +1,8 @@
 import bodyParser from "body-parser";
 import bodyParserXml from "body-parser-xml";
 import express from "express";
+import morgan from "morgan";
+import authController from "../auth/auth.controller";
 import { heartbeat } from "../db/heartbeat";
 import hookController from "../hook/hook.controller";
 import { connection as redisConnection } from "../redis";
@@ -9,7 +11,6 @@ import stateController from "../state/state.controller";
 import workerController from "../worker/worker.controller";
 import makeRequestContextMiddleware from "./request-context.middleware";
 import { duration, forStatusCode, requests } from "./server.metrics";
-import morgan from "morgan";
 
 bodyParserXml(bodyParser);
 
@@ -47,6 +48,7 @@ export default function makeServer(config: Config) {
   app.use("/admin/queues", workerController);
 
   app.use("/hooks", hookController);
+  app.use("/auth", authController);
   app.use("/", requestController);
   app.use("/", stateController);
 

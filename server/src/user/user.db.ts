@@ -12,6 +12,16 @@ export async function getUserByEmail(email: string): Promise<User | null> {
   return user;
 }
 
+export async function getUserById(id: string): Promise<User> {
+  const user = await getPool().one<User>(sql`
+    select id, email
+    from "user"
+    where id = ${id}
+  `);
+
+  return user;
+}
+
 export async function createUser(email?: string): Promise<User> {
   const user = await getPool().one<User>(sql`
     insert into "user"

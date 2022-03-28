@@ -1,22 +1,27 @@
 import jwt from "jsonwebtoken";
 import { isUUID } from "class-validator";
-import { createUser, getUserByEmail } from "../user/user.db";
+import { createUser, getUserByEmail, getUserById } from "../user/user.db";
 import { createSigninToken } from "../signin-token/signin-token.db";
 import { sendMail } from "../email/email.service";
 import { validateTokenAndGetUserIdThenDeleteToken as validateTokenAndGetUserIdThenDeleteTokenDb } from "../signin-token/signin-token.db";
 import { mergeAccess } from "../access/access.service";
 import { transaction } from "../db";
+import {
+  InvalidJwtError,
+  InvalidJwtSubError,
+  SignupWithNonGuestHeaderError,
+} from "./auth.errors";
 
 export function validateAndDecodeJwt(token: string): {
   userId: string;
 } {
   const decodedJwt = jwt.decode(token, { complete: true });
   if (!decodedJwt) {
-    throw new Error("unable to decode jwt");
+    throw new InvalidJwtError();
   }
 
   if (!isUUID(decodedJwt.payload.sub)) {
-    throw new Error("jwt sub is not uuid");
+    throw new InvalidJwtSubError();
   }
 
   const payload = jwt.verify(token, process.env.JWT_SECRET!, {
@@ -57,7 +62,14 @@ export async function initiateSignin({
   email: string;
   guestUserId: string;
 }) {
-  const user = await getUserByEmail(email);
+  const [user, sessionUser] = await Promise.all([
+    getUserByEmail(email),
+    getUserById(guestUserId),
+  ]);
+
+  if (sessionUser.email) {
+    throw new SignupWithNonGuestHeaderError();
+  }
 
   let userIdToSignin: string;
   if (!user) {

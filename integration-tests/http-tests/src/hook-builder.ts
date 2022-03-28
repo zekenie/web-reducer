@@ -21,13 +21,21 @@ type PaginatedHookHistory<PostBody, State> = {
   objects: { state: State; body: PostBody; createdAt: number }[];
 };
 
-export async function buildAuthenticatedApi(jwt?: string) {
+export async function buildAuthenticatedApi(
+  { jwt, guest }: { jwt?: string; guest?: boolean } = { guest: false }
+) {
+  const emailAddress = `${uniqueId()}@gmail.com`;
+
   if (!jwt) {
     const pool = getPool();
-    const { id: userId } = await pool.one<{ id: string }>(sql`
-      insert into "user" (email) values (${`${uniqueId()}@gmail.com`})
-      returning id
-    `);
+    const { id: userId } = await pool.one<{ id: string }>(
+      guest
+        ? sql`insert into "user" (id) values (default) returning id`
+        : sql`
+          insert into "user" (email) values (${emailAddress})
+          returning id
+        `
+    );
 
     jwt = jwtLib.sign({}, process.env.JWT_SECRET!, {
       subject: userId,
@@ -38,6 +46,15 @@ export async function buildAuthenticatedApi(jwt?: string) {
   });
 
   return {
+    authenticatedClient,
+    auth: {
+      async signin(
+        email: string = emailAddress,
+        axiosConfig: AxiosRequestConfig = {}
+      ) {
+        return authenticatedClient.post("/auth/signin", { email }, axiosConfig);
+      },
+    },
     hook: {
       async history<PostBody, State>(
         id: string,

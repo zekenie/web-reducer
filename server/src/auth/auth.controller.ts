@@ -10,7 +10,7 @@ export default Router()
   .post("/guest-user", async (req, res, next) => {
     try {
       const jwt = await service.initiateGuestUser();
-      res.json({
+      res.status(201).json({
         jwt,
       });
     } catch (e) {
@@ -34,7 +34,7 @@ export default Router()
     try {
       await service.initiateSignin({
         email: req.body.email,
-        guestUserId: getStore().id,
+        guestUserId: getStore().userId,
       });
 
       res.json({});
