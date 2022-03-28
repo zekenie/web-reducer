@@ -9,3 +9,7 @@
   - ideas
     - give them a `isValid` function
     - give them a `idempotencyTokenGenerator`
+
+## 3/27/22
+
+- consider [this tool called bubble wrap](https://github.com/containers/bubblewrap) at some point

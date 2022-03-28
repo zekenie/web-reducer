@@ -68,3 +68,13 @@ $ hygen new worker|email|etc
 ## 3/6/22 state dump
 
 - [ ] email queue system (https://github.com/forwardemail/email-templates)
+
+## 3/28/22
+
+- Auth layer is sort of working!
+- Made some changes to above.
+  - instead of using unsigned jwt for visitors, we hit an endpoint to sign up a new visitor
+  - this is because i thought it could be a single point to eliminate abuse (block signups from ip, capcha, etc)
+  - some integration tests of access and auth
+- ran security & dependency updates
+- considering doing the FE in remix and hitting the express API from backend to backend
