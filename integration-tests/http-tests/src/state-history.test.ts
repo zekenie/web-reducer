@@ -3,7 +3,7 @@ import { sql } from "slonik";
 import { unauthenticatedServerClient } from "./clients";
 import { getPool } from "./db";
 import { cleanup } from "./db/cleanup";
-import { buildHook } from "./hook-builder";
+import { buildAuthenticatedApi, buildHook } from "./hook-builder";
 
 const pool = getPool();
 
@@ -14,6 +14,23 @@ describe("existing hooks", () => {
 
   afterAll(async () => {
     return pool.end();
+  });
+
+  it("only allows reading history for user with access", async () => {
+    const body1 = { number: 4 };
+    const body2 = { number: 3 };
+    const { api, context } = await buildHook({ bodies: [body1, body2] });
+    const otherUserApi = await buildAuthenticatedApi();
+    await api.settled(body1);
+    await api.settled(body2);
+
+    const historyRes = await otherUserApi.hook.history(
+      context.hookId,
+      {},
+      { validateStatus: () => true }
+    );
+
+    expect(historyRes.status).toEqual(401);
   });
 
   it("saves history", async () => {

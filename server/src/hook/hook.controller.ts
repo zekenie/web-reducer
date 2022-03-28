@@ -21,10 +21,10 @@ export default Router()
       next(e);
     }
   })
-  // .use(
-  // "/:id"
-  //makeAccessMiddleware((req) => req.params.id)
-  // )
+  .use(
+    "/:id",
+    makeAccessMiddleware((req) => req.params.id)
+  )
   .get("/:id", async function (req, res, next) {
     try {
       const { draft, published } = await service.readHook(req.params.id);

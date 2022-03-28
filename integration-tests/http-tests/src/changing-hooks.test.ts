@@ -41,4 +41,22 @@ describe("changing hooks", () => {
     );
     expect(readReq.data.published).toBeUndefined();
   });
+
+  it("does not permit changing hooks without access", async () => {
+    const authedApi = await buildAuthenticatedApi();
+    const authedApi2 = await buildAuthenticatedApi();
+
+    const res = await authedApi.hook.createHook();
+    expect(res.status).toEqual(201);
+
+    const updateRes = await authedApi2.hook.updateHook(
+      res.data.hookId,
+      {
+        code: "function reducer() { console.log('foo'); }",
+      },
+      { validateStatus: () => true }
+    );
+
+    expect(updateRes.status).toEqual(401);
+  });
 });

@@ -6,6 +6,7 @@ import {
 } from "./clients";
 import { getPool } from "./db";
 import jwtLib from "jsonwebtoken";
+import { AxiosRequestConfig, AxiosResponse } from "axios";
 
 type Context = {
   jwt: string;
@@ -24,7 +25,7 @@ export async function buildAuthenticatedApi(jwt?: string) {
   if (!jwt) {
     const pool = getPool();
     const { id: userId } = await pool.one<{ id: string }>(sql`
-      insert into "user" (email) values ('test@test.com')
+      insert into "user" (email) values (${`${uniqueId()}@gmail.com`})
       returning id
     `);
 
@@ -38,18 +39,35 @@ export async function buildAuthenticatedApi(jwt?: string) {
 
   return {
     hook: {
-      async updateHook(id: string, updates: Record<string, any>) {
-        return authenticatedClient.put(`/hooks/${id}`, updates);
+      async history<PostBody, State>(
+        id: string,
+        { nextToken }: { nextToken?: string } = {},
+        axiosConfig: AxiosRequestConfig = {}
+      ): Promise<AxiosResponse<PaginatedHookHistory<PostBody, State>>> {
+        return authenticatedClient.get<PaginatedHookHistory<PostBody, State>>(
+          `/hooks/${id}/history`,
+          {
+            params: { token: nextToken },
+            ...axiosConfig,
+          }
+        );
       },
-      async createHook() {
+      async updateHook(
+        id: string,
+        updates: Record<string, any>,
+        axiosConfig?: AxiosRequestConfig
+      ) {
+        return authenticatedClient.put(`/hooks/${id}`, updates, axiosConfig);
+      },
+      async createHook(axiosConfig?: AxiosRequestConfig) {
         return authenticatedClient.post<{
           hookId: string;
           readKey: string;
           writeKey: string;
-        }>(`/hooks`);
+        }>(`/hooks`, axiosConfig);
       },
-      async readHook(id: string) {
-        return authenticatedClient.get(`/hooks/${id}`);
+      async readHook(id: string, axiosConfig?: AxiosRequestConfig) {
+        return authenticatedClient.get(`/hooks/${id}`, axiosConfig);
       },
     },
   };
@@ -108,7 +126,7 @@ function buildApi<PostBody, State>(context: Context) {
 export async function buildHook<PostBody, State>({
   bodies,
   code = "function reducer (oldState = { number: 0 }, req) { return { number: oldState.number + req.body.number } }",
-  email = "email@test.com",
+  email = `${uniqueId()}@test.com`,
 }: {
   bodies?: PostBody[];
   code?: string;
