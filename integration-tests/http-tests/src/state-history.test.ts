@@ -1,20 +1,11 @@
 import { last } from "lodash";
 import { sql } from "slonik";
-import { unauthenticatedServerClient } from "./clients";
 import { getPool } from "./db";
-import { cleanup } from "./db/cleanup";
 import { buildAuthenticatedApi, buildHook } from "./hook-builder";
-
-const pool = getPool();
+import { testSetup } from "./setup";
 
 describe("existing hooks", () => {
-  beforeEach(async () => {
-    await cleanup();
-  });
-
-  afterAll(async () => {
-    return pool.end();
-  });
+  testSetup();
 
   it("only allows reading history for user with access", async () => {
     const body1 = { number: 4 };

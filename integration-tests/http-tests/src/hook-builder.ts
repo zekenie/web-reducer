@@ -47,6 +47,7 @@ export async function buildAuthenticatedApi(
 
   return {
     authenticatedClient,
+    email: guest ? null : emailAddress,
     auth: {
       async signin(
         email: string = emailAddress,

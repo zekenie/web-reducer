@@ -43,6 +43,7 @@ services:
       - 3001:3001
       - 9464:9464
     environment:
+      NODE_ENV: test
       DATABASE_URL: postgres://postgres:postgres@db:5432/hook
       REDIS_URL: redis://redis:6379/0
       PORT: 3001

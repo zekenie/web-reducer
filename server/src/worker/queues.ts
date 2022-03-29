@@ -36,6 +36,13 @@ export function allQueues() {
   return Object.values(queues);
 }
 
+export function allQueuesAndEvents() {
+  return Object.keys(queues).map((queueName) => ({
+    queue: queues[queueName],
+    queueEvents: queueEvents[queueName],
+  }));
+}
+
 export function registerNameMapper(name: string, mapper: Mapper) {
   mappers[name] = mapper;
 }

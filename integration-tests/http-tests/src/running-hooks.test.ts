@@ -1,18 +1,9 @@
 import { unauthenticatedServerClient } from "./clients";
-import { getPool } from "./db";
-import { cleanup } from "./db/cleanup";
 import { buildHook } from "./hook-builder";
-
-const pool = getPool();
+import { testSetup } from "./setup";
 
 describe("existing hooks", () => {
-  beforeEach(async () => {
-    await cleanup();
-  });
-
-  afterAll(async () => {
-    return pool.end();
-  });
+  testSetup();
 
   it("has a context", async () => {
     const { context } = await buildHook();

@@ -1,15 +1,11 @@
-import { unauthenticatedServerClient } from "./clients";
 import { getPool } from "./db";
-import { cleanup } from "./db/cleanup";
 import { buildAuthenticatedApi } from "./hook-builder";
+import { testSetup } from "./setup";
 
 const pool = getPool();
 
 describe("changing hooks", () => {
-  beforeEach(async () => {
-    return cleanup();
-  });
-  afterAll(() => pool.end());
+  testSetup();
   it("successfully creates a hook", async () => {
     const authedApi = await buildAuthenticatedApi();
     const res = await authedApi.hook.createHook();
