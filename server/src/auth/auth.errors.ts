@@ -20,3 +20,10 @@ export class InvalidJwtSubError extends Error {
     super("Jwt subject is not a valid UUID");
   }
 }
+
+export class ExpiredSigninTokenError extends Error {
+  status: number = 400;
+  constructor() {
+    super("Signin token expired");
+  }
+}

@@ -7,7 +7,8 @@ declare global {
       [EMAIL_NAME]: {
         name: EMAIL_NAME;
         locals: {
-          link: string;
+          domain: string;
+          token: string;
         };
         from: "zeke@webreducer.dev";
       };

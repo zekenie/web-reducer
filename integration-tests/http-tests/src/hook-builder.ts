@@ -55,6 +55,16 @@ export async function buildAuthenticatedApi(
       ) {
         return authenticatedClient.post("/auth/signin", { email }, axiosConfig);
       },
+      async validateSigninToken(
+        token: string,
+        axiosConfig: AxiosRequestConfig = {}
+      ) {
+        return authenticatedClient.post(
+          "/auth/validate-signin-token",
+          { token },
+          axiosConfig
+        );
+      },
     },
     hook: {
       async history<PostBody, State>(

@@ -1,3 +1,4 @@
+import { sql } from "slonik";
 import { unauthenticatedServerClient } from "./clients";
 import { getPool } from "./db";
 import { cleanup } from "./db/cleanup";
@@ -81,10 +82,61 @@ describe("auth", () => {
           to: "realemail@email.com",
           template: "signin",
           locals: {
-            link: expect.any(String),
+            token: expect.any(String),
+            domain: expect.any(String),
           },
         })
       );
     });
+  });
+
+  describe("/validate-signin-token", () => {
+    it("signs in valid token", async () => {
+      const api = await buildAuthenticatedApi({ guest: true });
+      await api.auth.signin("realemail@email.com", {
+        validateStatus: () => true,
+      });
+
+      await serverInternals.allQueuesDrained();
+      const [{ payload: email }] = await serverInternals.read("email");
+
+      const token = email.locals.token;
+
+      const { data } = await api.auth.validateSigninToken(token);
+      expect(data.jwt).toEqual(expect.any(String));
+    });
+
+    it("rejects expired", async () => {
+      const api = await buildAuthenticatedApi({ guest: true });
+      await api.auth.signin("realemail@email.com", {
+        validateStatus: () => true,
+      });
+
+      await serverInternals.allQueuesDrained();
+      const [{ payload: email }] = await serverInternals.read("email");
+
+      const token = email.locals.token;
+
+      const pool = getPool();
+
+      await pool.query(sql`
+        update "signinToken"
+        set "createdAt" = "createdAt" - '2 hours'::interval
+      `);
+      const { status } = await api.auth.validateSigninToken(token, {
+        validateStatus: () => true,
+      });
+      expect(status).toEqual(400);
+    });
+    it("rejects invalid", async () => {
+      const api = await buildAuthenticatedApi({ guest: true });
+
+      const { status } = await api.auth.validateSigninToken("bs", {
+        validateStatus: () => true,
+      });
+      expect(status).toEqual(400);
+    });
+    it.todo("merges access from guest user to authenticated user");
+    it.todo("works with existing user");
   });
 });

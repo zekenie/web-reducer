@@ -1,6 +1,7 @@
 import { sql } from "slonik";
 import { getPool } from "../db";
 import { nanoid } from "nanoid";
+import { ExpiredSigninTokenError } from "../auth/auth.errors";
 
 export async function createSigninToken({
   userId,
@@ -27,17 +28,16 @@ export async function validateTokenAndGetUserIdThenDeleteToken(
     userId: string;
     guestUserId: string;
   }>(sql`
-      update "signinToken"
-      set "validatedAt" = NOW()
+      delete from "signinToken"
       where token = ${token}
-      and NOW() - "createdAt" < "1 hour"::interval
+      and NOW() - "createdAt" < '1 hour'::interval
       returning "userId", "guestUserId"
     `);
   if (!res) {
-    throw new Error(`token ${token} is no longer valid`);
+    throw new ExpiredSigninTokenError();
   }
   await getPool().any(sql`
-      insert into "singin"
+      insert into "signin"
       ("userId", "token", "createdAt")
       values
       (${res.userId}, ${token}, NOW())
