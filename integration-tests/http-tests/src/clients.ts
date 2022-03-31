@@ -15,7 +15,7 @@ unauthenticatedServerClient.interceptors.response.use(
   (r) => r,
   (err) => {
     const ourErr = new HttpClientErr("server client error");
-    console.error(err);
+    console.error(err.response.data);
     ourErr.originalError = err;
     throw ourErr;
   }
@@ -33,7 +33,7 @@ export const makeAuthenticatedServerClient = ({ jwt }: { jwt: string }) => {
     (r) => r,
     (err) => {
       const ourErr = new HttpClientErr("authenticated server client error");
-      console.error(err);
+      console.error(err.response.data);
       ourErr.originalError = err;
       throw ourErr;
     }

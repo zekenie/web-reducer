@@ -1,6 +1,6 @@
 import { IsString, MaxLength } from "class-validator";
 
-export default class ValidateSignIn {
+export default class RefreshToken {
   @IsString()
   @MaxLength(32)
   token: string;

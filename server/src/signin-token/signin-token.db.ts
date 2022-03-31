@@ -1,35 +1,33 @@
 import { sql } from "slonik";
 import { getPool } from "../db";
-import { nanoid } from "nanoid";
 import { ExpiredSigninTokenError } from "../auth/auth.errors";
 
 export async function createSigninToken({
   userId,
   guestUserId,
+  tokenHash,
 }: {
   userId: string;
+  tokenHash: string;
   guestUserId: string;
-}): Promise<string> {
-  const token = nanoid();
+}): Promise<void> {
   await getPool().any(sql`
     insert into "signinToken"
     ("userId", "guestUserId", "token", "createdAt")
     values
-    (${userId}, ${guestUserId}, ${token}, NOW())
+    (${userId}, ${guestUserId}, ${tokenHash}, NOW())
   `);
-
-  return token;
 }
 
 export async function validateTokenAndGetUserIdThenDeleteToken(
-  token: string
+  tokenHash: string
 ): Promise<{ userId: string; guestUserId: string }> {
   const res = await getPool().maybeOne<{
     userId: string;
     guestUserId: string;
   }>(sql`
       delete from "signinToken"
-      where token = ${token}
+      where token = ${tokenHash}
       and NOW() - "createdAt" < '1 hour'::interval
       returning "userId", "guestUserId"
     `);
@@ -40,7 +38,7 @@ export async function validateTokenAndGetUserIdThenDeleteToken(
       insert into "signin"
       ("userId", "token", "createdAt")
       values
-      (${res.userId}, ${token}, NOW())
+      (${res.userId}, ${tokenHash}, NOW())
     `);
   return res;
 }

@@ -23,8 +23,124 @@ describe("auth", () => {
       expect(res.data).toEqual(
         expect.objectContaining({
           jwt: expect.any(String),
+          refreshToken: expect.any(String),
         })
       );
+    });
+  });
+
+  describe("/refresh-token", () => {
+    it("issues new credentials with a valid refresh token", async () => {
+      const { data } = await unauthenticatedServerClient.post(
+        "/auth/guest-user"
+      );
+
+      const { jwt, refreshToken } = data;
+
+      const refreshRes = await unauthenticatedServerClient.post(
+        "/auth/refresh-token",
+        {
+          token: refreshToken,
+        },
+        { headers: { authorization: jwt } }
+      );
+
+      expect(refreshRes.data).toEqual(
+        expect.objectContaining({
+          jwt: expect.any(String),
+          refreshToken: expect.any(String),
+        })
+      );
+
+      expect(refreshToken).not.toEqual(refreshRes.data.refreshToken);
+      expect(jwt).not.toEqual(refreshRes.data.jwt);
+    });
+
+    it("does not honor valid tokens without jwts", async () => {
+      const { data } = await unauthenticatedServerClient.post(
+        "/auth/guest-user"
+      );
+
+      const { refreshToken } = data;
+
+      const { status } = await unauthenticatedServerClient.post(
+        "/auth/refresh-token",
+        {
+          token: refreshToken,
+        },
+        { validateStatus: () => true }
+      );
+
+      expect(status).toEqual(401);
+    });
+
+    it("does not not honor valid tokens with mismatched jwts", async () => {
+      const { data } = await unauthenticatedServerClient.post(
+        "/auth/guest-user"
+      );
+
+      const { data: dataUser2 } = await unauthenticatedServerClient.post(
+        "/auth/guest-user"
+      );
+
+      const jwt = data.jwt;
+      const refreshToken = dataUser2.refreshToken;
+
+      const { status } = await unauthenticatedServerClient.post(
+        "/auth/refresh-token",
+        {
+          token: refreshToken,
+        },
+        { headers: { authorization: jwt }, validateStatus: () => true }
+      );
+      expect(status).toEqual(400);
+    });
+
+    it("does not recognize expired tokens", async () => {
+      const { data } = await unauthenticatedServerClient.post(
+        "/auth/guest-user"
+      );
+
+      const { jwt, refreshToken } = data;
+
+      await pool.query(sql`
+        update "refreshToken"
+        set "createdAt" = "createdAt" - '2 weeks'::interval
+      `);
+
+      const { status } = await unauthenticatedServerClient.post(
+        "/auth/refresh-token",
+        {
+          token: refreshToken,
+        },
+        { headers: { authorization: jwt }, validateStatus: () => true }
+      );
+      expect(status).toEqual(400);
+    });
+
+    it("does not permit refresh tokens to be reused", async () => {
+      const { data } = await unauthenticatedServerClient.post(
+        "/auth/guest-user"
+      );
+
+      const { jwt, refreshToken } = data;
+
+      await unauthenticatedServerClient.post(
+        "/auth/refresh-token",
+        {
+          token: refreshToken,
+        },
+        { headers: { authorization: jwt } }
+      );
+
+      const { status } = await unauthenticatedServerClient.post(
+        "/auth/refresh-token",
+        {
+          token: refreshToken,
+        },
+        { headers: { authorization: jwt }, validateStatus: () => true }
+      );
+      expect(status).toEqual(400);
     });
   });
 

@@ -1,9 +1,7 @@
 import jwt from "jsonwebtoken";
 import { isUUID } from "class-validator";
 import { createUser, getUserByEmail, getUserById } from "../user/user.db";
-import { createSigninToken } from "../signin-token/signin-token.db";
 import { sendMail } from "../email/email.service";
-import { validateTokenAndGetUserIdThenDeleteToken as validateTokenAndGetUserIdThenDeleteTokenDb } from "../signin-token/signin-token.db";
 import { mergeAccess } from "../access/access.service";
 import { transaction } from "../db";
 import {
@@ -11,6 +9,20 @@ import {
   InvalidJwtSubError,
   SignupWithNonGuestHeaderError,
 } from "./auth.errors";
+import {
+  issueSigninTokenToken,
+  validateTokenAndGetUserIdThenDeleteToken,
+} from "../signin-token/signin-token.service";
+import {
+  issueRefreshToken,
+  validateRefreshToken,
+} from "../refresh-token/refresh-token.service";
+import { generateToken } from "../token/token.service";
+
+type Credentials = {
+  jwt: string;
+  refreshToken: string;
+};
 
 export function validateAndDecodeJwt(token: string): {
   userId: string;
@@ -33,26 +45,41 @@ export function validateAndDecodeJwt(token: string): {
   };
 }
 
-export function signJwt(userId: string): string {
-  return jwt.sign({}, process.env.JWT_SECRET!, {
-    subject: userId,
-  });
+export async function issueNewCredentialsForRefreshToken({
+  token,
+  userId,
+}: {
+  userId: string;
+  token: string;
+}): Promise<Credentials> {
+  await validateRefreshToken({ userId, token });
+  return createCredentials(userId);
 }
 
-export async function validateTokenAndSignJwt(
+export async function createCredentials(userId: string): Promise<Credentials> {
+  const jwtStr = jwt.sign({}, process.env.JWT_SECRET!, {
+    subject: userId,
+    expiresIn: "10 minutes",
+    keyid: await generateToken(),
+  });
+  const refreshToken = await issueRefreshToken({ userId });
+  return { jwt: jwtStr, refreshToken };
+}
+
+export async function validateTokenAndIssueCredentials(
   signinToken: string
-): Promise<string> {
+): Promise<Credentials> {
   return transaction(async () => {
     const { userId, guestUserId } =
-      await validateTokenAndGetUserIdThenDeleteTokenDb(signinToken);
+      await validateTokenAndGetUserIdThenDeleteToken({ token: signinToken });
     await mergeAccess({ oldUserId: guestUserId, newUserId: userId });
-    return signJwt(userId);
+    return createCredentials(userId);
   });
 }
 
 export async function initiateGuestUser() {
   const user = await createUser();
-  return signJwt(user.id);
+  return createCredentials(user.id);
 }
 
 export async function initiateSignin({
@@ -80,7 +107,7 @@ export async function initiateSignin({
   }
   // if no user, create user
   // create signin token
-  const signinToken = await createSigninToken({
+  const signinToken = await issueSigninTokenToken({
     userId: userIdToSignin,
     guestUserId,
   });

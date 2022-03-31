@@ -5,14 +5,15 @@ import validate from "../middleware/validate.middleware";
 import SignIn from "./inputs/signin.input";
 import { getStore } from "../server/request-context.middleware";
 import ValidateSignIn from "./inputs/validate-signin.input";
+import RefreshToken from "./inputs/refresh-token.input";
+import createHttpError from "http-errors";
+import jwtLib from "jsonwebtoken";
 
 export default Router()
   .post("/guest-user", async (req, res, next) => {
     try {
-      const jwt = await service.initiateGuestUser();
-      res.status(201).json({
-        jwt,
-      });
+      const creds = await service.initiateGuestUser();
+      res.status(201).json(creds);
     } catch (e) {
       next(e);
     }
@@ -22,13 +23,39 @@ export default Router()
     validate(ValidateSignIn),
     async (req, res, next) => {
       try {
-        const jwt = await service.validateTokenAndSignJwt(req.body.token);
-        res.json({ jwt });
+        const creds = await service.validateTokenAndIssueCredentials(
+          req.body.token
+        );
+        res.json(creds);
       } catch (e) {
         next(e);
       }
     }
   )
+  /**
+   * This route could have an expired (or heck even invalid jwt)
+   * We want someone to have to show 2 kinds of proof to use a refresh token
+   * If they don't even know the uuid of the user, then they can't use the token.
+   */
+  .post("/refresh-token", validate(RefreshToken), async (req, res, next) => {
+    try {
+      if (!req.headers.authorization) {
+        throw new createHttpError.Unauthorized();
+      }
+      const parsedJwt = jwtLib.decode(req.headers.authorization, {
+        json: true,
+      });
+
+      res.json(
+        await service.issueNewCredentialsForRefreshToken({
+          token: req.body.token,
+          userId: parsedJwt?.sub!,
+        })
+      );
+    } catch (e) {
+      next(e);
+    }
+  })
   .use(makeAuthMiddleware())
   .post("/signin", validate(SignIn), async (req, res, next) => {
     try {
