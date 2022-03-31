@@ -4,6 +4,7 @@ import { getPool } from "../db";
 import { WebhookRequest } from "./request.types";
 import { cargoQueue } from "async";
 import { captureBatchSize } from "./request.metrics";
+import { InvalidWriteKeyError } from "./request.errors";
 
 type RequestToRun = WebhookRequest & {
   writeKey: string;
@@ -135,7 +136,7 @@ export const captureRequest = async ({
   );
 
   if (!key) {
-    throw new Error(`invalid write key: ${writeKey}`);
+    throw new InvalidWriteKeyError();
   }
 
   await insertRequestCargo.pushAsync({

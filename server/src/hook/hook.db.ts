@@ -4,6 +4,7 @@ import { getPool } from "../db";
 import { createKey } from "../key/key.db";
 import UpdateHook from "./inputs/update-hook.input";
 import { HookWorkflowState } from "./hook.types";
+import { CodeNotFoundForWriteKeyError } from "./hook.errors";
 
 type CodeToRun = {
   versionId: string;
@@ -95,7 +96,8 @@ export async function getCodeByWriteKey(writeKey: string): Promise<CodeToRun> {
       select
       version.id as "versionId",
       version."hookId" as "hookId",
-      code from version
+      code
+    from version
     join "key"
       on "key"."hookId" = version."hookId"
     where "key"."type" = 'write'
@@ -106,7 +108,7 @@ export async function getCodeByWriteKey(writeKey: string): Promise<CodeToRun> {
   );
 
   if (!code) {
-    throw new Error(`no code found with write key ${writeKey}`);
+    throw new CodeNotFoundForWriteKeyError();
   }
   return code;
 }

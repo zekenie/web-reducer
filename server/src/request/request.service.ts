@@ -9,6 +9,7 @@ import {
   getRunnerJobIdForRequestId,
   queueNameForHookId as runnerQueueNameForHookId,
 } from "../runner/runner-hash.helper";
+import { UnableToResolveSettledRequest } from "./request.errors";
 
 export async function captureRequest(params: requestDb.CaptureRequest) {
   const { requestId, hookId } = await requestDb.captureRequest(params);
@@ -60,7 +61,9 @@ export async function resolveWhenJobSettled(
   attempt: number = 0
 ): Promise<"settled"> {
   if (attempt >= 3) {
-    throw new Error("state does not exist after runner job has completed");
+    throw new UnableToResolveSettledRequest(
+      "state does not exist after runner job has completed"
+    );
   }
   const requestQueue = getQueue(queueNameForWriteKey(writeKey));
   const requestQueueEvents = getQueueEvents(queueNameForWriteKey(writeKey));
@@ -70,7 +73,9 @@ export async function resolveWhenJobSettled(
       getRequestJobIdForRequestId(requestId)
     );
     if (!captureRequestJob) {
-      throw new Error("no request found on req queue or db");
+      throw new UnableToResolveSettledRequest(
+        "no request found on req queue or db"
+      );
     }
     await captureRequestJob.waitUntilFinished(requestQueueEvents);
   }
@@ -89,7 +94,9 @@ export async function resolveWhenJobSettled(
     getRunnerJobIdForRequestId(requestId)
   );
   if (!job) {
-    throw new Error("neither in db or enqueued... possible dropped request");
+    throw new UnableToResolveSettledRequest(
+      "neither in db or enqueued... possible dropped request"
+    );
   }
   await job.waitUntilFinished(getQueueEvents(queueName));
   return resolveWhenJobSettled(requestId, writeKey, attempt + 1);
