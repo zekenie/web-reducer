@@ -4,6 +4,7 @@ import { getPool } from "./db";
 import { cleanup } from "./db/cleanup";
 import { buildAuthenticatedApi } from "./hook-builder";
 import * as serverInternals from "./server-internals";
+import jwtLib from "jsonwebtoken";
 
 const pool = getPool();
 
@@ -93,9 +94,7 @@ describe("auth", () => {
   describe("/validate-signin-token", () => {
     it("signs in valid token", async () => {
       const api = await buildAuthenticatedApi({ guest: true });
-      await api.auth.signin("realemail@email.com", {
-        validateStatus: () => true,
-      });
+      await api.auth.signin("realemail@email.com");
 
       await serverInternals.allQueuesDrained();
       const [{ payload: email }] = await serverInternals.read("email");
@@ -128,6 +127,7 @@ describe("auth", () => {
       });
       expect(status).toEqual(400);
     });
+
     it("rejects invalid", async () => {
       const api = await buildAuthenticatedApi({ guest: true });
 
@@ -136,7 +136,39 @@ describe("auth", () => {
       });
       expect(status).toEqual(400);
     });
-    it.todo("merges access from guest user to authenticated user");
+
+    it("merges access from guest user to authenticated user", async () => {
+      const api = await buildAuthenticatedApi({ guest: true });
+      const { data: hookData } = await api.hook.createHook();
+      const { data: hookData2 } = await api.hook.createHook();
+      await api.auth.signin("realemail@email.com");
+      await serverInternals.allQueuesDrained();
+      const [{ payload: email }] = await serverInternals.read("email");
+
+      const token = email.locals.token;
+
+      const { data: signinRes } = await api.auth.validateSigninToken(token);
+      const signedInUserId = jwtLib.decode(signinRes.jwt)?.sub;
+      const pool = getPool();
+
+      const accessRecords = await pool.many(sql`select * from "access"`);
+
+      expect(accessRecords).toHaveLength(2);
+      const [access1, access2] = accessRecords;
+      expect(access1).toEqual(
+        expect.objectContaining({
+          hookId: hookData.hookId,
+          userId: signedInUserId,
+        })
+      );
+      expect(access2).toEqual(
+        expect.objectContaining({
+          hookId: hookData2.hookId,
+          userId: signedInUserId,
+        })
+      );
+    });
+
     it.todo("works with existing user");
   });
 });
