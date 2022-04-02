@@ -1,8 +1,9 @@
-import { getPool } from "../db";
+import { getPool, transaction } from "../db";
 import UpdateHook from "./inputs/update-hook.input";
 import * as db from "./hook.db";
 import { createKey } from "../key/key.db";
 import { provisionAccess } from "../access/access.db";
+import { enqueue } from "../worker/queue.service";
 
 export async function readHook(id: string) {
   return db.getDraftAndPublishedCode(id);
@@ -23,12 +24,17 @@ export async function updateDraft(hookId: string, input: UpdateHook) {
   await db.updateDraft(hookId, input);
 }
 
-export async function publishDraft() {
-  // transaction?
-  // pause current processing of hook somehow?
-  // take current and make old
-  // take draft and make published
-  // make new draft
-  // enqueue job to resync state (or not depending on pref?!)
-  // recursively batch process state until there is none, then resume
+export async function publishDraft({ hookId }: { hookId: string }) {
+  await transaction(async () => {
+    await db.pauseHook({ hookId });
+    await db.markPublishedVersionAsOld({ hookId });
+    await db.markDraftAsPublished({ hookId });
+    await db.createDraft({ hookId });
+    await enqueue({
+      name: "bulk-run-hook",
+      input: {
+        hookId,
+      },
+    });
+  });
 }
