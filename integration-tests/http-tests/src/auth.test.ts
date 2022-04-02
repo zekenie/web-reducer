@@ -244,6 +244,25 @@ describe("auth", () => {
       expect(status).toEqual(400);
     });
 
+    it("rejects already used", async () => {
+      const api = await buildAuthenticatedApi({ guest: true });
+      await api.auth.signin("realemail@email.com", {
+        validateStatus: () => true,
+      });
+
+      await serverInternals.allQueuesDrained();
+      const [{ payload: email }] = await serverInternals.read("email");
+
+      const token = email.locals.token;
+
+      await api.auth.validateSigninToken(token);
+
+      const { status } = await api.auth.validateSigninToken(token, {
+        validateStatus: () => true,
+      });
+      expect(status).toEqual(400);
+    });
+
     it("rejects invalid", async () => {
       const api = await buildAuthenticatedApi({ guest: true });
 
