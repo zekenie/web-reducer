@@ -67,7 +67,7 @@ $ hygen new worker|email|etc
 
 ## 3/6/22 state dump
 
-- [ ] email queue system (https://github.com/forwardemail/email-templates)
+- [x] email queue system (https://github.com/forwardemail/email-templates)
 
 ## 3/28/22
 
@@ -78,3 +78,8 @@ $ hygen new worker|email|etc
   - some integration tests of access and auth
 - ran security & dependency updates
 - considering doing the FE in remix and hitting the express API from backend to backend
+
+## 4/1/22
+
+- Refresh tokens seem to be working ok
+- next up is probably publishing draft

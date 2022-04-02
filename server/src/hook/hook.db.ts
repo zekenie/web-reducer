@@ -94,21 +94,85 @@ export async function getCodeByWriteKey(writeKey: string): Promise<CodeToRun> {
   const code = await pool.maybeOne<CodeToRun>(
     sql`
       select
-      version.id as "versionId",
-      version."hookId" as "hookId",
-      code
-    from version
-    join "key"
-      on "key"."hookId" = version."hookId"
-    where "key"."type" = 'write'
-      and "key"."key" = ${writeKey}
-      and version."workflowState" = ${HookWorkflowState.PUBLISHED}
-    limit 1
-  `
+        version.id as "versionId",
+        version."hookId" as "hookId",
+        code
+      from version
+      join "key"
+        on "key"."hookId" = version."hookId"
+      join "hook"
+        on "version"."hookId" = "hook"."id"
+      where "key"."type" = 'write'
+        and "key"."key" = ${writeKey}
+        and version."workflowState" = ${HookWorkflowState.PUBLISHED}
+      limit 1
+    `
   );
 
   if (!code) {
     throw new CodeNotFoundForWriteKeyError();
   }
   return code;
+}
+
+export async function pauseHook({ hookId }: { hookId: string }) {
+  await getPool().query(sql`
+    update "hook"
+    set "workflowState" = 'paused'
+    where "id" = ${hookId}
+  `);
+}
+
+export async function unpauseHook({ hookId }: { hookId: string }) {
+  await getPool().query(sql`
+    update "hook"
+    set "workflowState" = 'live'
+    where "id" = ${hookId}
+  `);
+}
+
+export async function isHookPaused({
+  hookId,
+}: {
+  hookId: string;
+}): Promise<boolean> {
+  const res = await getPool().one<{ workflowState: "live" | "paused" }>(sql`
+    select "workflowState"
+    from "hook"
+    where id = ${hookId}
+  `);
+  return res.workflowState === "paused";
+}
+
+export async function markPublishedVersionAsOld({
+  hookId,
+}: {
+  hookId: string;
+}) {
+  await getPool().query(sql`
+    update "version"
+    set "workflowState" = ${HookWorkflowState.OLD}
+    where "hookId" = ${hookId}
+    and "workflowState" = ${HookWorkflowState.PUBLISHED}
+  `);
+}
+
+export async function markDraftAsPublished({ hookId }: { hookId: string }) {
+  await getPool().query(sql`
+    update "version"
+    set "workflowState" = ${HookWorkflowState.PUBLISHED}
+    where "hookId" = ${hookId}
+    and "workflowState" = ${HookWorkflowState.DRAFT}
+  `);
+}
+
+export async function createDraft({ hookId }: { hookId: string }) {
+  const publishedVersion = await getPublishedCodeByHook(hookId);
+  await getPool().one<{ id: string }>(sql`
+    insert into "version"
+    ("hookId", "code", "workflowState", "createdAt", "updatedAt")
+    values
+    (${hookId}, ${publishedVersion.code}, ${HookWorkflowState.DRAFT}, NOW(), NOW())
+    returning id
+  `);
 }

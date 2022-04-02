@@ -1,8 +1,13 @@
 import { cargoQueue } from "async";
 import { last } from "lodash";
-import { getPool } from "../db";
-import { getPublishedCodeByHook } from "../hook/hook.db";
+import { transaction } from "../db";
 import {
+  getPublishedCodeByHook,
+  isHookPaused,
+  unpauseHook,
+} from "../hook/hook.db";
+import {
+  countPendingRequests,
   countRequestsForHook,
   streamRequestsForHook,
 } from "../request/request.db";
@@ -16,10 +21,16 @@ import { runCodeBulk } from "./vm.remote";
 
 export async function runBulk(
   hookId: string,
-  onProgress: (progress: number) => void
+  onProgress: (progress: number) => void,
+  attempts: number = 0
 ): Promise<void> {
-  const pool = getPool();
-  await pool.transaction(async () => {
+  if (attempts > 5) {
+    throw new Error("too much volume on hook to catch up");
+  }
+  if (!(await isHookPaused({ hookId }))) {
+    throw new Error("cannot batch process state on live hook");
+  }
+  await transaction(async () => {
     const code = await getPublishedCodeByHook(hookId);
     const lastStateRecord = await fetchState({
       hookId,
@@ -99,4 +110,11 @@ export async function runBulk(
     );
     await streamRequestsForHook(hookId, cq.push);
   });
+
+  const remainingUnprocessedRequests = await countPendingRequests({ hookId });
+  if (remainingUnprocessedRequests > 0) {
+    return runBulk(hookId, onProgress, attempts + 1);
+  } else {
+    await unpauseHook({ hookId });
+  }
 }

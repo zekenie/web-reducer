@@ -5,6 +5,7 @@ import { WebhookRequest } from "./request.types";
 import { cargoQueue } from "async";
 import { captureBatchSize } from "./request.metrics";
 import { InvalidWriteKeyError } from "./request.errors";
+import { getPublishedCodeByHook } from "../hook/hook.db";
 
 type RequestToRun = WebhookRequest & {
   writeKey: string;
@@ -149,3 +150,21 @@ export const captureRequest = async ({
 
   return { hookId: key.hookId, requestId: id };
 };
+
+export async function countPendingRequests({
+  hookId,
+}: {
+  hookId: string;
+}): Promise<number> {
+  const pool = getPool();
+  const { versionId } = await getPublishedCodeByHook(hookId);
+  const { count } = await pool.one<{ count: string }>(sql`
+    select count(*)
+    from "request"
+    left join "state"
+      on "request"."id" = "state"."requestId"
+    where "state"."requestId" is null
+    and "state"."versionId" = ${versionId}
+  `);
+  return +count;
+}

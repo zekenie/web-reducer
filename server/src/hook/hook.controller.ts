@@ -47,6 +47,13 @@ export default Router()
       next(e);
     }
   })
+  .post("/:id/publish", async function publishDraft(req, res, next) {
+    try {
+      await service.publishDraft({ hookId: req.params.id });
+    } catch (e) {
+      next(e);
+    }
+  })
   .put("/:id", validate(UpdateHook), async function updateHook(req, res, next) {
     try {
       await service.updateDraft(req.params.id, req.body);
