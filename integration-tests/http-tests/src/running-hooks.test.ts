@@ -1,5 +1,8 @@
+import { sql } from "slonik";
 import { unauthenticatedServerClient } from "./clients";
+import { getPool } from "./db";
 import { buildHook } from "./hook-builder";
+import { allQueuesDrained } from "./server-internals";
 import { testSetup } from "./setup";
 
 describe("existing hooks", () => {
@@ -45,5 +48,33 @@ describe("existing hooks", () => {
     const state = await api.read();
 
     expect(state).toEqual({ number: 7 });
+  });
+
+  it("captures but does not process requests if hook is paused", async () => {
+    const { api, context } = await buildHook();
+
+    await getPool().query(sql`
+      update "hook"
+      set "workflowState" = 'paused'
+      where "id" = ${context.hookId}
+    `);
+
+    await api.write({ number: 3 });
+    await api.write({ number: 4 });
+
+    await allQueuesDrained();
+    const { count } = await getPool().one<{ count: number }>(sql`
+      select count(*) from "request"
+      where "writeKey" = ${context.writeKey}
+    `);
+
+    expect(count).toEqual(2);
+
+    const { stateCount } = await getPool().one<{ stateCount: number }>(sql`
+      select count(*) as "stateCount" from "state"
+      where "hookId" = ${context.hookId}
+    `);
+
+    expect(stateCount).toEqual(0);
   });
 });

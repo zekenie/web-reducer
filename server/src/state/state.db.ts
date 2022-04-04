@@ -1,7 +1,7 @@
 import { omit } from "lodash";
 import { sql } from "slonik";
 import { getPool } from "../db";
-import { HookWorkflowState } from "../hook/hook.types";
+import { VersionWorkflowState } from "../hook/hook.types";
 import {
   PaginatedTokenResponse,
   PaginationQueryArgs,
@@ -62,7 +62,7 @@ export async function getStateHistory(
     join request
       on request.id = state."requestId"
     where "state"."hookId" = ${hookId}
-    and version."workflowState" = ${HookWorkflowState.PUBLISHED}
+    and version."workflowState" = ${VersionWorkflowState.PUBLISHED}
     ${generateSqlFilterExpressionForToken(paginationArgs.token)}
     order by "request"."createdAt" desc
     limit ${paginationArgs.pageSize}

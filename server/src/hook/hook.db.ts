@@ -1,12 +1,12 @@
 import { keyBy, mapValues } from "lodash";
 import { sql } from "slonik";
 import { getPool } from "../db";
-import { createKey } from "../key/key.db";
 import UpdateHook from "./inputs/update-hook.input";
-import { HookWorkflowState } from "./hook.types";
+import { HookWorkflowState, VersionWorkflowState } from "./hook.types";
 import { CodeNotFoundForWriteKeyError } from "./hook.errors";
 
 type CodeToRun = {
+  workflowState: HookWorkflowState;
   versionId: string;
   code: string;
   hookId: string;
@@ -38,7 +38,7 @@ export async function createHook() {
     insert into "version"
     ("hookId", "code", "workflowState", "createdAt", "updatedAt")
     values
-    (${id}, '', ${HookWorkflowState.DRAFT}, NOW(), NOW())
+    (${id}, '', ${VersionWorkflowState.DRAFT}, NOW(), NOW())
     returning id
   `);
 
@@ -46,29 +46,32 @@ export async function createHook() {
 }
 
 export async function getDraftAndPublishedCode(hookId: string): Promise<{
-  [HookWorkflowState.PUBLISHED]?: string;
-  [HookWorkflowState.DRAFT]: string;
+  [VersionWorkflowState.PUBLISHED]?: string;
+  [VersionWorkflowState.DRAFT]: string;
 }> {
   const pool = getPool();
   const versions = await pool.many<
-    CodeToRun & { workflowState: HookWorkflowState }
+    CodeToRun & { versionWorkflowState: VersionWorkflowState }
   >(
     sql`
       select
         version.id as "versionId",
         version."hookId" as "hookId",
-        version."workflowState",
+        version."workflowState" as "versionWorkflowState",
+        hook."workflowState",
         version.code
       from version
+      join "hook"
+        on "hook".id = "version"."hookId"
       where "version"."hookId" = ${hookId}
-        and version."workflowState" in (${HookWorkflowState.PUBLISHED}, ${HookWorkflowState.DRAFT})
+        and version."workflowState" in (${VersionWorkflowState.PUBLISHED}, ${VersionWorkflowState.DRAFT})
       limit 2
   `
   );
 
-  return mapValues(keyBy(versions, "workflowState"), "code") as {
-    [HookWorkflowState.PUBLISHED]?: string;
-    [HookWorkflowState.DRAFT]: string;
+  return mapValues(keyBy(versions, "versionWorkflowState"), "code") as {
+    [VersionWorkflowState.PUBLISHED]?: string;
+    [VersionWorkflowState.DRAFT]: string;
   };
 }
 
@@ -79,10 +82,13 @@ export function getPublishedCodeByHook(hookId: string): Promise<CodeToRun> {
       select
         version.id as "versionId",
         version."hookId" as "hookId",
+        hook."workflowState",
         code
       from version
+      join hook
+        on hook.id = version."hookId"
       where "version"."hookId" = ${hookId}
-        and version."workflowState" = ${HookWorkflowState.PUBLISHED}
+        and version."workflowState" = ${VersionWorkflowState.PUBLISHED}
       limit 1
   `
   );
@@ -95,6 +101,7 @@ export async function getCodeByWriteKey(writeKey: string): Promise<CodeToRun> {
     sql`
       select
         version.id as "versionId",
+        hook."workflowState",
         version."hookId" as "hookId",
         code
       from version
@@ -104,7 +111,7 @@ export async function getCodeByWriteKey(writeKey: string): Promise<CodeToRun> {
         on "version"."hookId" = "hook"."id"
       where "key"."type" = 'write'
         and "key"."key" = ${writeKey}
-        and version."workflowState" = ${HookWorkflowState.PUBLISHED}
+        and version."workflowState" = ${VersionWorkflowState.PUBLISHED}
       limit 1
     `
   );
@@ -118,7 +125,7 @@ export async function getCodeByWriteKey(writeKey: string): Promise<CodeToRun> {
 export async function pauseHook({ hookId }: { hookId: string }) {
   await getPool().query(sql`
     update "hook"
-    set "workflowState" = 'paused'
+    set "workflowState" = ${HookWorkflowState.PAUSED}
     where "id" = ${hookId}
   `);
 }
@@ -126,7 +133,7 @@ export async function pauseHook({ hookId }: { hookId: string }) {
 export async function unpauseHook({ hookId }: { hookId: string }) {
   await getPool().query(sql`
     update "hook"
-    set "workflowState" = 'live'
+    set "workflowState" = ${HookWorkflowState.LIVE}
     where "id" = ${hookId}
   `);
 }
@@ -136,12 +143,12 @@ export async function isHookPaused({
 }: {
   hookId: string;
 }): Promise<boolean> {
-  const res = await getPool().one<{ workflowState: "live" | "paused" }>(sql`
+  const res = await getPool().one<{ workflowState: HookWorkflowState }>(sql`
     select "workflowState"
     from "hook"
     where id = ${hookId}
   `);
-  return res.workflowState === "paused";
+  return res.workflowState === HookWorkflowState.PAUSED;
 }
 
 export async function markPublishedVersionAsOld({
@@ -151,18 +158,18 @@ export async function markPublishedVersionAsOld({
 }) {
   await getPool().query(sql`
     update "version"
-    set "workflowState" = ${HookWorkflowState.OLD}
+    set "workflowState" = ${VersionWorkflowState.OLD}
     where "hookId" = ${hookId}
-    and "workflowState" = ${HookWorkflowState.PUBLISHED}
+    and "workflowState" = ${VersionWorkflowState.PUBLISHED}
   `);
 }
 
 export async function markDraftAsPublished({ hookId }: { hookId: string }) {
   await getPool().query(sql`
     update "version"
-    set "workflowState" = ${HookWorkflowState.PUBLISHED}
+    set "workflowState" = ${VersionWorkflowState.PUBLISHED}
     where "hookId" = ${hookId}
-    and "workflowState" = ${HookWorkflowState.DRAFT}
+    and "workflowState" = ${VersionWorkflowState.DRAFT}
   `);
 }
 
@@ -172,7 +179,7 @@ export async function createDraft({ hookId }: { hookId: string }) {
     insert into "version"
     ("hookId", "code", "workflowState", "createdAt", "updatedAt")
     values
-    (${hookId}, ${publishedVersion.code}, ${HookWorkflowState.DRAFT}, NOW(), NOW())
+    (${hookId}, ${publishedVersion.code}, ${VersionWorkflowState.DRAFT}, NOW(), NOW())
     returning id
   `);
 }

@@ -1,4 +1,5 @@
 import { getCodeByWriteKey } from "../hook/hook.db";
+import { HookWorkflowState } from "../hook/hook.types";
 import { getRequestToRun } from "../request/request.db";
 import { createState, fetchState, isIdempotencyKeyOk } from "../state/state.db";
 import { runCode } from "./vm.remote";
@@ -8,7 +9,13 @@ export async function runHook(requestId: string): Promise<unknown> {
   if (!request) {
     throw new Error(`request ${requestId} not found`);
   }
-  const { versionId, hookId, code } = await getCodeByWriteKey(request.writeKey);
+  const { versionId, hookId, code, workflowState } = await getCodeByWriteKey(
+    request.writeKey
+  );
+
+  if (workflowState === HookWorkflowState.PAUSED) {
+    return;
+  }
 
   const state = await fetchState({ hookId, versionId });
 

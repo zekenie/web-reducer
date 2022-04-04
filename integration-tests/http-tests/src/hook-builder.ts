@@ -119,6 +119,10 @@ function buildApi<PostBody, State>(context: Context) {
       return data.id;
     },
 
+    async publish(): Promise<void> {
+      await authenticatedClient.post(`/hooks/${context.hookId}/publish`);
+    },
+
     async settled(requestIdOrPostBody: string | PostBody): Promise<void> {
       if (typeof requestIdOrPostBody === "string") {
         await unauthenticatedServerClient.get(

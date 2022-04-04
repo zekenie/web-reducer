@@ -83,3 +83,7 @@ $ hygen new worker|email|etc
 
 - Refresh tokens seem to be working ok
 - next up is probably publishing draft
+
+## 4/4/22
+
+- [CloudEvents](https://cloudevents.io/) are a spec for various event types... I think that should be used instead of our request schema.
