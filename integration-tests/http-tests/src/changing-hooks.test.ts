@@ -8,7 +8,7 @@ describe("changing hooks", () => {
   testSetup();
   it("successfully creates a hook", async () => {
     const authedApi = await buildAuthenticatedApi();
-    const res = await authedApi.hook.createHook();
+    const res = await authedApi.hook.create();
     expect(res.status).toEqual(201);
     expect(res.data).toEqual(
       expect.objectContaining({
@@ -21,31 +21,31 @@ describe("changing hooks", () => {
 
   it("can update a hook", async () => {
     const authedApi = await buildAuthenticatedApi();
-    const res = await authedApi.hook.createHook();
+    const res = await authedApi.hook.create();
     expect(res.status).toEqual(201);
 
-    const updateRes = await authedApi.hook.updateHook(res.data.hookId, {
+    const updateRes = await authedApi.hook.update(res.data.hookId, {
       code: "function reducer() { console.log('foo'); }",
     });
 
     expect(updateRes.status).toEqual(200);
 
-    const readReq = await authedApi.hook.readHook(res.data.hookId);
+    const readReq = await authedApi.hook.read(res.data.hookId);
 
     expect(readReq.data.draft).toEqual(
       "function reducer() { console.log('foo'); }"
     );
-    expect(readReq.data.published).toBeUndefined();
+    expect(readReq.data.published).toEqual("");
   });
 
   it("does not permit changing hooks without access", async () => {
     const authedApi = await buildAuthenticatedApi();
     const authedApi2 = await buildAuthenticatedApi();
 
-    const res = await authedApi.hook.createHook();
+    const res = await authedApi.hook.create();
     expect(res.status).toEqual(201);
 
-    const updateRes = await authedApi2.hook.updateHook(
+    const updateRes = await authedApi2.hook.update(
       res.data.hookId,
       {
         code: "function reducer() { console.log('foo'); }",
@@ -53,6 +53,6 @@ describe("changing hooks", () => {
       { validateStatus: () => true }
     );
 
-    expect(updateRes.status).toEqual(401);
+    expect(updateRes.status).toEqual(403);
   });
 });

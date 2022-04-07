@@ -34,12 +34,13 @@ export async function createHook() {
     (NOW())
     returning id
   `);
-  await pool.one<{ id: string }>(sql`
+  await pool.many<{ id: string }>(sql`
     insert into "version"
     ("hookId", "code", "workflowState", "createdAt", "updatedAt")
     values
-    (${id}, '', ${VersionWorkflowState.DRAFT}, NOW(), NOW())
-    returning id
+    (${id}, '', ${VersionWorkflowState.DRAFT}, NOW(), NOW()),
+    (${id}, '', ${VersionWorkflowState.PUBLISHED}, NOW(), NOW())
+    returning *
   `);
 
   return id;
@@ -156,20 +157,22 @@ export async function markPublishedVersionAsOld({
 }: {
   hookId: string;
 }) {
-  await getPool().query(sql`
+  await getPool().one(sql`
     update "version"
     set "workflowState" = ${VersionWorkflowState.OLD}
     where "hookId" = ${hookId}
     and "workflowState" = ${VersionWorkflowState.PUBLISHED}
+    returning id
   `);
 }
 
 export async function markDraftAsPublished({ hookId }: { hookId: string }) {
-  await getPool().query(sql`
+  await getPool().one(sql`
     update "version"
     set "workflowState" = ${VersionWorkflowState.PUBLISHED}
     where "hookId" = ${hookId}
     and "workflowState" = ${VersionWorkflowState.DRAFT}
+    returning id
   `);
 }
 

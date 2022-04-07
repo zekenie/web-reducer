@@ -38,10 +38,10 @@ export async function runBulk(
     });
     const totalRequests = await countRequestsForHook(
       hookId,
-      lastStateRecord?.requestId
+      lastStateRecord?.createdAt
     );
 
-    let currentState = lastStateRecord?.state || {};
+    let currentState = lastStateRecord?.state;
     let processed = 0;
     const cq = cargoQueue<WebhookRequest>(
       async function (requests, done) {

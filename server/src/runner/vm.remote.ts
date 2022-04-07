@@ -56,10 +56,10 @@ export async function runCodeBulk({
   idempotencyKeysToIgnore: string[];
   state: unknown;
 }): Promise<CodeResponse[]> {
-  const { data } = await client.post<CodeResponse[]>("/", {
+  const { data } = await client.post<CodeResponse[]>("/bulk", {
     code,
     requestsJson: JSON.stringify(requests),
-    idempotencyKeysToIgnore,
+    invalidIdempotencyKeys: idempotencyKeysToIgnore,
     state: JSON.stringify(state),
   });
   return data;

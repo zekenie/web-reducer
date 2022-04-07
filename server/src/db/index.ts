@@ -8,7 +8,10 @@ import { TransactionFunctionType } from "slonik/dist/src/types";
 const interceptors = [createQueryLoggingInterceptor()];
 
 export const getPool = memoize((id = "default") =>
-  createPool(process.env.DATABASE_URL!, { interceptors })
+  createPool(process.env.DATABASE_URL!, {
+    interceptors,
+    captureStackTrace: true,
+  })
 );
 
 export const transaction = <T>(cb: TransactionFunctionType<T>) =>

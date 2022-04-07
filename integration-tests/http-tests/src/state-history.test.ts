@@ -21,7 +21,7 @@ describe("existing hooks", () => {
       { validateStatus: () => true }
     );
 
-    expect(historyRes.status).toEqual(401);
+    expect(historyRes.status).toEqual(403);
   });
 
   it("saves history", async () => {

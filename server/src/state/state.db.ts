@@ -94,10 +94,15 @@ export async function readState(
     from state
     join "key"
       on "key"."hookId" = state."hookId"
+    join "request"
+      on "request"."id" = "state"."requestId"
+    join "version"
+      on "state"."versionId" = "version"."id"
     where
       "key"."key" = ${readKey}
       and "key"."type" = 'read'
-    order by "state"."createdAt" desc
+      and "version"."workflowState" = 'published'
+    order by "request"."createdAt" desc
     limit 1
   `);
 }
@@ -152,7 +157,7 @@ export async function bulkCreateState({
   versionId: string;
 }) {
   const pool = getPool();
-  await pool.maybeOne(sql`
+  const res = await pool.many(sql`
     insert into state
     (state, error, console, "executionTime", "hookId", "requestId", "versionId")
     select * from ${sql.unnest(
@@ -167,6 +172,7 @@ export async function bulkCreateState({
       ]),
       ["jsonb", "jsonb", "jsonb", "int4", "uuid", "uuid", "uuid"]
     )}
+    returning id
   `);
 }
 
@@ -208,13 +214,19 @@ export async function fetchState({
 }: {
   hookId: string;
   versionId: string;
-}): Promise<{ state: {}; requestId: string } | null> {
+}): Promise<{ state: {}; requestId: string; createdAt: string } | null> {
   const pool = getPool();
-  const result = await pool.maybeOne<{ state: {}; requestId: string }>(sql`
-    select state from state 
-    where "hookId" = ${hookId}
+  const result = await pool.maybeOne<{
+    state: {};
+    requestId: string;
+    createdAt: string;
+  }>(sql`
+    select state, "requestId", "request"."createdAt" from state 
+    join "request"
+      on "request".id = "state"."requestId"
+    where state."hookId" = ${hookId}
     and "versionId" = ${versionId}
-    order by "createdAt" desc
+    order by "request"."createdAt" desc
     limit 1
   `);
   if (!result) {

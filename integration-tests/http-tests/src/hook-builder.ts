@@ -80,22 +80,29 @@ export async function buildAuthenticatedApi(
           }
         );
       },
-      async updateHook(
+      async update(
         id: string,
         updates: Record<string, any>,
         axiosConfig?: AxiosRequestConfig
       ) {
         return authenticatedClient.put(`/hooks/${id}`, updates, axiosConfig);
       },
-      async createHook(axiosConfig?: AxiosRequestConfig) {
+      async create(axiosConfig?: AxiosRequestConfig) {
         return authenticatedClient.post<{
           hookId: string;
           readKey: string;
           writeKey: string;
         }>(`/hooks`, axiosConfig);
       },
-      async readHook(id: string, axiosConfig?: AxiosRequestConfig) {
+      async read(id: string, axiosConfig?: AxiosRequestConfig) {
         return authenticatedClient.get(`/hooks/${id}`, axiosConfig);
+      },
+      async publish(id: string, axiosConfig?: AxiosRequestConfig) {
+        return authenticatedClient.post(
+          `/hooks/${id}/publish`,
+          undefined,
+          axiosConfig
+        );
       },
     },
   };
@@ -144,6 +151,17 @@ function buildApi<PostBody, State>(context: Context) {
       );
       return data;
     },
+
+    async update(
+      updates: Record<string, any>,
+      axiosConfig?: AxiosRequestConfig
+    ) {
+      return authenticatedClient.put(
+        `/hooks/${context.hookId}`,
+        updates,
+        axiosConfig
+      );
+    },
     async history(): Promise<PaginatedHookHistory<PostBody, State>> {
       const { data } = await authenticatedClient.get<
         PaginatedHookHistory<PostBody, State>
@@ -186,10 +204,11 @@ export async function buildHook<PostBody, State>({
     (${hookId}, ${userId})
   `);
 
-  const { id: versionId } = await pool.one<{ id: string }>(sql`
+  const [{ id: versionId }] = await pool.many<{ id: string }>(sql`
     INSERT INTO "version" ("code","workflowState","createdAt","updatedAt","hookId")
     VALUES
-    (${code}, 'published', NOW(), NOW() , ${hookId})
+    (${code}, 'published', NOW(), NOW() , ${hookId}),
+    (${code}, 'draft', NOW(), NOW() , ${hookId})
     returning id
   `);
   const { key: writeKey } = await pool.one<{ key: string }>(sql`

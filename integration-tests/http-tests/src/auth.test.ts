@@ -274,8 +274,8 @@ describe("auth", () => {
 
     it("merges access from guest user to authenticated user", async () => {
       const api = await buildAuthenticatedApi({ guest: true });
-      const { data: hookData } = await api.hook.createHook();
-      const { data: hookData2 } = await api.hook.createHook();
+      const { data: hookData } = await api.hook.create();
+      const { data: hookData2 } = await api.hook.create();
       await api.auth.signin("realemail@email.com");
       await serverInternals.allQueuesDrained();
       const [{ payload: email }] = await serverInternals.read("email");

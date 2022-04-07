@@ -29,12 +29,15 @@ export default function registerWorker<T extends keyof Queue.WorkerTypes>(
             async () => {
               const start = Date.now();
               try {
+                console.log("running queue", name);
                 const result = await worker.worker(job);
                 forWorkerType("all").succeeded.add(1);
                 forWorkerType(name).succeeded.add(1);
                 // forWorkerType(job.queueName).succeeded.add(1);
+                console.log("queue", name, "succeeded");
                 return result;
               } catch (e) {
+                console.log("queue", name, "failed");
                 console.error(e);
                 forWorkerType("all").failed.add(1);
                 forWorkerType(name).failed.add(1);

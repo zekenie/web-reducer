@@ -15,7 +15,7 @@ export function makeAccessMiddleware(hookIdResolver: (req: Request) => string) {
       if (await hasAccess({ hookId, userId })) {
         return next();
       }
-      throw new httpErrors.Unauthorized(
+      throw new httpErrors.Forbidden(
         `${userId} does not have access to ${hookId}`
       );
     } catch (e) {

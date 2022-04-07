@@ -6,6 +6,7 @@
 - state diffs
 - tags
 - must record each state change
+- http oracle
 
 ## pro
 

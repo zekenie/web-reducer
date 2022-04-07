@@ -50,6 +50,7 @@ export default Router()
   .post("/:id/publish", async function publishDraft(req, res, next) {
     try {
       await service.publishDraft({ hookId: req.params.id });
+      res.json({});
     } catch (e) {
       next(e);
     }

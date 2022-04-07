@@ -46,6 +46,7 @@ services:
       NODE_ENV: test
       DATABASE_URL: postgres://postgres:postgres@db:5432/hook
       REDIS_URL: redis://redis:6379/0
+      ROARR_LOG: "true"
       PORT: 3001
       RUNNER_URL: http://code_runner:3002
       JWT_SECRET: asdf

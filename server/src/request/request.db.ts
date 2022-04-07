@@ -18,14 +18,15 @@ export async function countRequestsForHook(
 ): Promise<number> {
   const pool = getPool();
   const { count } = await pool.one<{ count: number }>(sql`
-    select count(request.id)
+    select count(*)
     from request
-    join "writeKey"
-      on request."writeKey" = "writeKey"."key"
+    join "key"
+      on request."writeKey" = "key"."key"
     where
-      "writeKey"."hookId" = ${hookId}
-    ${after ? sql`and "id" > ${after}` : ""}
-    order by "createdAt" asc
+      "key"."hookId" = ${hookId}
+      and "key"."type" = 'write'
+    ${after ? sql`and "request"."createdAt > ${after}` : sql``}
+    -- order by "request"."createdAt" asc
   `);
   return count;
 }
@@ -42,10 +43,11 @@ export async function streamRequestsForHook(
       request.body,
       request.headers
     from request
-    join "writeKey"
-      on request."writeKey" = "writeKey"."key"
+    join "key"
+      on request."writeKey" = "key"."key"
     where
-      "writeKey"."hookId" = ${hookId}
+      "key"."hookId" = ${hookId}
+      and "key"."type" = 'write'
     order by request."createdAt" asc
   `,
     (stream) => {
