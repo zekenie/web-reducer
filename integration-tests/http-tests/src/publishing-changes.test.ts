@@ -64,15 +64,6 @@ describe("/publish", () => {
       await allQueuesDrained();
       await allQueuesDrained();
       await allQueuesDrained();
-      await allQueuesDrained();
-      await allQueuesDrained();
-
-      console.log(
-        await getPool().many(sql`
-      select * from version
-      -- limit 1
-    `)
-      );
 
       const stateAfterPublish = await api.read();
 
