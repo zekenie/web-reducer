@@ -29,7 +29,10 @@ export function read(path: string) {
   return internals[path] || [];
 }
 
-export async function resolveWhenAllQueuesAreDrained() {
+export async function resolveWhenAllQueuesAreDrained(attempt = 0) {
+  if (attempt >= 2) {
+    return;
+  }
   const queueEvents = allQueuesAndEvents();
   for (const q of queueEvents) {
     const count = await q.queue.count();
@@ -39,4 +42,5 @@ export async function resolveWhenAllQueuesAreDrained() {
       });
     }
   }
+  await resolveWhenAllQueuesAreDrained(attempt + 1);
 }
