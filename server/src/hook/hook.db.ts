@@ -12,6 +12,18 @@ type CodeToRun = {
   hookId: string;
 };
 
+export async function listHooks({ userId }: { userId: string }) {
+  const pool = getPool();
+  const res = await pool.query<{ id: string }>(sql`
+    select hook.id as id from "hook"
+    join "access"
+      on "hook"."id" = "access"."hookId"
+    where "access"."userId" = ${userId}
+  `);
+
+  return res.rows;
+}
+
 export async function updateDraft(
   id: string,
   input: UpdateHook

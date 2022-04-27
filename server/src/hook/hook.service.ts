@@ -5,6 +5,10 @@ import { createKey } from "../key/key.db";
 import { provisionAccess } from "../access/access.db";
 import { enqueue } from "../worker/queue.service";
 
+export async function listHooks({ userId }: { userId: string }) {
+  return db.listHooks({ userId });
+}
+
 export async function readHook(id: string) {
   return db.getDraftAndPublishedCode(id);
 }

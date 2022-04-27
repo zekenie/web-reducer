@@ -10,6 +10,16 @@ import { makeAuthMiddleware } from "../auth/auth.middleware";
 
 export default Router()
   .use(makeAuthMiddleware())
+  .get("/", async (req, res, next) => {
+    try {
+      const { userId } = getStore();
+      const hooks = await service.listHooks({ userId });
+      console.log({ hooks });
+      res.json(hooks);
+    } catch (e) {
+      next(e);
+    }
+  })
   .post("/", async (req, res, next) => {
     try {
       const { userId } = getStore();

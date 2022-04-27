@@ -1,6 +1,6 @@
 import bodyParser from "body-parser";
 import bodyParserXml from "body-parser-xml";
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import authController from "../auth/auth.controller";
 import { heartbeat } from "../db/heartbeat";
@@ -42,6 +42,18 @@ export default function makeServer(config: Config) {
   app.use("/auth", authController);
   app.use("/", requestController);
   app.use("/", stateController);
+
+  app.use(
+    (
+      err: Error & { status?: number },
+      req: Request,
+      res: Response,
+      next: NextFunction
+    ) => {
+      res.status(err.status || 500);
+      res.json({ message: err.message });
+    }
+  );
 
   return app;
 }
