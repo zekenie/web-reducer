@@ -12,13 +12,13 @@ const authClientFactory = (httpClient: HttpJsonClient) => ({
 
   async refresh({ token }: { token: string }): Promise<Credentials> {
     return httpClient.post<Credentials>("/auth/refresh-token", {
-      body: { token },
+      token,
     });
   },
 
   async signin({ email }: { email: string }): Promise<void> {
     await httpClient.post<{}>("/auth/signin", {
-      body: { email },
+      email,
     });
   },
 
@@ -28,7 +28,7 @@ const authClientFactory = (httpClient: HttpJsonClient) => ({
     token: string;
   }): Promise<Credentials> {
     return httpClient.post<Credentials>("/auth/validate-signin-token", {
-      body: { token },
+      token,
     });
   },
 });

@@ -10,9 +10,12 @@ enum HttpMethods {
   DELETE = "DELETE",
 }
 
+type RescueErrorCb = (error: HttpClientError) => Promise<void>;
+
 export class HttpJsonClient {
   baseUrl?: string;
   baseConfig: Partial<RequestInit> = {};
+  rescueErrorCb?: RescueErrorCb;
   constructor({
     baseUrl,
     baseConfig = {},
@@ -21,9 +24,25 @@ export class HttpJsonClient {
     baseConfig?: Partial<RequestInit>;
   }) {
     this.baseUrl = baseUrl;
-    baseConfig.headers = { accept: "application/json", ...baseConfig.headers };
+    baseConfig.headers = {
+      "Content-Type": "application/json",
+      Accept: "application/json, text/plain, */*",
+      ...baseConfig.headers,
+    };
     this.baseConfig = baseConfig;
   }
+
+  public headers(headers: RequestInit["headers"]) {
+    this.baseConfig = {
+      ...this.baseConfig,
+      headers: { ...this.baseConfig.headers, ...headers },
+    };
+  }
+
+  public rescueError(fn: RescueErrorCb) {
+    this.rescueErrorCb = fn;
+  }
+
   public async get<Res>(url: string) {
     return this.makeRequest<Res>(url, { method: HttpMethods.GET });
   }
@@ -49,7 +68,7 @@ export class HttpJsonClient {
   public async delete<Res>(url: string) {
     return this.makeRequest<Res>(url, { method: HttpMethods.DELETE });
   }
-  private async makeRequest<T>(url: string, req: RequestInit) {
+  private async makeRequest<T>(url: string, req: RequestInit): Promise<T> {
     if (this.baseUrl) {
       url = `${this.baseUrl}${url}`;
     }
@@ -61,7 +80,16 @@ export class HttpJsonClient {
     const json = await res.json();
 
     if (res.status >= 400) {
-      throw new HttpClientError(json.message as string, res.status);
+      // @ts-expect-error
+      const err = new HttpClientError(json.message as string, res.status, json);
+      if (this.rescueErrorCb) {
+        await this.rescueErrorCb(err);
+        return this.makeRequest(url, {
+          ...req,
+          headers: { ...req.headers, ...this.baseConfig.headers },
+        }) as unknown as T;
+      }
+      throw err;
     }
 
     return json as unknown as T;
@@ -70,8 +98,10 @@ export class HttpJsonClient {
 
 class HttpClientError extends Error {
   status: number;
-  constructor(message: string, status: number) {
-    super(message);
+  body: unknown;
+  constructor(message: string, status: number, body?: unknown) {
+    super(message + JSON.stringify(body, null, 2));
     this.status = status;
+    this.body = body;
   }
 }

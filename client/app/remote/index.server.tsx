@@ -1,23 +1,30 @@
 import type { Headers } from "@remix-run/node";
-import authClientFactory from "./auth-client.server";
+import authClientFactory, { Credentials } from "./auth-client.server";
 import hookClientFactory from "./hook-client.server";
 import { HttpJsonClient } from "./http-json-client.server";
 
-export function buildHttpClientForJwt(jwt?: string) {
+/**
+ * This file basically exists to merge HttpClient and credentials
+ * and client methods for our specific api
+ */
+
+function buildHttpClientForJwt({ jwt }: { jwt?: string }) {
   const headers = jwt ? { authorization: jwt } : ({} as Headers);
-  return new HttpJsonClient({
+  const client = new HttpJsonClient({
     baseUrl: process.env.BACKEND_URL!,
-    baseConfig: {
-      headers,
-    },
   });
+
+  client.headers(headers);
+  return client;
 }
 
-export default function buildClientForJwt(jwt?: string) {
-  const httpClient = buildHttpClientForJwt(jwt);
+export default function buildClientForJwt(jwt: string) {
+  const httpClient = buildHttpClientForJwt({ jwt });
+
+  const auth = authClientFactory(httpClient);
 
   return {
-    auth: authClientFactory(httpClient),
+    auth,
     hooks: hookClientFactory(httpClient),
   };
 }
