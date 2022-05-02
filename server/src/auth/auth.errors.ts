@@ -21,6 +21,13 @@ export class InvalidJwtSubError extends Error {
   }
 }
 
+export class InvalidOrExpiredJwtError extends Error {
+  status: number = 400;
+  constructor() {
+    super("Jwt is invalid or expired");
+  }
+}
+
 export class ExpiredSigninTokenError extends Error {
   status: number = 400;
   constructor() {

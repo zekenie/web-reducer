@@ -7,6 +7,7 @@ import { transaction } from "../db";
 import {
   InvalidJwtError,
   InvalidJwtSubError,
+  InvalidOrExpiredJwtError,
   SignupWithNonGuestHeaderError,
 } from "./auth.errors";
 import {
@@ -36,13 +37,17 @@ export function validateAndDecodeJwt(token: string): {
     throw new InvalidJwtSubError();
   }
 
-  const payload = jwt.verify(token, process.env.JWT_SECRET!, {
-    complete: true,
-  });
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET!, {
+      complete: true,
+    });
 
-  return {
-    userId: payload.payload.sub as string,
-  };
+    return {
+      userId: payload.payload.sub as string,
+    };
+  } catch (e) {
+    throw new InvalidOrExpiredJwtError();
+  }
 }
 
 export async function issueNewCredentialsForRefreshToken({

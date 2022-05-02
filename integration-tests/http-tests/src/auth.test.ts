@@ -289,16 +289,17 @@ describe("auth", () => {
       const accessRecords = await pool.many(sql`select * from "access"`);
 
       expect(accessRecords).toHaveLength(2);
-      const [access1, access2] = accessRecords;
-      expect(access1).toEqual(
+      // const [access1, access2] = accessRecords;
+      expect(accessRecords).toContainEqual(
         expect.objectContaining({
-          hookId: hookData.hookId,
+          hookId: hookData.id,
           userId: signedInUserId,
         })
       );
-      expect(access2).toEqual(
+
+      expect(accessRecords).toContainEqual(
         expect.objectContaining({
-          hookId: hookData2.hookId,
+          hookId: hookData2.id,
           userId: signedInUserId,
         })
       );

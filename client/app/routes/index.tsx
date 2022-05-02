@@ -1,5 +1,5 @@
 import type { LoaderFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import { useModals } from "~/modals/ModalProvider";
 import type { HookOverview } from "~/remote/hook-client.server";
 import buildClientForJwt from "~/remote/index.server";
@@ -14,7 +14,7 @@ export default function Index() {
   const hooks = useLoaderData<HookOverview[]>();
   const { pushModal } = useModals();
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.4" }}>
+    <>
       <h1>Hook ids</h1>
       <button
         onClick={() => pushModal({ name: "test", props: { text: "foo" } })}
@@ -23,12 +23,14 @@ export default function Index() {
       </button>
       <ul>
         {hooks.map((hook) => (
-          <li key={hook.id}>{hook.id}</li>
+          <li key={hook.id}>
+            <Link to={`/hooks/${hook.id}`}>{hook.name}</Link>
+          </li>
         ))}
       </ul>
       <form method="post" action="/hooks">
         <button type="submit">Create hook</button>
       </form>
-    </div>
+    </>
   );
 }

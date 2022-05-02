@@ -12,9 +12,10 @@ describe("changing hooks", () => {
     expect(res.status).toEqual(201);
     expect(res.data).toEqual(
       expect.objectContaining({
-        hookId: expect.any(String),
-        readKey: expect.any(String),
-        writeKey: expect.any(String),
+        id: expect.any(String),
+        readKeys: [expect.any(String)],
+        writeKeys: [expect.any(String)],
+        workflowState: "live",
       })
     );
   });
@@ -24,13 +25,13 @@ describe("changing hooks", () => {
     const res = await authedApi.hook.create();
     expect(res.status).toEqual(201);
 
-    const updateRes = await authedApi.hook.update(res.data.hookId, {
+    const updateRes = await authedApi.hook.update(res.data.id, {
       code: "function reducer() { console.log('foo'); }",
     });
 
     expect(updateRes.status).toEqual(200);
 
-    const readReq = await authedApi.hook.read(res.data.hookId);
+    const readReq = await authedApi.hook.read(res.data.id);
 
     expect(readReq.data.draft).toEqual(
       "function reducer() { console.log('foo'); }"
@@ -46,7 +47,7 @@ describe("changing hooks", () => {
     expect(res.status).toEqual(201);
 
     const updateRes = await authedApi2.hook.update(
-      res.data.hookId,
+      res.data.id,
       {
         code: "function reducer() { console.log('foo'); }",
       },

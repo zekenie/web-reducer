@@ -2,7 +2,13 @@ import { keyBy, mapValues } from "lodash";
 import { sql } from "slonik";
 import { getPool } from "../db";
 import UpdateHook from "./inputs/update-hook.input";
-import { HookWorkflowState, VersionWorkflowState } from "./hook.types";
+import {
+  HookCode,
+  HookOverview,
+  HookWorkflowState,
+  KeysByType,
+  VersionWorkflowState,
+} from "./hook.types";
 import { CodeNotFoundForWriteKeyError } from "./hook.errors";
 
 type CodeToRun = {
@@ -14,14 +20,59 @@ type CodeToRun = {
 
 export async function listHooks({ userId }: { userId: string }) {
   const pool = getPool();
-  const res = await pool.query<{ id: string }>(sql`
-    select hook.id as id from "hook"
+  const res = await pool.query<HookOverview>(sql`
+    select
+      hook.id as id,
+      hook.name as "name",
+      hook."workflowState" as "workflowState"
+    from "hook"
     join "access"
       on "hook"."id" = "access"."hookId"
     where "access"."userId" = ${userId}
   `);
 
   return res.rows;
+}
+
+export async function getOverviewForHook({
+  hookId,
+}: {
+  hookId: string;
+}): Promise<HookOverview> {
+  const pool = getPool();
+  const row = await pool.one<HookOverview>(sql`
+    select id, name, "workflowState"
+    from "hook"
+    where id = ${hookId}
+  `);
+  return row;
+}
+
+export async function getKeysForHook({
+  hookId,
+}: {
+  hookId: string;
+}): Promise<KeysByType> {
+  const pool = getPool();
+  const res = await pool.many<{ type: "read" | "write"; key: string }>(sql`
+    select key, type from "key"
+    where "hookId" = ${hookId}
+  `);
+
+  return {
+    readKeys: res.filter((row) => row.type === "read").map((r) => r.key),
+    writeKeys: res.filter((row) => row.type === "write").map((r) => r.key),
+  };
+}
+
+export async function getHookNameCollisions({ names }: { names: string[] }) {
+  const pool = getPool();
+  const res = await pool.query<{ name: string }>(sql`
+    select hook.name as "name" from "hook"
+    where "name" = ANY(${sql.array(names, "text")})
+  `);
+
+  return res.rows.map((r) => r.name);
 }
 
 export async function updateDraft(
@@ -37,13 +88,13 @@ export async function updateDraft(
   `);
 }
 
-export async function createHook() {
+export async function createHook({ name }: { name: string }) {
   const pool = getPool();
   const { id } = await pool.one<{ id: string }>(sql`
     insert into "hook"
-    ("createdAt")
+    ("name", "createdAt")
     values
-    (NOW())
+    (${name}, NOW())
     returning id
   `);
   await pool.many<{ id: string }>(sql`
@@ -58,10 +109,9 @@ export async function createHook() {
   return id;
 }
 
-export async function getDraftAndPublishedCode(hookId: string): Promise<{
-  [VersionWorkflowState.PUBLISHED]?: string;
-  [VersionWorkflowState.DRAFT]: string;
-}> {
+export async function getDraftAndPublishedCode(
+  hookId: string
+): Promise<HookCode> {
   const pool = getPool();
   const versions = await pool.many<
     CodeToRun & { versionWorkflowState: VersionWorkflowState }

@@ -25,7 +25,9 @@ export default function App() {
       </head>
       <body>
         <ModalProvider>
-          <Outlet />
+          <div className="flex flex-col h-screen overflow-hidden">
+            <Outlet />
+          </div>
         </ModalProvider>
         <ScrollRestoration />
         <Scripts />

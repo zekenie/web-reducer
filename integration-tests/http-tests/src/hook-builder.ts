@@ -8,6 +8,36 @@ import { getPool } from "./db";
 import jwtLib from "jsonwebtoken";
 import { AxiosRequestConfig, AxiosResponse } from "axios";
 
+export enum VersionWorkflowState {
+  DRAFT = "draft",
+  PUBLISHED = "published",
+  OLD = "old",
+}
+
+export enum HookWorkflowState {
+  LIVE = "live",
+  PAUSED = "paused",
+}
+
+export type KeysByType = {
+  writeKeys: string[];
+  readKeys: string[];
+};
+
+export type HookCode = {
+  [VersionWorkflowState.PUBLISHED]?: string;
+  [VersionWorkflowState.DRAFT]: string;
+};
+
+export type HookDetail = HookOverview & KeysByType & HookCode;
+
+export type HookOverview = {
+  id: string;
+  name: string;
+  workflowState: HookWorkflowState;
+  // requestCount: number;
+};
+
 type Context = {
   jwt: string;
   writeKey: string;
@@ -88,11 +118,7 @@ export async function buildAuthenticatedApi(
         return authenticatedClient.put(`/hooks/${id}`, updates, axiosConfig);
       },
       async create(axiosConfig?: AxiosRequestConfig) {
-        return authenticatedClient.post<{
-          hookId: string;
-          readKey: string;
-          writeKey: string;
-        }>(`/hooks`, axiosConfig);
+        return authenticatedClient.post<HookDetail>(`/hooks`, axiosConfig);
       },
       async read(id: string, axiosConfig?: AxiosRequestConfig) {
         return authenticatedClient.get(`/hooks/${id}`, axiosConfig);

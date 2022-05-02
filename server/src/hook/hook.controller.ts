@@ -1,12 +1,11 @@
 import { Router } from "express";
+import { makeAccessMiddleware } from "../access/access.middleware";
+import { makeAuthMiddleware } from "../auth/auth.middleware";
 import validate from "../middleware/validate.middleware";
+import { getStore } from "../server/request-context.middleware";
+import * as stateService from "../state/state.service";
 import * as service from "./hook.service";
 import UpdateHook from "./inputs/update-hook.input";
-import * as stateService from "../state/state.service";
-import { last } from "lodash";
-import { makeAccessMiddleware } from "../access/access.middleware";
-import { getStore } from "../server/request-context.middleware";
-import { makeAuthMiddleware } from "../auth/auth.middleware";
 
 export default Router()
   .use(makeAuthMiddleware())
@@ -14,7 +13,6 @@ export default Router()
     try {
       const { userId } = getStore();
       const hooks = await service.listHooks({ userId });
-      console.log({ hooks });
       res.json(hooks);
     } catch (e) {
       next(e);
@@ -23,10 +21,10 @@ export default Router()
   .post("/", async (req, res, next) => {
     try {
       const { userId } = getStore();
-      const { hookId, writeKey, readKey } = await service.createHook({
+      const overview = await service.createHook({
         userId,
       });
-      res.status(201).json({ hookId, writeKey, readKey });
+      res.status(201).json(overview);
     } catch (e) {
       next(e);
     }
@@ -37,8 +35,8 @@ export default Router()
   )
   .get("/:id", async function (req, res, next) {
     try {
-      const { draft, published } = await service.readHook(req.params.id);
-      res.json({ draft, published });
+      const hook = await service.readHook(req.params.id);
+      res.json(hook);
     } catch (e) {
       next(e);
     }
