@@ -1,7 +1,9 @@
 import { MenuIcon } from "@heroicons/react/outline";
 import type { LoaderFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import ResourceBar from "~/components/resource-bar";
+import { Outlet, useLoaderData } from "@remix-run/react";
+import EditorAndFooter from "~/components/hook/editor";
+import ResourceBar from "~/components/hook/resource-bar";
+import { Tab, Tabs } from "~/components/tabs";
 import type { HookDetail } from "~/remote/hook-client.server";
 import buildClientForJwt from "~/remote/index.server";
 
@@ -13,6 +15,7 @@ export const loader: LoaderFunction = async ({ context, params }) => {
 
 export default function Hook() {
   const hook = useLoaderData<HookDetail>();
+
   return (
     <>
       <header className="px-3 flex-shrink-0 py-3 border-b grid grid-cols-3">
@@ -34,29 +37,20 @@ export default function Hook() {
         <div />
       </header>
       <section className="flex-grow grid grid-cols-2 overflow-hidden">
-        <div className="flex-grow">
-          {/* <Editor
-            options={{
-              fontSize: "16px",
-              minimap: { enabled: false },
-            }}
-            defaultLanguage="javascript"
-            defaultValue={exampleCode}
-          /> */}
-        </div>
+        <EditorAndFooter hook={hook} />
 
         <div className="border-l flex-grow flex-col flex flex-shrink-0 overflow-hidden">
-          {/* <Tabs>
-            <Tab selected>Requests</Tab>
-            <Tab>State</Tab>
-            <Tab>Secrets</Tab>
-            <Tab>Keys</Tab>
-            <Tab>Config</Tab>
-            <Tab>Docs</Tab>
+          <Tabs>
+            <Tab end to={`/hooks/${hook.id}`}>
+              Requests
+            </Tab>
+            <Tab to="./secrets">Secrets</Tab>
+            <Tab to="./keys">Keys</Tab>
           </Tabs>
+
           <div className="overflow-y-scroll flex-grow">
-            <Requests />
-          </div> */}
+            <Outlet />
+          </div>
         </div>
       </section>
     </>

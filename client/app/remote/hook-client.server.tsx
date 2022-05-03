@@ -38,6 +38,19 @@ const hookClientFactory = (httpClient: HttpJsonClient) => ({
   async createHook(): Promise<HookDetail> {
     return httpClient.post<HookDetail>("/hooks");
   },
+  async update({
+    id,
+    payload,
+  }: {
+    id: string;
+    payload: { code: string };
+  }): Promise<void> {
+    await httpClient.put(`/hooks/${id}`, payload);
+  },
+
+  async publish({ id }: { id: string }): Promise<void> {
+    await httpClient.post(`/hooks/${id}/publish`);
+  },
 });
 
 export default hookClientFactory;

@@ -28,7 +28,7 @@ export default function Index() {
           </li>
         ))}
       </ul>
-      <form method="post" action="/hooks">
+      <form method="post" action="/hooks/create">
         <button type="submit">Create hook</button>
       </form>
     </>
