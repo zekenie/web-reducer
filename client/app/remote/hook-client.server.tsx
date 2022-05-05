@@ -28,16 +28,52 @@ export type HookOverview = {
   // requestCount: number;
 };
 
+export type RuntimeError = {
+  name: string;
+  message: string;
+  stacktrace?: string;
+};
+
+type LogLevels = "warn" | "error" | "log" | "trace" | "debug" | "info";
+
+export type ConsoleMessage = {
+  level: LogLevels;
+  messages: string[];
+  timestamp: number;
+};
+
+export type StateHistory = {
+  requestId: string;
+  state: unknown;
+  body: unknown;
+  error: RuntimeError;
+  console: ConsoleMessage;
+  createdAt: Date;
+};
+
+export type PaginatedTokenResponse<T> = {
+  nextToken: string | null;
+  objects: T[];
+};
+
 const hookClientFactory = (httpClient: HttpJsonClient) => ({
-  async listHooks() {
+  async list() {
     return httpClient.get<HookOverview[]>("/hooks");
   },
-  async getHook(id: string): Promise<HookDetail> {
+  async detail(id: string): Promise<HookDetail> {
     return httpClient.get<HookDetail>(`/hooks/${id}`);
   },
-  async createHook(): Promise<HookDetail> {
+  async create(): Promise<HookDetail> {
     return httpClient.post<HookDetail>("/hooks");
   },
+
+  async history(id: string, { token }: { token?: string } = {}) {
+    const qs = token ? `?token=${token}` : "";
+    return httpClient.get<PaginatedTokenResponse<StateHistory>>(
+      `/hooks/${id}/history${qs}`
+    );
+  },
+
   async update({
     id,
     payload,

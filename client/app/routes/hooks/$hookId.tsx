@@ -10,7 +10,7 @@ import buildClientForJwt from "~/remote/index.server";
 export const loader: LoaderFunction = async ({ context, params }) => {
   const client = buildClientForJwt(context.creds.jwt);
 
-  return client.hooks.getHook(params.hookId!);
+  return client.hooks.detail(params.hookId!);
 };
 
 export default function Hook() {
@@ -48,7 +48,7 @@ export default function Hook() {
             <Tab to="./keys">Keys</Tab>
           </Tabs>
 
-          <div className="overflow-y-scroll flex-grow">
+          <div className="overflow-y-scroll flex flex-col flex-1 flex-grow p-2">
             <Outlet />
           </div>
         </div>

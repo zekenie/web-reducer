@@ -7,7 +7,7 @@ import buildClientForJwt from "~/remote/index.server";
 export const loader: LoaderFunction = async ({ context }) => {
   const client = buildClientForJwt(context.creds.jwt);
 
-  return client.hooks.listHooks();
+  return client.hooks.list();
 };
 
 export default function Index() {

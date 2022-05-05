@@ -4,6 +4,6 @@ import buildClientForJwt from "~/remote/index.server";
 
 export const action: ActionFunction = async ({ context }) => {
   const client = buildClientForJwt(context.creds.jwt);
-  await client.hooks.createHook();
+  await client.hooks.create();
   return redirect("/");
 };
