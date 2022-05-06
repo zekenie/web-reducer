@@ -1,10 +1,12 @@
-import { getCodeByWriteKey } from "../hook/hook.db";
+import { getCodeByWriteKey, getKeysForHook } from "../hook/hook.db";
 import { HookWorkflowState } from "../hook/hook.types";
 import { getRequestToRun } from "../request/request.db";
 import { createState, fetchState, isIdempotencyKeyOk } from "../state/state.db";
+import { StateHistory } from "../state/state.types";
+import { publishState } from "./runner.publisher";
 import { runCode } from "./vm.remote";
 
-export async function runHook(requestId: string): Promise<unknown> {
+export async function runHook(requestId: string): Promise<void> {
   const request = await getRequestToRun(requestId);
   if (!request) {
     throw new Error(`request ${requestId} not found`);
@@ -31,6 +33,7 @@ export async function runHook(requestId: string): Promise<unknown> {
       id: requestId,
       body: request.body,
       headers: request.headers,
+      createdAt: request.createdAt,
     },
     state: state?.state,
   });
@@ -63,5 +66,33 @@ export async function runHook(requestId: string): Promise<unknown> {
     executionTime: ms,
   });
 
-  return false;
+  try {
+    await getReadKeysAndPublishState({
+      hookId,
+      state: {
+        body: request.body,
+        console,
+        createdAt: new Date(request.createdAt),
+        error,
+        requestId: request.id,
+        state,
+      },
+    });
+  } catch (e) {
+    // don't fail the job just because we couldn't notify about the state
+  }
+}
+
+async function getReadKeysAndPublishState({
+  hookId,
+  state,
+}: {
+  hookId: string;
+  state: StateHistory;
+}) {
+  const keys = await getKeysForHook({ hookId });
+
+  for (const readKey of keys.readKeys) {
+    await publishState({ readKey, state });
+  }
 }

@@ -35,6 +35,7 @@ export default Router()
           body: req.body,
           headers: req.headers,
           id: getStore().id,
+          createdAt: new Date().toString(),
         },
         writeKey: req.params.writeKey,
         contentType: req.headers["content-type"]!,

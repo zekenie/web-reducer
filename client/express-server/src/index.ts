@@ -20,8 +20,6 @@ declare global {
 
 const BUILD_DIR = join(__dirname, "..", "..", "build");
 
-console.log(BUILD_DIR);
-
 const app = express();
 app.use(compression());
 

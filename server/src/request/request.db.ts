@@ -41,7 +41,8 @@ export async function streamRequestsForHook(
     select
       request.id,
       request.body,
-      request.headers
+      request.headers,
+      request."createdAt"
     from request
     join "key"
       on request."writeKey" = "key"."key"
@@ -72,7 +73,8 @@ export function getRequestToRun(id: string): Promise<RequestToRun | null> {
         "writeKey",
         "id",
         body,
-        headers
+        headers,
+        "createdAt"
       from request
       where id = ${id}`
   );

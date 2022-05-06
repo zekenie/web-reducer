@@ -4,6 +4,7 @@ export type WebhookRequest = {
   id: string;
   body: {};
   headers: IncomingHttpHeaders | Record<string, string>;
+  createdAt: string;
 };
 
 export type WORKER_NAME = "request";

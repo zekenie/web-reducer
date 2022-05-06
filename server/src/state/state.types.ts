@@ -4,7 +4,7 @@ export type StateHistory = {
   requestId: string;
   state: unknown;
   body: unknown;
-  error: RuntimeError;
-  console: ConsoleMessage;
+  error: RuntimeError | undefined;
+  console: ConsoleMessage[];
   createdAt: Date;
 };
