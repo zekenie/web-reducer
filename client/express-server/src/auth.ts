@@ -5,10 +5,18 @@
  * - if your refresh token fails, create a guest user
  */
 
-const { fetch } = require("@remix-run/node");
-const jwtLib = require("jsonwebtoken");
+import { fetch } from "@remix-run/node";
+import * as jwtLib from "jsonwebtoken";
 
-async function getNewCredsWithRefreshToken(token, existingExpiredJwt) {
+export type Credentials = {
+  jwt: string;
+  refreshToken: string;
+};
+
+async function getNewCredsWithRefreshToken(
+  token: string,
+  existingExpiredJwt: string
+): Promise<Credentials> {
   const res = await fetch(`${process.env.BACKEND_URL}/auth/refresh-token`, {
     method: "POST",
     headers: {
@@ -19,7 +27,7 @@ async function getNewCredsWithRefreshToken(token, existingExpiredJwt) {
     body: JSON.stringify({ token }),
   });
 
-  return res.json();
+  return res.json() as Promise<Credentials>;
 }
 
 async function createGuestUser() {
@@ -31,10 +39,10 @@ async function createGuestUser() {
     },
   });
 
-  return res.json();
+  return res.json() as Promise<Credentials>;
 }
 
-function credentialStrategy(creds) {
+function credentialStrategy(creds: Credentials) {
   // they are logged in and loading the page for the first time
   if (creds.refreshToken && !creds.jwt) {
     return "refresh";
@@ -45,7 +53,11 @@ function credentialStrategy(creds) {
   return "guest";
 }
 
-async function credentialExchange({ creds }) {
+export default async function credentialExchange({
+  creds,
+}: {
+  creds: Credentials;
+}) {
   const strategy = credentialStrategy(creds);
   try {
     switch (strategy) {
@@ -59,7 +71,7 @@ async function credentialExchange({ creds }) {
           throw new Error("same strategy requires jwt");
         }
         try {
-          jwtLib.verify(creds.jwt, process.env.JWT_SECRET, {
+          jwtLib.verify(creds.jwt, process.env.JWT_SECRET!, {
             complete: true,
           });
           return { jwt: creds.jwt, refreshToken: creds.refreshToken };
@@ -74,5 +86,3 @@ async function credentialExchange({ creds }) {
   }
   throw new Error("unsupported strategy");
 }
-
-module.exports = { credentialStrategy, credentialExchange };

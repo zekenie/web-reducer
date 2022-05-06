@@ -1,16 +1,28 @@
-require("dotenv").config();
-const path = require("path");
-const express = require("express");
-const compression = require("compression");
-const morgan = require("morgan");
-const { createRequestHandler } = require("@remix-run/express");
-const cookieParser = require("cookie-parser");
-const { credentialExchange } = require("./auth-helper");
+import { config } from "dotenv";
+import { join } from "path";
+import express from "express";
+import compression from "compression";
+import morgan from "morgan";
+import { createRequestHandler } from "@remix-run/express";
+import cookieParser from "cookie-parser";
+import type { Credentials } from "./auth";
+import credentialExchange from "./auth";
 
-const BUILD_DIR = path.join(process.cwd(), "build");
+config({ path: "../.env" });
+
+declare global {
+  namespace Express {
+    export interface Request {
+      creds: Credentials;
+    }
+  }
+}
+
+const BUILD_DIR = join(__dirname, "..", "..", "build");
+
+console.log(BUILD_DIR);
 
 const app = express();
-
 app.use(compression());
 
 // http://expressjs.com/en/advanced/best-practice-security.html#at-a-minimum-disable-x-powered-by-header
@@ -21,12 +33,12 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 // Remix fingerprints its assets so we can cache forever.
 app.use(
   "/build",
-  express.static("public/build", { immutable: true, maxAge: "1y" })
+  express.static("../public/build", { immutable: true, maxAge: "1y" })
 );
 
 // Everything else (like favicon.ico) is cached for an hour. You may want to be
 // more aggressive with this caching.
-app.use(express.static("public", { maxAge: "1h" }));
+app.use(express.static("../public", { maxAge: "1h" }));
 
 app.use(morgan("tiny"));
 
