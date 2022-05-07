@@ -4,10 +4,13 @@
     "creds",
     "hygen",
     "idempotency",
+    "readkey",
     "roarr",
     "Signin",
     "slonik",
     "sunglo",
+    "unbuilt",
+    "websockets",
     "Zipkin"
   ]
 }

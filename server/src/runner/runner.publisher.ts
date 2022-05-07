@@ -1,17 +1,24 @@
-import { connection, connection as redisConnection } from "../redis";
+import IORedis from "ioredis";
 import { StateHistory } from "../state/state.types";
+
+// separate connection from bull so that we're not in pub mode
+// and don't conflict with their settings
+export const connection = new IORedis(process.env.REDIS_URL);
 
 export async function publishState({
   state,
-  readKey,
+  readKeys,
+  hookId,
 }: {
   state: StateHistory;
-  readKey: string;
+  readKeys: string[];
+  hookId: string;
 }) {
   const message = {
     state,
-    readKey,
+    hookId,
+    readKeys,
   };
 
-  await connection.publish(`state.${readKey}`, JSON.stringify(message));
+  await connection.publish(`state.${hookId}`, JSON.stringify(message));
 }

@@ -4,8 +4,8 @@ import express from "express";
 import compression from "compression";
 import morgan from "morgan";
 import { createRequestHandler } from "@remix-run/express";
-import cookieParser from "cookie-parser";
 import type { Credentials } from "./auth";
+import { cookieParserMiddleware } from "./auth";
 import credentialExchange from "./auth";
 
 config({ path: "../.env" });
@@ -26,7 +26,7 @@ app.use(compression());
 // http://expressjs.com/en/advanced/best-practice-security.html#at-a-minimum-disable-x-powered-by-header
 app.disable("x-powered-by");
 
-app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use(cookieParserMiddleware);
 
 // Remix fingerprints its assets so we can cache forever.
 app.use(

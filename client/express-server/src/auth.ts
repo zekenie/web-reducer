@@ -6,6 +6,7 @@
  */
 
 import { fetch } from "@remix-run/node";
+import cookieParser from "cookie-parser";
 import * as jwtLib from "jsonwebtoken";
 
 export type Credentials = {
@@ -13,18 +14,19 @@ export type Credentials = {
   refreshToken: string;
 };
 
-async function getNewCredsWithRefreshToken(
-  token: string,
-  existingExpiredJwt: string
+export const cookieParserMiddleware = cookieParser(process.env.COOKIE_SECRET);
+
+export async function getNewCredsWithRefreshToken(
+  existingCreds: Credentials
 ): Promise<Credentials> {
   const res = await fetch(`${process.env.BACKEND_URL}/auth/refresh-token`, {
     method: "POST",
     headers: {
       Accepts: "application/json",
       "Content-Type": "application/json",
-      Authorization: existingExpiredJwt,
+      Authorization: existingCreds.jwt,
     },
-    body: JSON.stringify({ token }),
+    body: JSON.stringify({ token: existingCreds.refreshToken }),
   });
 
   return res.json() as Promise<Credentials>;
@@ -53,6 +55,17 @@ function credentialStrategy(creds: Credentials) {
   return "guest";
 }
 
+export function verifyJwt(jwt: string): boolean {
+  try {
+    jwtLib.verify(jwt, process.env.JWT_SECRET!, {
+      complete: true,
+    });
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 export default async function credentialExchange({
   creds,
 }: {
@@ -65,19 +78,15 @@ export default async function credentialExchange({
         if (!creds.refreshToken) {
           throw new Error("refresh strategy requires refresh token");
         }
-        return getNewCredsWithRefreshToken(creds.refreshToken, creds.jwt);
+        return getNewCredsWithRefreshToken(creds);
       case "same":
         if (!creds.jwt || !creds.refreshToken) {
           throw new Error("same strategy requires jwt");
         }
-        try {
-          jwtLib.verify(creds.jwt, process.env.JWT_SECRET!, {
-            complete: true,
-          });
+        if (verifyJwt(creds.jwt)) {
           return { jwt: creds.jwt, refreshToken: creds.refreshToken };
-        } catch (e) {
-          return getNewCredsWithRefreshToken(creds.refreshToken, creds.jwt);
         }
+        return getNewCredsWithRefreshToken(creds);
       case "guest":
         return createGuestUser();
     }
