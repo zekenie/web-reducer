@@ -46,7 +46,7 @@ describe("existing hooks", () => {
     expect(state1.createdAt).toBeGreaterThan(state2.createdAt);
   });
 
-  it.only("`hasNext` when there are more records", async () => {
+  it("`hasNext` when there are more records", async () => {
     const pool = getPool();
     const reqs = Array.from({ length: 42 }, (_, index) => ({ index }));
     const { api, context } = await buildHook<
