@@ -46,9 +46,9 @@ describe("existing hooks", () => {
     expect(state1.createdAt).toBeGreaterThan(state2.createdAt);
   });
 
-  it("`hasNext` when there are more records", async () => {
+  it.only("`hasNext` when there are more records", async () => {
     const pool = getPool();
-    const reqs = Array.from({ length: 50 }, (_, index) => ({ index }));
+    const reqs = Array.from({ length: 42 }, (_, index) => ({ index }));
     const { api, context } = await buildHook<
       { index: number },
       { num: number; index: number }
@@ -63,7 +63,7 @@ describe("existing hooks", () => {
       sql`select count(*) from state where "hookId" = ${context.hookId} and "versionId" = ${context.versionId}`
     );
 
-    expect(count).toEqual(50);
+    expect(count).toEqual(42);
 
     const historyPage = await api.history();
     expect(historyPage.nextToken).toEqual(expect.any(String));
@@ -75,7 +75,7 @@ describe("existing hooks", () => {
 
     const nextHistoryPage = await api.history();
 
-    expect(nextHistoryPage.objects).toHaveLength(10);
+    expect(nextHistoryPage.objects).toHaveLength(2);
     expect(nextHistoryPage.nextToken).toBeFalsy();
-  });
+  }, 8000);
 });

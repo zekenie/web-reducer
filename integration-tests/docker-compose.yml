@@ -28,6 +28,16 @@ services:
     build: ../runner
     ports:
       - 3002:3002
+  web:
+    build: ../client
+    ports:
+      - 3000:3000
+    environment:
+      NODE_ENV: test
+      REDIS_URL: redis://redis:6379/0
+      PORT: 3000
+      BACKEND_URL: http://code_runner:3001
+      JWT_SECRET: asdf
   migrator:
     build: ./migrator
     volumes:
@@ -46,7 +56,7 @@ services:
       NODE_ENV: test
       DATABASE_URL: postgres://postgres:postgres@db:5432/hook
       REDIS_URL: redis://redis:6379/0
-      ROARR_LOG: "true"
+      ROARR_LOG: "false"
       PORT: 3001
       RUNNER_URL: http://code_runner:3002
       JWT_SECRET: asdf
