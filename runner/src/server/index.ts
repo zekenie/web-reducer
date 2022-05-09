@@ -20,19 +20,17 @@ export default function makeServer(config: Config) {
   });
 
   app.use(function errorHandler(
-    err: unknown,
+    err: Error & { status?: number },
     req: Request,
     res: Response,
     next: NextFunction
   ) {
-    if (err) {
-      if (config.onError) {
-        config.onError(err);
-      }
-      next(err);
-      return;
+    if (config.onError) {
+      config.onError(err);
     }
-    next();
+    res.status(err.status || 500);
+    res.json({ message: err.message, name: err.name });
+    return;
   });
 
   return app;

@@ -75,7 +75,7 @@ export async function runHook(requestId: string): Promise<void> {
         createdAt: new Date(request.createdAt),
         error,
         requestId: request.id,
-        state,
+        state: newState,
       },
     });
   } catch (e) {

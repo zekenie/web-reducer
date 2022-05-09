@@ -1,5 +1,6 @@
 import axios from "axios";
 import { WebhookRequest } from "../request/request.types";
+import { RunnerError } from "./runner.errors";
 import { ConsoleMessage, RuntimeError } from "./runner.types";
 
 const client = axios.create({
@@ -12,9 +13,7 @@ client.interceptors.response.use(
     return r;
   },
   (err) => {
-    const response = err.response.data;
-    console.error(response);
-    throw err;
+    throw new RunnerError(err.response.data);
   }
 );
 

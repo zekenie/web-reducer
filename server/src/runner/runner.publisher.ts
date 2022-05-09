@@ -19,6 +19,5 @@ export async function publishState({
     hookId,
     readKeys,
   };
-
   await connection.publish(`state.${hookId}`, JSON.stringify(message));
 }

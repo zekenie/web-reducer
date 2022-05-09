@@ -1,15 +1,11 @@
-import type { Request, Response } from "express";
+import { parse } from "cookie";
 import type { IncomingMessage, Server } from "http";
 import IORedis from "ioredis";
 import { URL } from "url";
 import type { WebSocket } from "ws";
 import { WebSocketServer } from "ws";
 import type { Credentials } from "./auth";
-import {
-  cookieParserMiddleware,
-  getNewCredsWithRefreshToken,
-  verifyJwt,
-} from "./auth";
+import { getNewCredsWithRefreshToken, verifyJwt } from "./auth";
 
 type StateHistory = {
   requestId: string;
@@ -37,13 +33,11 @@ const redisConnection = new IORedis(process.env.REDIS_URL!);
 
 function hackyWrapperAroundCookieParser(
   req: IncomingMessage
-): Promise<Record<string, string>> {
-  return new Promise((resolve) => {
-    cookieParserMiddleware(req as Request, {} as Response, () => {
-      // @ts-ignore
-      resolve(req["signedCookies"] as unknown as any);
-    });
-  });
+): Record<string, string> {
+  if (!req.headers.cookie) {
+    return {};
+  }
+  return parse(req.headers.cookie);
 }
 
 export async function doesUserHaveHookAccess({
@@ -71,7 +65,8 @@ export async function doesUserHaveHookAccess({
 const listeners = {
   websocketsForHookIds: {} as { [hookId: string]: Set<WebSocket> },
   add(hookId: string, ws: WebSocket) {
-    this.websocketsForHookIds[hookId] = this.websocketsForHookIds[hookId] || [];
+    this.websocketsForHookIds[hookId] =
+      this.websocketsForHookIds[hookId] || new Set();
     this.websocketsForHookIds[hookId].add(ws);
     if (this.websocketsForHookIds[hookId].size === 1) {
       // setup redis listener
@@ -96,7 +91,7 @@ const listeners = {
     }
     for (const ws of this.websocketsForHookIds[hookId]) {
       if (ws.readyState === ws.OPEN) {
-        ws.emit("state", message);
+        ws.send(message);
       }
     }
   },
@@ -112,28 +107,28 @@ redisConnection.on(
 
 export default function attachWebsocketToServer(server: Server): void {
   server.on("upgrade", async function upgrade(request, socket, head) {
-    const rejectConnection = () => {
-      socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
+    const rejectConnection = (status = 401) => {
+      socket.write(`HTTP/1.1 ${status} Unauthorized\r\n\r\n`);
       socket.destroy();
     };
-
-    const { search } = new URL(request.url!);
-    const searchParams = new URLSearchParams(search);
+    const { searchParams } = new URL(
+      request.url!,
+      `http://${request.headers.host}`
+    );
 
     const hookId = searchParams.get("hookId");
 
     if (!hookId) {
-      return rejectConnection();
+      return rejectConnection(400);
     }
-
-    const cookies = await hackyWrapperAroundCookieParser(request);
+    const cookies = hackyWrapperAroundCookieParser(request);
     const credsString = cookies.credentials;
     let creds: Credentials | null = credsString
       ? JSON.parse(credsString)
       : null;
 
     if (!creds) {
-      return rejectConnection();
+      return rejectConnection(401);
     }
 
     if (!verifyJwt(creds.jwt)) {
@@ -150,7 +145,7 @@ export default function attachWebsocketToServer(server: Server): void {
         hookId,
       }))
     ) {
-      return rejectConnection();
+      return rejectConnection(403);
     }
 
     wss.handleUpgrade(request, socket, head, (ws) => {

@@ -36,8 +36,9 @@ services:
       NODE_ENV: test
       REDIS_URL: redis://redis:6379/0
       PORT: 3000
-      BACKEND_URL: http://code_runner:3001
+      BACKEND_URL: http://server:3001
       JWT_SECRET: asdf
+      COOKIE_SECRET: asdf
   migrator:
     build: ./migrator
     volumes:
@@ -69,7 +70,9 @@ services:
       - shared-tmpfs:/tmp/shared
     environment:
       SERVER_URL: http://server:3001
+      WEB_URL: http://web:3000
       JWT_SECRET: asdf
+      COOKIE_SECRET: asdf
       DATABASE_URL: postgres://postgres:postgres@db:5432/hook
       JEST_ARGS: ${JEST_ARGS}
       RUNNER_URL: http://code_runner:3002

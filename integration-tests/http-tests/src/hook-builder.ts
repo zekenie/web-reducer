@@ -7,6 +7,7 @@ import {
 import { getPool } from "./db";
 import jwtLib from "jsonwebtoken";
 import { AxiosRequestConfig, AxiosResponse } from "axios";
+import { createHash } from "crypto";
 
 export enum VersionWorkflowState {
   DRAFT = "draft",
@@ -51,31 +52,44 @@ type PaginatedHookHistory<PostBody, State> = {
   objects: { state: State; body: PostBody; createdAt: number }[];
 };
 
+export function hashToken(token: string): string {
+  const hash = createHash("sha1");
+  hash.update(token, "utf-8");
+  return hash.digest("hex");
+}
+
 export async function buildAuthenticatedApi(
-  { jwt, guest }: { jwt?: string; guest?: boolean } = { guest: false }
+  { guest }: { guest?: boolean } = { guest: false }
 ) {
   const emailAddress = `${uniqueId()}@gmail.com`;
+  const refreshToken = uniqueId("my-token");
 
-  if (!jwt) {
-    const pool = getPool();
-    const { id: userId } = await pool.one<{ id: string }>(
-      guest
-        ? sql`insert into "user" (id) values (default) returning id`
-        : sql`
+  const pool = getPool();
+  const { id: userId } = await pool.one<{ id: string }>(
+    guest
+      ? sql`insert into "user" (id) values (default) returning id`
+      : sql`
           insert into "user" (email) values (${emailAddress})
           returning id
         `
-    );
+  );
 
-    jwt = jwtLib.sign({}, process.env.JWT_SECRET!, {
-      subject: userId,
-    });
-  }
+  await getPool().any(sql`
+      insert into "refreshToken"
+      ("userId", "token", "createdAt")
+      values
+      (${userId}, ${hashToken(refreshToken)}, NOW())
+    `);
+
+  const jwt = jwtLib.sign({}, process.env.JWT_SECRET!, {
+    subject: userId,
+  });
   const authenticatedClient = makeAuthenticatedServerClient({
     jwt,
   });
 
   return {
+    creds: { jwt, refreshToken },
     authenticatedClient,
     email: guest ? null : emailAddress,
     auth: {
@@ -97,6 +111,16 @@ export async function buildAuthenticatedApi(
       },
     },
     hook: {
+      async writeKey(
+        key: string,
+        body: any,
+        axiosConfig: AxiosRequestConfig = {}
+      ) {
+        return authenticatedClient.post(`/${key}`, {
+          data: JSON.stringify(body),
+          ...axiosConfig,
+        });
+      },
       async history<PostBody, State>(
         id: string,
         { nextToken }: { nextToken?: string } = {},
