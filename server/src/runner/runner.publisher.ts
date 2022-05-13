@@ -6,16 +6,17 @@ import { StateHistory } from "../state/state.types";
 export const connection = new IORedis(process.env.REDIS_URL);
 
 export async function publishState({
-  state,
+  request,
   readKeys,
   hookId,
 }: {
-  state: StateHistory;
+  request: StateHistory;
   readKeys: string[];
   hookId: string;
 }) {
   const message = {
-    state,
+    type: "new-request",
+    request,
     hookId,
     readKeys,
   };

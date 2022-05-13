@@ -42,7 +42,7 @@ export type ConsoleMessage = {
   timestamp: number;
 };
 
-export type StateHistory = {
+export type Request = {
   requestId: string;
   state: unknown;
   body: unknown;
@@ -69,7 +69,7 @@ const hookClientFactory = (httpClient: HttpJsonClient) => ({
 
   async history(id: string, { token }: { token?: string } = {}) {
     const qs = token ? `?token=${token}` : "";
-    return httpClient.get<PaginatedTokenResponse<StateHistory>>(
+    return httpClient.get<PaginatedTokenResponse<Request>>(
       `/hooks/${id}/history${qs}`
     );
   },

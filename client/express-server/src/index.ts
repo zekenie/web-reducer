@@ -1,4 +1,6 @@
-import { config } from "dotenv";
+/* eslint-disable import/first */
+require("dotenv").config({ path: "../.env" });
+
 import { join } from "path";
 import express from "express";
 import compression from "compression";
@@ -8,8 +10,6 @@ import type { Credentials } from "./auth";
 import { cookieParserMiddleware } from "./auth";
 import credentialExchange from "./auth";
 import attachWebsocketToServer from "./authenticated-sockets";
-
-config({ path: "../.env" });
 
 declare global {
   namespace Express {
@@ -57,7 +57,6 @@ app.use(async (req, res, next) => {
     const credsString = req.signedCookies?.credentials;
     const creds = credsString ? JSON.parse(credsString) : {};
     const newCreds = await credentialExchange({ creds });
-    // @todo make secure, configure
     res.setCreds(newCreds);
     req.creds = newCreds;
     next();

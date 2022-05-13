@@ -135,6 +135,11 @@
   dependencies:
     "@types/express" "*"
 
+"@types/cookie-signature@^1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@types/cookie-signature/-/cookie-signature-1.0.4.tgz#164cc7208f35fc379195a9d09431801677fc4559"
+  integrity sha512-B9LOCjVnLniz5NHq8pPFQdDjRGtLZKYG7tQHveMeUalWvZgOuLQ5OeWgx3y4/WLJFt0N+tYyk8HMEOsvCjf7Yw==
+
 "@types/cookie@^0.4.0":
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/@types/cookie/-/cookie-0.4.1.tgz#bfd02c1f2224567676c1545199f87c3a861d878d"
@@ -587,7 +592,7 @@ cookie-signature@1.0.6:
   resolved "https://registry.yarnpkg.com/cookie-signature/-/cookie-signature-1.0.6.tgz#e303a882b342cc3ee8ca513a79999734dab3ae2c"
   integrity sha1-4wOogrNCzD7oylE6eZmXNNqzriw=
 
-cookie-signature@^1.1.0:
+cookie-signature@^1.1.0, cookie-signature@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/cookie-signature/-/cookie-signature-1.2.0.tgz#4deed303f5f095e7a02c979e3fcb19157f5eaeea"
   integrity sha512-R0BOPfLGTitaKhgKROKZQN6iyq2iDQcH1DOF8nJoaWapguX5bC2w+Q/I9NmmM5lfcvEarnLZr+cCvmEYYSXvYA==

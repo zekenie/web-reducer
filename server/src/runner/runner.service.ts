@@ -92,5 +92,5 @@ async function getReadKeysAndPublishState({
 }) {
   const keys = await getKeysForHook({ hookId });
 
-  await publishState({ hookId, readKeys: keys.readKeys, state });
+  await publishState({ hookId, readKeys: keys.readKeys, request: state });
 }

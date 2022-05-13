@@ -1,24 +1,25 @@
 import { serialize } from "cookie";
 import { randomUUID } from "crypto";
-import { sql } from "slonik";
 import { WebSocket } from "ws";
-import { getPool } from "./db";
 import { buildAuthenticatedApi, HookDetail } from "./hook-builder";
 import { allQueuesDrained } from "./server-internals";
 import { testSetup } from "./setup";
+import { sign } from "cookie-signature";
 
 type Credentials = {
   jwt: string;
   refreshToken: string;
 };
 function cookieForCreds(creds: Credentials) {
-  return serialize("credentials", JSON.stringify(creds), {
-    // signed: true,
-
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 1000 * 60 * 60 * 24 * 30,
-  });
+  return serialize(
+    "credentials",
+    `s:${sign(JSON.stringify(creds), process.env.COOKIE_SECRET!)}`,
+    {
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 1000 * 60 * 60 * 24 * 30,
+    }
+  );
 }
 
 function convertEventToPromise<T>(event: string, ws: WebSocket) {

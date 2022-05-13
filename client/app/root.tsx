@@ -7,8 +7,10 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "@remix-run/react";
 import ModalProvider from "./modals/ModalProvider";
+import { json } from "@remix-run/node";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
@@ -16,7 +18,17 @@ export const meta: MetaFunction = () => ({
   viewport: "width=device-width,initial-scale=1",
 });
 
+export async function loader() {
+  return json({
+    ENV: {
+      AUTHENTICATED_SOCKET_URL: process.env.AUTHENTICATED_SOCKET_URL,
+    },
+  });
+}
+
 export default function App() {
+  const data = useLoaderData();
+
   return (
     <html lang="en">
       <head>
@@ -30,6 +42,11 @@ export default function App() {
           </div>
         </ModalProvider>
         <ScrollRestoration />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.ENV = ${JSON.stringify(data.ENV)}`,
+          }}
+        />
         <Scripts />
         <LiveReload />
       </body>

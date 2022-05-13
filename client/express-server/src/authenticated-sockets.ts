@@ -6,8 +6,9 @@ import type { WebSocket } from "ws";
 import { WebSocketServer } from "ws";
 import type { Credentials } from "./auth";
 import { getNewCredsWithRefreshToken, verifyJwt } from "./auth";
+import { unsign } from "cookie-signature";
 
-type StateHistory = {
+type Request = {
   requestId: string;
   state: unknown;
   body: unknown;
@@ -16,11 +17,14 @@ type StateHistory = {
   createdAt: Date;
 };
 
-type SocketMessage = {
-  state: StateHistory;
+type NewRequestMessage = {
+  type: "new-request";
+  request: Request;
   readKeys: string[];
   hookId: string;
 };
+
+type SocketMessage = NewRequestMessage; // | OtherMessage
 
 const wss = new WebSocketServer({ noServer: true, path: "/hook-events" });
 
@@ -31,13 +35,21 @@ const wss = new WebSocketServer({ noServer: true, path: "/hook-events" });
 
 const redisConnection = new IORedis(process.env.REDIS_URL!);
 
-function hackyWrapperAroundCookieParser(
-  req: IncomingMessage
-): Record<string, string> {
+function getCredsFromRequest(req: IncomingMessage): Credentials | null {
   if (!req.headers.cookie) {
-    return {};
+    return null;
   }
-  return parse(req.headers.cookie);
+  const cookies = parse(req.headers.cookie);
+  let cookieStr = cookies.credentials;
+
+  if (cookieStr.startsWith("s:")) {
+    cookieStr = cookieStr.slice(2);
+  }
+  const unsigned = unsign(cookieStr, process.env.COOKIE_SECRET!);
+  if (!unsigned) {
+    return null;
+  }
+  return JSON.parse(unsigned);
 }
 
 export async function doesUserHaveHookAccess({
@@ -121,11 +133,7 @@ export default function attachWebsocketToServer(server: Server): void {
     if (!hookId) {
       return rejectConnection(400);
     }
-    const cookies = hackyWrapperAroundCookieParser(request);
-    const credsString = cookies.credentials;
-    let creds: Credentials | null = credsString
-      ? JSON.parse(credsString)
-      : null;
+    let creds = getCredsFromRequest(request);
 
     if (!creds) {
       return rejectConnection(401);
