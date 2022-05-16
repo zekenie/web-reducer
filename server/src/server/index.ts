@@ -12,6 +12,7 @@ import stateController from "../state/state.controller";
 import workerController from "../worker/worker.controller";
 import makeRequestContextMiddleware from "./request-context.middleware";
 import testInternalsController from "../test-internals/test-internals.controller";
+import helmet from "helmet";
 
 bodyParserXml(bodyParser);
 
@@ -19,6 +20,8 @@ type Config = {};
 
 export default function makeServer(config: Config) {
   const app = express();
+
+  app.use(helmet());
 
   app.use(morgan("dev"));
 
@@ -30,6 +33,7 @@ export default function makeServer(config: Config) {
   app.use(serverMetricsMiddlewareFactory());
 
   app.use(bodyParser.json());
+  app.use(bodyParser.text());
   app.use(bodyParser.xml());
   app.use(bodyParser.urlencoded({ extended: true }));
 

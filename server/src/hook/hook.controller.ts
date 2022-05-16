@@ -43,7 +43,7 @@ export default Router()
   })
   .get("/:id/history", async (req, res, next) => {
     try {
-      const stateHistoryPage = await stateService.readStateHistory(
+      const stateHistoryPage = await stateService.readStateHistoryPage(
         req.params.id,
         {
           token: req.query.token as string,

@@ -39,7 +39,34 @@ function generateSqlFilterExpressionForToken(token?: string) {
   return sql` and ("request"."createdAt", "requestId") < (${createdAt.toISOString()}, ${requestId}) `;
 }
 
-export async function getStateHistory(
+export async function getStateHistoryForRequest({
+  requestId,
+}: {
+  requestId: string;
+}): Promise<StateHistory | null> {
+  const pool = getPool();
+
+  const res = await pool.maybeOne<StateHistory>(sql`
+    select
+      "requestId",
+      state,
+      request."body",
+      error,
+      console,
+      "request"."createdAt"
+    from state
+    join version
+      on version."hookId" = state."hookId"
+    join request
+      on request.id = state."requestId"
+    where "request"."id" = ${requestId}
+    and version."workflowState" = ${VersionWorkflowState.PUBLISHED}
+  `);
+
+  return res;
+}
+
+export async function getStateHistoryPage(
   hookId: string,
   paginationArgs: PaginationQueryArgs
 ): Promise<PaginatedTokenResponse<StateHistory>> {
@@ -87,7 +114,7 @@ export async function getStateHistory(
   };
 }
 
-export async function readState(
+export async function readCurrentState(
   readKey: string
 ): Promise<{ state: unknown } | null> {
   const pool = getPool();

@@ -10,6 +10,7 @@ import type { Credentials } from "./auth";
 import { cookieParserMiddleware } from "./auth";
 import credentialExchange from "./auth";
 import attachWebsocketToServer from "./authenticated-sockets";
+import helmet from "helmet";
 
 declare global {
   namespace Express {
@@ -27,8 +28,7 @@ const BUILD_DIR = join(__dirname, "..", "..", "build");
 const app = express();
 app.use(compression());
 
-// http://expressjs.com/en/advanced/best-practice-security.html#at-a-minimum-disable-x-powered-by-header
-app.disable("x-powered-by");
+app.use(helmet());
 
 app.use(cookieParserMiddleware);
 

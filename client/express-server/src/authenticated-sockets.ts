@@ -12,6 +12,8 @@ type Request = {
   requestId: string;
   state: unknown;
   body: unknown;
+  bodyHash: string;
+  stateHash: string;
   error: any;
   console: any[];
   createdAt: Date;

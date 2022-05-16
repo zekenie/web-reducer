@@ -2,6 +2,7 @@ import bodyParser from "body-parser";
 import express, { NextFunction, Request, Response } from "express";
 import vmController from "../vm/vm.controller";
 import morgan from "morgan";
+import helmet from "helmet";
 
 type Config = {
   onError?: (err: unknown | Error) => void;
@@ -9,6 +10,7 @@ type Config = {
 
 export default function makeServer(config: Config) {
   const app = express();
+  app.use(helmet());
   app.use(morgan("dev"));
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));

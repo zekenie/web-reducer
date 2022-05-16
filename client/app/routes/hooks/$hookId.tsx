@@ -49,7 +49,7 @@ export default function Hook() {
           </Tabs>
 
           <div className="overflow-y-scroll flex flex-col flex-1 flex-grow p-2">
-            <Outlet />
+            <Outlet context={{ hook }} />
           </div>
         </div>
       </section>

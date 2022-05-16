@@ -2,6 +2,7 @@ import { getCodeByWriteKey, getKeysForHook } from "../hook/hook.db";
 import { HookWorkflowState } from "../hook/hook.types";
 import { getRequestToRun } from "../request/request.db";
 import { createState, fetchState, isIdempotencyKeyOk } from "../state/state.db";
+import { readStateHistory } from "../state/state.service";
 import { StateHistory } from "../state/state.types";
 import { publishState } from "./runner.publisher";
 import { runCode } from "./vm.remote";
@@ -67,16 +68,13 @@ export async function runHook(requestId: string): Promise<void> {
   });
 
   try {
+    const stateHistory = await readStateHistory({ requestId });
+    if (!stateHistory) {
+      return;
+    }
     await getReadKeysAndPublishState({
       hookId,
-      state: {
-        body: request.body,
-        console,
-        createdAt: new Date(request.createdAt),
-        error,
-        requestId: request.id,
-        state: newState,
-      },
+      state: stateHistory,
     });
   } catch (e) {
     // don't fail the job just because we couldn't notify about the state

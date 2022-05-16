@@ -45,7 +45,9 @@ export type ConsoleMessage = {
 export type Request = {
   requestId: string;
   state: unknown;
+  stateHash: string;
   body: unknown;
+  bodyHash: string;
   error: RuntimeError;
   console: ConsoleMessage;
   createdAt: Date;

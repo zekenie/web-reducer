@@ -45,3 +45,22 @@
 - having state be its own table because we can bulk insert
 - will have to stream requests and do the whole async cargo queue thing
 - versions workflow states will something like "provisioning"
+
+## secrets
+
+- separate express server?
+- secrets are in groups
+  - you can list them by group name (in this case hook id?)
+- key encryption key?
+- crud at the key level
+- need to delete group when hook is removed
+- namespaces are in plain text on the secret server
+- but, hook has a secret namespace column, and it is encrypted with env var
+- our secret server can be hit by anyone in our private network, but knowing the namespace is key
+- secret server not responsible for access, that's the monolith
+
+```
+app POST /namespaces on secret server
+  res: { secret: 'foobar' }
+  // sha1("foobar") stored on
+```

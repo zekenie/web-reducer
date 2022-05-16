@@ -8,3 +8,8 @@ export type StateHistory = {
   console: ConsoleMessage[];
   createdAt: Date;
 };
+
+export type StateHistoryContract = StateHistory & {
+  bodyHash: string;
+  stateHash: string;
+};

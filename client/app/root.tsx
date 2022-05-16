@@ -11,6 +11,7 @@ import {
 } from "@remix-run/react";
 import ModalProvider from "./modals/ModalProvider";
 import { json } from "@remix-run/node";
+import { Toaster } from "react-hot-toast";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
@@ -22,6 +23,7 @@ export async function loader() {
   return json({
     ENV: {
       AUTHENTICATED_SOCKET_URL: process.env.AUTHENTICATED_SOCKET_URL,
+      SITE_URL: process.env.SITE_URL,
     },
   });
 }
@@ -40,6 +42,7 @@ export default function App() {
           <div className="flex flex-col h-screen overflow-hidden">
             <Outlet />
           </div>
+          <Toaster position="bottom-right" />
         </ModalProvider>
         <ScrollRestoration />
         <script
