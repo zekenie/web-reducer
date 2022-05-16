@@ -35,7 +35,7 @@ const wss = new WebSocketServer({ noServer: true, path: "/hook-events" });
  * maybe switch to Kafka at greater scale...
  */
 
-const redisConnection = new IORedis(process.env.REDIS_URL!);
+export const redisConnection = new IORedis(process.env.REDIS_URL!);
 
 function getCredsFromRequest(req: IncomingMessage): Credentials | null {
   if (!req.headers.cookie) {

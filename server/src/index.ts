@@ -4,6 +4,7 @@ import tracing from "./tracing";
 
 import { getPool } from "./db";
 import { connection as redisConnection } from "./redis";
+import { connection as redisPublisherConnection } from "./runner/runner.publisher";
 import "./worker/all-workers";
 import { runWorkers } from "./worker/workers";
 
@@ -23,6 +24,7 @@ tracing.start().then(async () => {
       server.close(async () => {
         try {
           await redisConnection.quit();
+          await redisPublisherConnection.quit();
           const pool = getPool();
           await pool.end();
         } catch (e) {

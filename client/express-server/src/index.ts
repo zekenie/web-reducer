@@ -9,7 +9,9 @@ import { createRequestHandler } from "@remix-run/express";
 import type { Credentials } from "./auth";
 import { cookieParserMiddleware } from "./auth";
 import credentialExchange from "./auth";
-import attachWebsocketToServer from "./authenticated-sockets";
+import attachWebsocketToServer, {
+  redisConnection,
+} from "./authenticated-sockets";
 import helmet from "helmet";
 
 declare global {
@@ -107,3 +109,23 @@ function purgeRequireCache() {
     }
   }
 }
+
+function closeGracefully(signal: string) {
+  try {
+    console.log(`*^!@4=> Received signal to terminate: ${signal}`);
+
+    server.close(async () => {
+      try {
+        await redisConnection.quit();
+      } catch (e) {
+        return process.exit(1);
+      }
+      process.exit();
+    });
+  } catch (e) {
+    console.error("error responding to ", signal);
+    process.exit(1);
+  }
+}
+process.on("SIGINT", closeGracefully);
+process.on("SIGTERM", closeGracefully);
