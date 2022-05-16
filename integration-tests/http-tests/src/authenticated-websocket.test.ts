@@ -104,8 +104,12 @@ describe("authenticated socket", () => {
       const asJson = JSON.parse(msg.toString());
       expect(asJson).toEqual(
         expect.objectContaining({
-          state: expect.objectContaining({
+          type: "new-request",
+          hookId: hook.id,
+          request: expect.objectContaining({
             state: { foo: 3 },
+            stateHash: expect.any(String),
+            bodyHash: expect.any(String),
           }),
         })
       );
