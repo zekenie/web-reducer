@@ -3,10 +3,10 @@ import { unauthenticatedServerClient } from "./clients";
 import { getPool } from "./db";
 import { buildHook } from "./hook-builder";
 import { allQueuesDrained } from "./server-internals";
-import { testSetup } from "./setup";
+import { serverTestSetup } from "./setup";
 
 describe("existing hooks", () => {
-  testSetup();
+  serverTestSetup();
 
   it("has a context", async () => {
     const { context } = await buildHook();

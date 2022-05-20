@@ -3,20 +3,21 @@ import { sql } from "slonik";
 import { TopologicalSort } from "topological-sort";
 import { getPool } from ".";
 
-const getSafeDependencyOrder = once(
-  async function _getSafeDependencyOrder(): Promise<string[]> {
-    const graph = new TopologicalSort(new Map());
-    const pool = getPool();
-    const rows = await pool.many<{
-      table_schema: string;
-      constraint_name: string;
-      table_name: string;
-      column_name: string;
-      foreign_table_schema: string;
-      foreign_table_name: string;
-      foreign_column_name: string;
-    }>(
-      sql`
+const getSafeDependencyOrder = once(async function _getSafeDependencyOrder(
+  uri?: string
+): Promise<string[]> {
+  const graph = new TopologicalSort(new Map());
+  const pool = getPool("default", uri);
+  const rows = await pool.many<{
+    table_schema: string;
+    constraint_name: string;
+    table_name: string;
+    column_name: string;
+    foreign_table_schema: string;
+    foreign_table_name: string;
+    foreign_column_name: string;
+  }>(
+    sql`
       with all_foreign_keys as (
         SELECT
             tc.table_schema,
@@ -40,29 +41,28 @@ const getSafeDependencyOrder = once(
       and column_name != foreign_column_name
       group by table_name, foreign_table_name
     `
-    );
+  );
 
-    const allTables = uniq([
-      ...rows.map((row) => row.table_name),
-      ...rows.map((row) => row.foreign_table_name),
-    ]);
+  const allTables = uniq([
+    ...rows.map((row) => row.table_name),
+    ...rows.map((row) => row.foreign_table_name),
+  ]);
 
-    for (const table of allTables) {
-      graph.addNode(table, table);
-    }
-
-    for (const row of rows) {
-      graph.addEdge(row.table_name, row.foreign_table_name);
-    }
-
-    return [...graph.sort().keys()];
+  for (const table of allTables) {
+    graph.addNode(table, table);
   }
-);
 
-export async function cleanup() {
-  const safeDependencyOrder = await getSafeDependencyOrder();
+  for (const row of rows) {
+    graph.addEdge(row.table_name, row.foreign_table_name);
+  }
 
-  const pool = getPool();
+  return [...graph.sort().keys()];
+});
+
+export async function cleanup(uri?: string) {
+  const safeDependencyOrder = await getSafeDependencyOrder(uri);
+
+  const pool = getPool("default", uri);
 
   for (const table of safeDependencyOrder) {
     await pool.any(sql`

@@ -4,7 +4,7 @@ import { clear } from "./server-internals";
 
 const pool = getPool();
 
-export function testSetup() {
+export function serverTestSetup() {
   beforeEach(async () => {
     await cleanup();
     await clear();
@@ -12,5 +12,15 @@ export function testSetup() {
 
   afterAll(async () => {
     return pool.end();
+  });
+}
+
+export function secretsTestSetup() {
+  beforeEach(async () => {
+    await cleanup(process.env.SECRETS_DATABASE_URL!);
+  });
+
+  afterAll(async () => {
+    return getPool("default", process.env.SECRETS_DATABASE_URL!).end();
   });
 }

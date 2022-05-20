@@ -1,5 +1,6 @@
 node_modules
 postgres-data
+secrets-data
 dist/yarn-error.log
 yarn-error.log
 dist/

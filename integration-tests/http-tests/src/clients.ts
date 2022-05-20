@@ -54,3 +54,16 @@ runnerClient.interceptors.response.use(
     throw ourErr;
   }
 );
+
+export const secretsClient = axios.create({
+  baseURL: process.env.SECRETS_URL,
+});
+
+secretsClient.interceptors.response.use(
+  (r) => r,
+  (err) => {
+    const ourErr = new HttpClientErr("secret client error");
+    ourErr.originalError = err;
+    throw ourErr;
+  }
+);

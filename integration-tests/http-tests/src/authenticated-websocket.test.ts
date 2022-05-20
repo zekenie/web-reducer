@@ -3,7 +3,7 @@ import { randomUUID } from "crypto";
 import { WebSocket } from "ws";
 import { buildAuthenticatedApi, HookDetail } from "./hook-builder";
 import { allQueuesDrained } from "./server-internals";
-import { testSetup } from "./setup";
+import { serverTestSetup } from "./setup";
 import { sign } from "cookie-signature";
 
 type Credentials = {
@@ -31,7 +31,7 @@ function convertEventToPromise<T>(event: string, ws: WebSocket) {
 }
 
 describe("authenticated socket", () => {
-  testSetup();
+  serverTestSetup();
   let api: Awaited<ReturnType<typeof buildAuthenticatedApi>>;
   let hook: HookDetail;
   beforeEach(async () => {

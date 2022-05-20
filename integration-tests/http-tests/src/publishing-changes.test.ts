@@ -3,10 +3,10 @@ import { unauthenticatedServerClient } from "./clients";
 import { getPool } from "./db";
 import { buildAuthenticatedApi, buildHook } from "./hook-builder";
 import { allQueuesDrained } from "./server-internals";
-import { testSetup } from "./setup";
+import { serverTestSetup } from "./setup";
 
 describe("/publish", () => {
-  testSetup();
+  serverTestSetup();
   describe("as an unauthenticated client", () => {
     it("should reject requests", async () => {
       const { context } = await buildHook();

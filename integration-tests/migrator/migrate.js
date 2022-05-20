@@ -1,6 +1,8 @@
 const { SlonikMigrator } = require("@slonik/migrator");
 const { createPool } = require("slonik");
 
+console.log("db env", process.env.DATABASE_URL);
+
 // in an existing slonik project, this would usually be setup in another module
 const slonik = createPool(process.env.DATABASE_URL); // e.g. 'postgresql://postgres:postgres@localhost:5433/postgres'
 

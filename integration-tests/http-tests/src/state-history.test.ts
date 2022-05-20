@@ -2,10 +2,10 @@ import { last } from "lodash";
 import { sql } from "slonik";
 import { getPool } from "./db";
 import { buildAuthenticatedApi, buildHook } from "./hook-builder";
-import { testSetup } from "./setup";
+import { serverTestSetup } from "./setup";
 
 describe("existing hooks", () => {
-  testSetup();
+  serverTestSetup();
 
   it("only allows reading history for user with access", async () => {
     const body1 = { number: 4 };

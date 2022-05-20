@@ -1,3 +1,3 @@
 #!/bin/sh
 
-exec dumb-init "$@" | yarn roarr pretty-print
+exec dumb-init "$@"

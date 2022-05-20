@@ -13,13 +13,24 @@ services:
     image: supabase/postgres:13.3.0
     shm_size: 2g
     ports:
-      - "5433:5432"
+      - "5432:5432"
     environment:
       - POSTGRES_DB=hook
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
+  secrets_db:
+    image: supabase/postgres:13.3.0
+    shm_size: 2g
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_DB=hook_secrets
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ./secrets-data:/var/lib/postgresql/data
   redis:
     image: redis:6.2.6
     ports:
@@ -39,14 +50,41 @@ services:
       BACKEND_URL: http://server:3001
       JWT_SECRET: asdf
       COOKIE_SECRET: asdf
+  secrets:
+    build: ../secrets
+    ports:
+      - 3003:3003
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@secrets_db:5432/hook_secrets
+      PORT: 3003
+      ENCRYPTION_SECRET: foobarbaz
+    depends_on:
+      - secrets_db
   migrator:
     build: ./migrator
     volumes:
       - shared-tmpfs:/tmp/shared
+      - ../server/migrations:/usr/src/app/migrations
     environment:
       DATABASE_URL: postgres://postgres:postgres@db:5432/hook
+      MIGRATOR_NAME: server
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
     depends_on:
       - db
+    restart: on-failure
+  secrets_migrator:
+    build: ./migrator
+    volumes:
+      - shared-tmpfs:/tmp/shared
+      - ../secrets/migrations:/usr/src/app/migrations
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@secrets_db:5432/hook_secrets
+      MIGRATOR_NAME: secrets
+      DATABASE_HOST: secrets_db
+      DATABASE_PORT: 5432
+    depends_on:
+      - secrets_db
     restart: on-failure
   server:
     build: ../server
@@ -74,11 +112,15 @@ services:
       JWT_SECRET: asdf
       COOKIE_SECRET: asdf
       DATABASE_URL: postgres://postgres:postgres@db:5432/hook
+      SECRETS_DATABASE_URL: postgres://postgres:postgres@secrets_db:5432/hook_secrets
       JEST_ARGS: ${JEST_ARGS}
       RUNNER_URL: http://code_runner:3002
+      SECRETS_URL: http://secrets:3003
     # https://github.com/compose-spec/compose-spec/blob/master/spec.md#long-syntax-1
     depends_on:
       - server
+      - secrets_db
+      - secrets
       - db
       - migrator
       - code_runner

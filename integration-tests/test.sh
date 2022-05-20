@@ -1,8 +1,8 @@
 #!/bin/sh
 
-rm -rf ./migrator/migrations
+# rm -rf ./migrator/migrations
 
-cp -R ../server/migrations ./migrator/migrations
+# cp -R ../server/migrations ./migrator/migrations
 
 docker-compose build
 JEST_ARGS=$1 docker-compose up \

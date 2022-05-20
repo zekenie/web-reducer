@@ -60,7 +60,7 @@
     "nilsimsa": "^0.2.7",
     "rate-limit-redis": "^2.1.0",
     "roarr": "^7.8.0",
-    "slonik": "^25.1.3",
+    "slonik": "^28.1.0",
     "slonik-interceptor-query-logging": "^1.4.2",
     "typescript": "^4.5.2",
     "uuid": "^8.3.2"

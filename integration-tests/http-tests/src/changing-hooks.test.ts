@@ -1,11 +1,11 @@
 import { getPool } from "./db";
 import { buildAuthenticatedApi } from "./hook-builder";
-import { testSetup } from "./setup";
+import { serverTestSetup } from "./setup";
 
 const pool = getPool();
 
 describe("changing hooks", () => {
-  testSetup();
+  serverTestSetup();
   it("successfully creates a hook", async () => {
     const authedApi = await buildAuthenticatedApi();
     const res = await authedApi.hook.create();
