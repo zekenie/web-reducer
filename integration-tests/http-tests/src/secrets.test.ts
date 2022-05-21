@@ -24,10 +24,14 @@ describe("secrets", () => {
   it("creates a secret", async () => {
     const { data } = await secretsClient.post("/");
 
-    const { status } = await secretsClient.post(`/${data.accessKey}/secrets`, {
-      key: "foo",
-      value: "bar",
-    });
+    const { status } = await secretsClient.post(
+      `/secrets`,
+      {
+        key: "foo",
+        value: "bar",
+      },
+      { params: { accessKey: data.accessKey } }
+    );
 
     expect(status).toEqual(201);
   });
@@ -35,21 +39,26 @@ describe("secrets", () => {
   it("allows overwriting of a secret", async () => {
     const { data } = await secretsClient.post("/");
 
-    const { status } = await secretsClient.post(`/${data.accessKey}/secrets`, {
-      key: "foo",
-      value: "bar",
-    });
+    const { status } = await secretsClient.post(
+      `/secrets`,
+      {
+        key: "foo",
+        value: "bar",
+      },
+      { params: { accessKey: data.accessKey } }
+    );
 
     const { status: secondStatus } = await secretsClient.post(
-      `/${data.accessKey}/secrets`,
+      `/secrets`,
       {
         key: "foo",
         value: "baz",
-      }
+      },
+      { params: { accessKey: data.accessKey } }
     );
-    const { data: secretsReadData } = await secretsClient.get(
-      `/${data.accessKey}/secrets`
-    );
+    const { data: secretsReadData } = await secretsClient.get(`/secrets`, {
+      params: { accessKey: data.accessKey },
+    });
 
     expect(status).toEqual(201);
     expect(secondStatus).toEqual(201);
@@ -60,14 +69,14 @@ describe("secrets", () => {
   it("can delete a namespace", async () => {
     const { data } = await secretsClient.post("/");
 
-    const { status: deleteStatus } = await secretsClient.delete(
-      `/${data.accessKey}`
-    );
+    const { status: deleteStatus } = await secretsClient.delete("/", {
+      params: { accessKey: data.accessKey },
+    });
 
-    const { status: getStatus } = await secretsClient.get(
-      `/${data.accessKey}/secrets`,
-      { validateStatus: () => true }
-    );
+    const { status: getStatus } = await secretsClient.get(`/secrets`, {
+      validateStatus: () => true,
+      params: { accessKey: data.accessKey },
+    });
 
     expect(deleteStatus).toEqual(202);
     expect(getStatus).toEqual(404);
@@ -76,19 +85,22 @@ describe("secrets", () => {
   it("can delete a secret", async () => {
     const { data } = await secretsClient.post("/");
 
-    await secretsClient.post(`/${data.accessKey}/secrets`, {
-      key: "foo",
-      value: "baz",
-    });
-
-    const { status: deleteStatus } = await secretsClient.delete(
-      `/${data.accessKey}/secrets`,
-      { params: { key: "foo" } }
+    await secretsClient.post(
+      `/secrets`,
+      {
+        key: "foo",
+        value: "baz",
+      },
+      { params: { key: "foo", accessKey: data.accessKey } }
     );
 
+    const { status: deleteStatus } = await secretsClient.delete(`/secrets`, {
+      params: { key: "foo", accessKey: data.accessKey },
+    });
+
     const { status: getStatus, data: getData } = await secretsClient.get(
-      `/${data.accessKey}/secrets`,
-      { validateStatus: () => true }
+      `/secrets`,
+      { validateStatus: () => true, params: { accessKey: data.accessKey } }
     );
 
     expect(deleteStatus).toEqual(202);
@@ -99,21 +111,26 @@ describe("secrets", () => {
   it("reads secrets", async () => {
     const { data } = await secretsClient.post("/");
 
-    const { status } = await secretsClient.post(`/${data.accessKey}/secrets`, {
-      key: "foo",
-      value: "bar",
-    });
+    const { status } = await secretsClient.post(
+      `/secrets`,
+      {
+        key: "foo",
+        value: "bar",
+      },
+      { params: { accessKey: data.accessKey } }
+    );
 
     const { status: secondStatus } = await secretsClient.post(
-      `/${data.accessKey}/secrets`,
+      `/secrets`,
       {
         key: "foo2",
         value: "baz",
-      }
+      },
+      { params: { accessKey: data.accessKey } }
     );
-    const { data: secretsReadData } = await secretsClient.get(
-      `/${data.accessKey}/secrets`
-    );
+    const { data: secretsReadData } = await secretsClient.get(`/secrets`, {
+      params: { accessKey: data.accessKey },
+    });
 
     expect(status).toEqual(201);
     expect(secondStatus).toEqual(201);

@@ -1,5 +1,5 @@
 import validate from "../middleware/validate.middleware";
-import { Router } from "express";
+import { RequestHandler, Router } from "express";
 import * as service from "./namespace.service";
 import * as secretService from "../secret/secret.service";
 import CreateSecretInput from "./inputs/create-secret.input";
@@ -7,6 +7,23 @@ import {
   InvalidKeyParamError,
   MissingKeyParamError,
 } from "../secret/secret.errors";
+
+function requireStringQueryParams(...requiredStrings: string[]) {
+  const middleware: RequestHandler = (req, res, next) => {
+    for (const requiredString of requiredStrings) {
+      const str = req.query[requiredString];
+      if (!str) {
+        return next(new MissingKeyParamError(requiredString));
+      }
+      if (typeof str !== "string") {
+        return next(new InvalidKeyParamError(requiredString));
+      }
+    }
+    next();
+  };
+
+  return middleware;
+}
 
 export default Router()
   .post("/", async (req, res, next) => {
@@ -17,23 +34,28 @@ export default Router()
       next(e);
     }
   })
-  .get("/:accessKey/secrets", async (req, res, next) => {
-    try {
-      const secrets = await service.getSecretsForNamespace({
-        accessKey: req.params.accessKey,
-      });
-      res.status(200).json({ secrets });
-    } catch (e) {
-      next(e);
+  .get(
+    "/secrets",
+    requireStringQueryParams("accessKey"),
+    async (req, res, next) => {
+      try {
+        const secrets = await service.getSecretsForNamespace({
+          accessKey: req.query.accessKey as string,
+        });
+        res.status(200).json({ secrets });
+      } catch (e) {
+        next(e);
+      }
     }
-  })
+  )
   .post(
-    "/:accessKey/secrets",
+    "/secrets",
     validate(CreateSecretInput),
+    requireStringQueryParams("accessKey"),
     async (req, res, next) => {
       try {
         await secretService.createSecret({
-          accessKey: req.params.accessKey,
+          accessKey: req.query.accessKey as string,
           key: req.body.key,
           value: req.body.value,
         });
@@ -43,28 +65,32 @@ export default Router()
       }
     }
   )
-  .delete("/:accessKey", async (req, res, next) => {
-    try {
-      await service.deleteNamespace({ accessKey: req.params.accessKey });
-      res.status(202).json({ deleted: true });
-    } catch (e) {
-      next(e);
-    }
-  })
-  .delete("/:accessKey/secrets", async (req, res, next) => {
-    try {
-      if (!req.query.key) {
-        throw new MissingKeyParamError();
+  .delete(
+    "/",
+    requireStringQueryParams("accessKey"),
+    async (req, res, next) => {
+      try {
+        await service.deleteNamespace({
+          accessKey: req.query.accessKey as string,
+        });
+        res.status(202).json({ deleted: true });
+      } catch (e) {
+        next(e);
       }
-      if (typeof req.query.key !== "string") {
-        throw new InvalidKeyParamError();
-      }
-      await secretService.deleteSecret({
-        accessKey: req.params.accessKey,
-        key: req.query.key,
-      });
-      res.status(202).json({ deleted: true });
-    } catch (e) {
-      next(e);
     }
-  });
+  )
+  .delete(
+    "/secrets",
+    requireStringQueryParams("key", "accessKey"),
+    async (req, res, next) => {
+      try {
+        await secretService.deleteSecret({
+          accessKey: req.query.accessKey as string,
+          key: req.query.key as string,
+        });
+        res.status(202).json({ deleted: true });
+      } catch (e) {
+        next(e);
+      }
+    }
+  );
