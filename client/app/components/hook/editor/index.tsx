@@ -25,7 +25,7 @@ function EditorSwitch({
         <Editor
           options={options}
           onChange={onChange}
-          defaultLanguage="typescript"
+          defaultLanguage="javascript"
           defaultValue={hook.draft}
         />
       );
@@ -33,8 +33,8 @@ function EditorSwitch({
       return (
         <DiffEditor
           original={hook.published}
-          originalLanguage="typescript"
-          modifiedLanguage="typescript"
+          originalLanguage="javascript"
+          modifiedLanguage="javascript"
           modified={hook.draft}
           options={{ ...options, renderSideBySide: false, readOnly: true }}
         />

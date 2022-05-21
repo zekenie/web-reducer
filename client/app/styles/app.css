@@ -531,16 +531,16 @@ Ensure the default browser behavior of the `hidden` attribute.
   height: 100vh;
 }
 
+.h-5 {
+  height: 1.25rem;
+}
+
 .h-3\.5 {
   height: 0.875rem;
 }
 
 .h-3 {
   height: 0.75rem;
-}
-
-.h-5 {
-  height: 1.25rem;
 }
 
 .h-7 {
@@ -561,6 +561,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .max-h-96 {
   max-height: 24rem;
+}
+
+.w-5 {
+  width: 1.25rem;
 }
 
 .w-3\.5 {
@@ -599,10 +603,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .w-2 {
   width: 0.5rem;
-}
-
-.w-5 {
-  width: 1.25rem;
 }
 
 .max-w-2xl {
@@ -825,14 +825,18 @@ Ensure the default browser behavior of the `hidden` attribute.
   border-color: rgb(44 92 58 / var(--tw-border-opacity));
 }
 
-.bg-canvas-50 {
+.bg-sky-50 {
   --tw-bg-opacity: 1;
-  background-color: rgb(245 246 247 / var(--tw-bg-opacity));
+  background-color: rgb(247 250 252 / var(--tw-bg-opacity));
 }
 
 .bg-white {
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+}
+
+.bg-transparent {
+  background-color: transparent;
 }
 
 .bg-sky-100 {
@@ -842,6 +846,11 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .bg-slate-700\/75 {
   background-color: rgb(51 65 85 / 0.75);
+}
+
+.bg-canvas-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(245 246 247 / var(--tw-bg-opacity));
 }
 
 .bg-gold-200 {
@@ -867,25 +876,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 .bg-slate-50 {
   --tw-bg-opacity: 1;
   background-color: rgb(248 250 252 / var(--tw-bg-opacity));
-}
-
-.bg-transparent {
-  background-color: transparent;
-}
-
-.bg-fern-50 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(247 252 248 / var(--tw-bg-opacity));
-}
-
-.bg-sunglo-50 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(254 248 248 / var(--tw-bg-opacity));
-}
-
-.bg-sky-50 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(247 250 252 / var(--tw-bg-opacity));
 }
 
 .p-1 {
@@ -1011,6 +1001,11 @@ Ensure the default browser behavior of the `hidden` attribute.
   font-weight: 800;
 }
 
+.text-fern-600 {
+  --tw-text-opacity: 1;
+  color: rgb(81 169 106 / var(--tw-text-opacity));
+}
+
 .text-canvas-400 {
   --tw-text-opacity: 1;
   color: rgb(109 134 145 / var(--tw-text-opacity));
@@ -1029,21 +1024,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
-}
-
-.text-fern-400 {
-  --tw-text-opacity: 1;
-  color: rgb(140 208 159 / var(--tw-text-opacity));
-}
-
-.text-fern-500 {
-  --tw-text-opacity: 1;
-  color: rgb(90 188 118 / var(--tw-text-opacity));
-}
-
-.text-fern-600 {
-  --tw-text-opacity: 1;
-  color: rgb(81 169 106 / var(--tw-text-opacity));
 }
 
 .text-fern-900 {
@@ -1070,6 +1050,12 @@ Ensure the default browser behavior of the `hidden` attribute.
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 
+.transition-transform {
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
 .transition {
   transition-property: color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
@@ -1078,10 +1064,8 @@ Ensure the default browser behavior of the `hidden` attribute.
   transition-duration: 150ms;
 }
 
-.transition-transform {
-  transition-property: transform;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+.duration-300 {
+  transition-duration: 300ms;
 }
 
 .duration-200 {
@@ -1092,26 +1076,12 @@ Ensure the default browser behavior of the `hidden` attribute.
   transition-duration: 150ms;
 }
 
-.duration-300 {
-  transition-duration: 300ms;
-}
-
 .ease-out {
   transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
 }
 
 .ease-in {
   transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
-}
-
-.hover\:rotate-3:hover {
-  --tw-rotate: 3deg;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
-.hover\:-rotate-2:hover {
-  --tw-rotate: -2deg;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
 .hover\:-rotate-1:hover {

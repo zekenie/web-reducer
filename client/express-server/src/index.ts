@@ -30,7 +30,11 @@ const BUILD_DIR = join(__dirname, "..", "..", "build");
 const app = express();
 app.use(compression());
 
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+  })
+);
 
 app.use(cookieParserMiddleware);
 
