@@ -1,11 +1,13 @@
-import { getPool, transaction } from "../db";
-import UpdateHook from "./inputs/update-hook.input";
-import * as db from "./hook.db";
-import { createKey } from "../key/key.db";
 import { provisionAccess } from "../access/access.db";
+import { encrypt } from "../crypto/crypto.service";
+import { transaction } from "../db";
+import { createKey } from "../key/key.db";
+import * as secretService from "../secret/secret.remote";
 import { enqueue } from "../worker/queue.service";
 import { generateUnusedHookName } from "./hook-name.service";
-import { HookDetail, HookOverview } from "./hook.types";
+import * as db from "./hook.db";
+import { HookDetail } from "./hook.types";
+import UpdateHook from "./inputs/update-hook.input";
 
 export async function listHooks({ userId }: { userId: string }) {
   return db.listHooks({ userId });
@@ -27,17 +29,30 @@ export async function createHook({
 }: {
   userId: string;
 }): Promise<HookDetail> {
-  return transaction(async () => {
-    const name = await generateUnusedHookName();
-    const hookId = await db.createHook({ name });
-    await Promise.all([
-      provisionAccess({ hookId, userId }),
-      createKey({ type: "write", hookId }),
-      createKey({ type: "read", hookId }),
-    ]);
-    // return { hookId, writeKey, readKey };
-    return readHook(hookId);
-  });
+  const { accessKey: secretNamespaceAccessKey } =
+    await secretService.createNamespace();
+  const encryptedSecretAccessKey = encrypt(
+    secretNamespaceAccessKey,
+    process.env.SECRET_ACCESS_KEY_KEY!
+  );
+  try {
+    return transaction(async () => {
+      const name = await generateUnusedHookName();
+      const hookId = await db.createHook({ name, encryptedSecretAccessKey });
+      await Promise.all([
+        provisionAccess({ hookId, userId }),
+        createKey({ type: "write", hookId }),
+        createKey({ type: "read", hookId }),
+      ]);
+      // return { hookId, writeKey, readKey };
+      return readHook(hookId);
+    });
+  } catch (e) {
+    await secretService.deleteNamespace({
+      accessKey: secretNamespaceAccessKey,
+    });
+    throw e;
+  }
 }
 
 export async function updateDraft(hookId: string, input: UpdateHook) {

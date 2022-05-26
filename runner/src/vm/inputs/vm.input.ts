@@ -15,4 +15,9 @@ export default class VMInput {
   @IsString()
   @MaxLength(115 * 1000)
   readonly requestJson: string;
+
+  @IsJSON()
+  @IsString()
+  @MaxLength(10 * 1000)
+  readonly secretsJson: string;
 }

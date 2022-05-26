@@ -62,6 +62,7 @@ describe("/publish", () => {
 
       await api.publish();
       await allQueuesDrained();
+      await allQueuesDrained();
 
       const stateAfterPublish = await api.read();
 

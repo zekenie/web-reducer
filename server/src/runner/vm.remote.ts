@@ -30,16 +30,19 @@ type CodeResponse = {
 export async function runCode({
   code,
   request,
+  secrets,
   state,
 }: {
   code: string;
   request: WebhookRequest;
   state: unknown;
+  secrets: Record<string, string>;
 }): Promise<CodeResponse> {
   const res = await client.post<CodeResponse>("/", {
     code,
     requestJson: JSON.stringify(request),
     state: state ? JSON.stringify(state) : undefined,
+    secretsJson: JSON.stringify(secrets),
   });
   return res.data;
 }
@@ -48,11 +51,13 @@ export async function runCodeBulk({
   code,
   requests,
   idempotencyKeysToIgnore,
+  secrets,
   state,
 }: {
   code: string;
   requests: WebhookRequest[];
   idempotencyKeysToIgnore: string[];
+  secrets: Record<string, string>;
   state: unknown;
 }): Promise<CodeResponse[]> {
   const { data } = await client.post<CodeResponse[]>("/bulk", {
@@ -60,6 +65,7 @@ export async function runCodeBulk({
     requestsJson: JSON.stringify(requests),
     invalidIdempotencyKeys: idempotencyKeysToIgnore,
     state: JSON.stringify(state),
+    secretsJson: JSON.stringify(secrets),
   });
   return data;
 }

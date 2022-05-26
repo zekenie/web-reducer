@@ -1,4 +1,4 @@
-import { uniqueId } from "lodash";
+import { first, uniqueId } from "lodash";
 import { sql } from "slonik";
 import {
   makeAuthenticatedServerClient,
@@ -8,6 +8,7 @@ import { getPool } from "./db";
 import jwtLib from "jsonwebtoken";
 import { AxiosRequestConfig, AxiosResponse } from "axios";
 import { createHash } from "crypto";
+import { allQueuesDrained } from "./server-internals";
 
 export enum VersionWorkflowState {
   DRAFT = "draft",
@@ -44,7 +45,6 @@ type Context = {
   writeKey: string;
   readKey: string;
   hookId: string;
-  versionId: string;
 };
 
 type PaginatedHookHistory<PostBody, State> = {
@@ -195,6 +195,21 @@ function buildApi<PostBody, State>(context: Context) {
         `${context.writeKey}/settled/${id}`
       );
     },
+    async setSecret(key: string, value: string): Promise<void> {
+      await authenticatedClient.post(`/secrets/${context.hookId}`, {
+        key,
+        value,
+      });
+    },
+    async deleteSecret(key: string): Promise<void> {
+      await authenticatedClient.delete(`/secrets/${context.hookId}?key=${key}`);
+    },
+    async getSecrets(): Promise<Record<string, string>> {
+      const { data } = await authenticatedClient.get(
+        `/secrets/${context.hookId}`
+      );
+      return data.secrets;
+    },
     async read(): Promise<State> {
       const { data } = await unauthenticatedServerClient.get<State>(
         `/${context.readKey}`
@@ -226,59 +241,64 @@ function buildApi<PostBody, State>(context: Context) {
 export async function buildHook<PostBody, State>({
   bodies,
   code = "function reducer (oldState = { number: 0 }, req) { return { number: oldState.number + req.body.number } }",
-  email = `${uniqueId()}@test.com`,
 }: {
   bodies?: PostBody[];
   code?: string;
-  email?: string;
 } = {}) {
-  const pool = getPool();
-  const { id: userId } = await pool.one<{ id: string }>(sql`
-    insert into "user" (email) values (${email})
-    returning id
-  `);
+  const authedApi = await buildAuthenticatedApi({});
 
-  const jwt = jwtLib.sign({}, process.env.JWT_SECRET!, {
-    subject: userId,
-  });
+  // const pool = getPool();
+  // const { id: userId } = await pool.one<{ id: string }>(sql`
+  //   insert into "user" (email) values (${email})
+  //   returning id
+  // `);
 
-  const { id: hookId } = await pool.one<{ id: string }>(sql`
-    insert into hook (id) values (default)
-    returning id
-  `);
+  // const jwt = jwtLib.sign({}, process.env.JWT_SECRET!, {
+  //   subject: userId,
+  // });
 
-  await pool.any(sql`
-    insert into "access"
-    ("hookId", "userId")
-    values
-    (${hookId}, ${userId})
-  `);
+  // const { id: hookId } = await pool.one<{ id: string }>(sql`
+  //   insert into hook (id) values (default)
+  //   returning id
+  // `);
 
-  const [{ id: versionId }] = await pool.many<{ id: string }>(sql`
-    INSERT INTO "version" ("code","workflowState","createdAt","updatedAt","hookId")
-    VALUES
-    (${code}, 'published', NOW(), NOW() , ${hookId}),
-    (${code}, 'draft', NOW(), NOW() , ${hookId})
-    returning id
-  `);
-  const { key: writeKey } = await pool.one<{ key: string }>(sql`
-  insert into key (type, key, "hookId")
-    values
-    ('write', ${uniqueId("rand")}, ${hookId})
-    returning key
-  `);
-  const { key: readKey } = await pool.one<{ key: string }>(sql`
-    insert into key (type, key, "hookId")
-    values
-    ('read', ${uniqueId("rand")}, ${hookId})
-    returning key
-  `);
+  // await pool.any(sql`
+  //   insert into "access"
+  //   ("hookId", "userId")
+  //   values
+  //   (${hookId}, ${userId})
+  // `);
+
+  // const [{ id: versionId }] = await pool.many<{ id: string }>(sql`
+  //   INSERT INTO "version" ("code","workflowState","createdAt","updatedAt","hookId")
+  //   VALUES
+  //   (${code}, 'published', NOW(), NOW() , ${hookId}),
+  //   (${code}, 'draft', NOW(), NOW() , ${hookId})
+  //   returning id
+  // `);
+  // const { key: writeKey } = await pool.one<{ key: string }>(sql`
+  // insert into key (type, key, "hookId")
+  //   values
+  //   ('write', ${uniqueId("rand")}, ${hookId})
+  //   returning key
+  // `);
+  // const { key: readKey } = await pool.one<{ key: string }>(sql`
+  //   insert into key (type, key, "hookId")
+  //   values
+  //   ('read', ${uniqueId("rand")}, ${hookId})
+  //   returning key
+  // `);
+
+  const hook = await authedApi.hook.create();
+  await authedApi.hook.update(hook.data.id, { code });
+  await authedApi.hook.publish(hook.data.id);
+  await allQueuesDrained();
+
   const context: Context = {
-    jwt,
-    hookId,
-    versionId,
-    writeKey,
-    readKey,
+    jwt: authedApi.creds.jwt,
+    hookId: hook.data.id,
+    writeKey: first(hook.data.writeKeys)!,
+    readKey: first(hook.data.readKeys)!,
   };
 
   const api = buildApi<PostBody, State>(context);
@@ -288,6 +308,7 @@ export async function buildHook<PostBody, State>({
       await api.write(body);
     }
   }
+  await allQueuesDrained();
 
   return { context, api };
 }

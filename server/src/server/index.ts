@@ -9,6 +9,7 @@ import serverMetricsMiddlewareFactory from "../middleware/server-metrics.middlew
 import { connection as redisConnection } from "../redis";
 import requestController from "../request/request.controller";
 import stateController from "../state/state.controller";
+import secretController from "../secret/secret.controller";
 import workerController from "../worker/worker.controller";
 import makeRequestContextMiddleware from "./request-context.middleware";
 import testInternalsController from "../test-internals/test-internals.controller";
@@ -44,6 +45,7 @@ export default function makeServer(config: Config) {
 
   app.use("/hooks", hookController);
   app.use("/auth", authController);
+  app.use("/secrets", secretController);
   app.use("/", requestController);
   app.use("/", stateController);
 

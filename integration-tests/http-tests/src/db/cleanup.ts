@@ -1,9 +1,9 @@
-import { once, uniq } from "lodash";
+import { memoize, uniq } from "lodash";
 import { sql } from "slonik";
 import { TopologicalSort } from "topological-sort";
 import { getPool } from ".";
 
-const getSafeDependencyOrder = once(async function _getSafeDependencyOrder(
+const getSafeDependencyOrder = memoize(async function _getSafeDependencyOrder(
   uri?: string
 ): Promise<string[]> {
   const graph = new TopologicalSort(new Map());

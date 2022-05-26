@@ -3,7 +3,7 @@ import { unauthenticatedServerClient } from "./clients";
 import { getPool } from "./db";
 import { buildHook } from "./hook-builder";
 import { allQueuesDrained } from "./server-internals";
-import { serverTestSetup } from "./setup";
+import { secretsTestSetup, serverTestSetup } from "./setup";
 
 describe("existing hooks", () => {
   serverTestSetup();
@@ -13,7 +13,6 @@ describe("existing hooks", () => {
     expect(context).toEqual(
       expect.objectContaining({
         hookId: expect.any(String),
-        versionId: expect.any(String),
         writeKey: expect.any(String),
         readKey: expect.any(String),
       })
@@ -76,5 +75,26 @@ describe("existing hooks", () => {
     `);
 
     expect(stateCount).toEqual(0);
+  });
+
+  describe("secrets", () => {
+    secretsTestSetup();
+    it("can set secrets and then use them at runtime", async () => {
+      const body1 = { number: 4 };
+      const body2 = { number: 3 };
+      const { api } = await buildHook({
+        code: "function reducer (oldState = { number: 0 }, req) { return { number: Number(secrets.number) + oldState.number + req.body.number } }",
+      });
+      await api.setSecret("number", "3");
+      await api.write(body1);
+      await api.write(body2);
+      await api.settled(body2);
+
+      await allQueuesDrained();
+
+      const state = await api.read();
+
+      expect(state).toEqual({ number: 13 });
+    });
   });
 });

@@ -177,12 +177,14 @@ export function runCode({
   code,
   state,
   timeout = 250,
+  secretsJson,
   invalidIdempotencyKeys,
-  requestsJSON,
+  requestsJson,
   filename = "hook.js",
 }: Readonly<{
   code: string;
-  requestsJSON: string;
+  requestsJson: string;
+  secretsJson: string;
   state?: string;
   invalidIdempotencyKeys: string[];
   timeout?: number;
@@ -192,7 +194,12 @@ export function runCode({
   const artifacts = new Artifacts();
   const vm = new vm2.VM({
     timeout,
-    sandbox: { artifacts, invalidIdempotencyKeys, console: artifacts.console },
+    sandbox: {
+      artifacts,
+      invalidIdempotencyKeys,
+      console: artifacts.console,
+      secrets: JSON.parse(secretsJson),
+    },
   });
   const start = new Date();
   const codeWithRuntime = `(function(state, requests) {
@@ -237,7 +244,7 @@ export function runCode({
         return [...acc, { error: e, state: head.state }];
       }
     }, []);
-  })(${state}, ${requestsJSON})`;
+  })(${state}, ${requestsJson})`;
   vm.run(codeWithRuntime, filename);
 
   const end = new Date();

@@ -29,4 +29,9 @@ export default class BulkVMInput {
   @ArrayMaxSize(1000)
   @MaxLength(255, { each: true })
   readonly invalidIdempotencyKeys: string[];
+
+  @IsJSON()
+  @IsString()
+  @MaxLength(10 * 1000)
+  readonly secretsJson: string;
 }

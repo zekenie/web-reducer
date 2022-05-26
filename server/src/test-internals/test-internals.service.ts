@@ -30,7 +30,7 @@ export function read(path: string) {
 }
 
 export async function resolveWhenAllQueuesAreDrained(attempt = 0) {
-  if (attempt >= 2) {
+  if (attempt >= 3) {
     return;
   }
   const queueEvents = allQueuesAndEvents();

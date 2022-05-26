@@ -88,13 +88,35 @@ export async function updateDraft(
   `);
 }
 
-export async function createHook({ name }: { name: string }) {
+export async function getEncryptedSecretAccessKey({
+  hookId,
+}: {
+  hookId: string;
+}) {
+  const pool = getPool();
+  const { secretAccessKey } = await pool.one<{ secretAccessKey: string }>(
+    sql`
+      select "secretAccessKey"
+      from "hook"
+      where "id" = ${hookId}
+  `
+  );
+  return secretAccessKey;
+}
+
+export async function createHook({
+  name,
+  encryptedSecretAccessKey,
+}: {
+  name: string;
+  encryptedSecretAccessKey: string;
+}) {
   const pool = getPool();
   const { id } = await pool.one<{ id: string }>(sql`
     insert into "hook"
-    ("name", "createdAt")
+    ("name", "secretAccessKey", "createdAt")
     values
-    (${name}, NOW())
+    (${name}, ${encryptedSecretAccessKey}, NOW())
     returning id
   `);
   await pool.many<{ id: string }>(sql`
@@ -138,9 +160,11 @@ export async function getDraftAndPublishedCode(
   };
 }
 
-export function getPublishedCodeByHook(hookId: string): Promise<CodeToRun> {
+export async function getPublishedCodeByHook(
+  hookId: string
+): Promise<CodeToRun> {
   const pool = getPool();
-  const code = pool.one<CodeToRun>(
+  const code = await pool.one<CodeToRun>(
     sql`
       select
         version.id as "versionId",

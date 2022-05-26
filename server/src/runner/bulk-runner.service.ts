@@ -12,6 +12,8 @@ import {
   streamRequestsForHook,
 } from "../request/request.db";
 import { WebhookRequest } from "../request/request.types";
+import { _dangerouslyExposeSecretsInPlaintextForNamespace } from "../secret/secret.remote";
+import { getAccessKeyForHook } from "../secret/secret.service";
 import {
   bulkCreateState,
   checkValidityOfIdempotencyKeys,
@@ -30,6 +32,9 @@ export async function runBulk(
   if (!(await isHookPaused({ hookId }))) {
     throw new Error("cannot batch process state on live hook");
   }
+  const secrets = await _dangerouslyExposeSecretsInPlaintextForNamespace({
+    accessKey: await getAccessKeyForHook({ hookId }),
+  });
   await transaction(async () => {
     const code = await getPublishedCodeByHook(hookId);
     const lastStateRecord = await fetchState({
@@ -49,6 +54,7 @@ export async function runBulk(
           invalidIdempotencyKeys: string[] = []
         ): Promise<void> {
           const runResults = await runCodeBulk({
+            secrets,
             code: code.code,
             requests: requests,
             idempotencyKeysToIgnore: invalidIdempotencyKeys,

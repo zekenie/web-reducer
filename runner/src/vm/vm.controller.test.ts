@@ -9,7 +9,20 @@ describe("single", () => {
       .post("/")
       .send({
         code: `function reducer() { return 3 }`,
+        secretsJson: "{}",
         state: "asdfsdf",
+        requestJson: "{ headers: {}, body: {}}",
+      })
+      .expect(400);
+  });
+
+  it("rejects invalid secrets", async () => {
+    await supertest(server)
+      .post("/")
+      .send({
+        code: `function reducer() { return 3 }`,
+        secretsJson: "function haxer() {}",
+        state: "{}",
         requestJson: "{ headers: {}, body: {}}",
       })
       .expect(400);
@@ -20,6 +33,7 @@ describe("single", () => {
       .post("/")
       .send({
         code: `function reducer(state, event) { return { num: state.num + event.num } }`,
+        secretsJson: "{}",
         state: JSON.stringify(
           Array.from({ length: 10000 }, () => ({
             foo: "bar",
@@ -35,6 +49,7 @@ describe("single", () => {
       .post("/")
       .send({
         code: `function reducer(state, event) { return { num: state.num + event.num } }`,
+        secretsJson: "{}",
         requestJson: JSON.stringify(
           Array.from({ length: 4000 }, () => ({
             body: { foo: "bar" },
@@ -50,6 +65,7 @@ describe("single", () => {
     await supertest(server)
       .post("/")
       .send({
+        secretsJson: "{}",
         code: `function reducer(state, event) { ${"console.log(state); ".repeat(
           1000
         )} return { num: state.num + event.num } }`,
@@ -63,6 +79,7 @@ describe("single", () => {
     const { body } = await supertest(server)
       .post("/")
       .send({
+        secretsJson: "{}",
         code: `function reducer(state, { body }) { return { num: state.num + body.num } }`,
         requestJson: JSON.stringify({ id: "1", body: { num: 4 }, headers: {} }),
         state: JSON.stringify({ num: 4 }),
@@ -77,6 +94,7 @@ describe("single", () => {
     const { body } = await supertest(server)
       .post("/")
       .send({
+        secretsJson: "{}",
         code: `function reducer(state = { num: 4 }, { body }) { return { num: state.num + body.num } }`,
         requestJson: JSON.stringify({ id: "1", body: { num: 4 }, headers: {} }),
       })
@@ -90,6 +108,7 @@ describe("single", () => {
     await supertest(server)
       .post("/")
       .send({
+        secretsJson: "{}",
         code: `function reducer(state = { num: 4 }, { body }) { return { num: state.num + body.num } }`,
         state: JSON.stringify({ num: 4 }),
       })
@@ -102,6 +121,7 @@ describe("bulk", () => {
     const { body } = await supertest(server)
       .post("/bulk")
       .send({
+        secretsJson: "{}",
         code: `function reducer(state, { body }) { return { num: state.num + body.num } }`,
         invalidIdempotencyKeys: [],
         requestsJson: JSON.stringify([
@@ -116,5 +136,21 @@ describe("bulk", () => {
         expect.objectContaining({ id: expect.any(String), state: { num: 12 } }),
       ])
     );
+  });
+
+  it("rejects invalid secrets json", async () => {
+    const { body } = await supertest(server)
+      .post("/bulk")
+      .send({
+        secretsJson: "function foo() {}",
+        code: `function reducer(state, { body }) { return { num: state.num + body.num } }`,
+        invalidIdempotencyKeys: [],
+        requestsJson: JSON.stringify([
+          { id: "1", body: { num: 4 }, headers: {} },
+          { id: "2", body: { num: 4 }, headers: {} },
+        ]),
+        state: JSON.stringify({ num: 4 }),
+      })
+      .expect(400);
   });
 });

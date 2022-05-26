@@ -18,6 +18,9 @@ function requireStringQueryParams(...requiredStrings: string[]) {
       if (typeof str !== "string") {
         return next(new InvalidKeyParamError(requiredString));
       }
+      if (str.length > 500) {
+        return next(new InvalidKeyParamError(requiredString));
+      }
     }
     next();
   };
@@ -36,11 +39,15 @@ export default Router()
   })
   .get(
     "/secrets",
-    requireStringQueryParams("accessKey"),
+    requireStringQueryParams("accessKey", "mode"),
     async (req, res, next) => {
       try {
+        if (!["public", "private"].includes(req.query.mode as string)) {
+          throw new InvalidKeyParamError("mode");
+        }
         const secrets = await service.getSecretsForNamespace({
           accessKey: req.query.accessKey as string,
+          mode: req.query.mode as "public" | "private",
         });
         res.status(200).json({ secrets });
       } catch (e) {

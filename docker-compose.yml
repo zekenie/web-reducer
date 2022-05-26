@@ -30,3 +30,13 @@ services:
     build: ./runner
     ports:
       - 3002:3002
+  secrets:
+    build: ./secrets
+    ports:
+      - 3003:3003
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@secrets_db:5432/hook_secrets
+      PORT: 3003
+      ENCRYPTION_SECRET: foobarbaz
+    depends_on:
+      - secrets_db

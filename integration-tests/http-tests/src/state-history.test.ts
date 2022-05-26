@@ -2,6 +2,7 @@ import { last } from "lodash";
 import { sql } from "slonik";
 import { getPool } from "./db";
 import { buildAuthenticatedApi, buildHook } from "./hook-builder";
+import { allQueuesDrained } from "./server-internals";
 import { serverTestSetup } from "./setup";
 
 describe("existing hooks", () => {
@@ -56,11 +57,19 @@ describe("existing hooks", () => {
       code: `function reducer(prev = { num: 0 }, { body }) { return { num: prev.num + 1, index: body.index } }`,
       bodies: reqs,
     });
-    const lastReq = last(reqs)!;
-    await api.settled(lastReq);
+    await allQueuesDrained();
+
+    const mostRecentVersion = await pool.one<{ id: string }>(
+      sql`select id from "version"
+      where "hookId" = ${context.hookId}
+      and "workflowState" = 'published'
+      order by "createdAt" desc
+      limit 1
+    `
+    );
 
     const { count } = await pool.one<{ count: number }>(
-      sql`select count(*) from state where "hookId" = ${context.hookId} and "versionId" = ${context.versionId}`
+      sql`select count(*) from state where "hookId" = ${context.hookId} and "versionId" = ${mostRecentVersion.id}`
     );
 
     expect(count).toEqual(42);

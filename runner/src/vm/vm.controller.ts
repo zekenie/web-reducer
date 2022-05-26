@@ -10,8 +10,9 @@ export default Router()
     try {
       const [payload] = service.runCode({
         code: body.code,
-        requestsJSON: `[${body.requestJson}]`,
+        requestsJson: `[${body.requestJson}]`,
         invalidIdempotencyKeys: [],
+        secretsJson: body.secretsJson,
         state: body.state,
       });
       res.json(payload);
@@ -27,9 +28,10 @@ export default Router()
       try {
         const payload = service.runCode({
           code: body.code,
-          requestsJSON: body.requestsJson,
+          requestsJson: body.requestsJson,
           invalidIdempotencyKeys: body.invalidIdempotencyKeys,
           state: body.state,
+          secretsJson: body.secretsJson,
         });
         res.json(payload);
       } catch (e) {

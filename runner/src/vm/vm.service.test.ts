@@ -9,8 +9,9 @@ it("runs hello world", () => {
   `;
   expect(
     runCode({
+      secretsJson: "{}",
       code: helloWorld,
-      requestsJSON: formatRequest(),
+      requestsJson: formatRequest(),
       invalidIdempotencyKeys: [],
       state: "{}",
     })
@@ -34,8 +35,9 @@ it("works with state and event", () => {
   `;
   expect(
     runCode({
+      secretsJson: "{}",
       code: program,
-      requestsJSON: formatRequest({ body: { number: 3 } }),
+      requestsJson: formatRequest({ body: { number: 3 } }),
       invalidIdempotencyKeys: [],
       state: JSON.stringify({ number: 4 }),
     })
@@ -51,6 +53,34 @@ it("works with state and event", () => {
   );
 });
 
+it("has access to secret data", () => {
+  const program = `
+    function reducer(state, { body }) {
+      return { number: secrets.num + state.number + body.number }
+    }
+  `;
+
+  expect(
+    runCode({
+      secretsJson: `{"num": 1}`,
+      code: program,
+      requestsJson: formatRequest({ body: { number: 3 } }),
+      invalidIdempotencyKeys: [],
+      state: JSON.stringify({ number: 4 }),
+    })
+  ).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: expect.any(String),
+        ms: expect.any(Number),
+        authentic: true,
+        error: null,
+        state: { number: 8 },
+      }),
+    ])
+  );
+});
+
 it("is authentic when no `isAuthentic` function is passed", () => {
   const program = `
     function reducer(state, { body }) {
@@ -59,8 +89,9 @@ it("is authentic when no `isAuthentic` function is passed", () => {
   `;
   expect(
     runCode({
+      secretsJson: "{}",
       code: program,
-      requestsJSON: formatRequest({ body: { number: 3 } }),
+      requestsJson: formatRequest({ body: { number: 3 } }),
       invalidIdempotencyKeys: [],
       state: JSON.stringify({ number: 4 }),
     })
@@ -86,8 +117,9 @@ it("is not authentic when `isAuthentic` returns false", () => {
   `;
   expect(
     runCode({
+      secretsJson: "{}",
       code: program,
-      requestsJSON: formatRequest({ body: { number: 3 } }),
+      requestsJson: formatRequest({ body: { number: 3 } }),
       invalidIdempotencyKeys: [],
       state: JSON.stringify({ number: 4 }),
     })
@@ -113,8 +145,9 @@ it("is authentic when `isAuthentic` returns true", () => {
   `;
   expect(
     runCode({
+      secretsJson: "{}",
       code: program,
-      requestsJSON: formatRequest({ body: { number: 3 } }),
+      requestsJson: formatRequest({ body: { number: 3 } }),
       invalidIdempotencyKeys: [],
       state: JSON.stringify({ number: 4 }),
     })
@@ -140,8 +173,9 @@ it("is not authentic when `isAuthentic` throws", () => {
   `;
   expect(
     runCode({
+      secretsJson: "{}",
       code: program,
-      requestsJSON: formatRequest({ body: { number: 3 } }),
+      requestsJson: formatRequest({ body: { number: 3 } }),
       invalidIdempotencyKeys: [],
       state: JSON.stringify({ number: 4 }),
     })
@@ -175,8 +209,9 @@ it("finds idempotency tokens", () => {
   `;
   expect(
     runCode({
+      secretsJson: "{}",
       code: program,
-      requestsJSON: formatRequest({
+      requestsJson: formatRequest({
         headers: { "x-idempotency-token": "foo" },
         body: { number: 3 },
       }),
@@ -204,8 +239,9 @@ it("returns errors with stack and message", () => {
   `;
   expect(
     runCode({
+      secretsJson: "{}",
       code: program,
-      requestsJSON: formatRequest({ body: { number: 3 } }),
+      requestsJson: formatRequest({ body: { number: 3 } }),
       invalidIdempotencyKeys: [],
       state: JSON.stringify({ number: 4 }),
     })
@@ -232,8 +268,9 @@ it("filters out our code from stacktraces", () => {
     }
   `;
   const result = runCode({
+    secretsJson: "{}",
     code: program,
-    requestsJSON: formatRequest({ body: { number: 3 } }),
+    requestsJson: formatRequest({ body: { number: 3 } }),
     invalidIdempotencyKeys: [],
     state: JSON.stringify({ number: 4 }),
   });
@@ -250,8 +287,9 @@ it("times out code that doesn't finish", () => {
 
   expect(() => {
     runCode({
+      secretsJson: "{}",
       code: program,
-      requestsJSON: formatRequest({ body: { number: 3 } }),
+      requestsJson: formatRequest({ body: { number: 3 } }),
       invalidIdempotencyKeys: [],
       state: JSON.stringify({ number: 4 }),
     });
@@ -265,8 +303,9 @@ it("accepts multiple requests", () => {
   }
 `;
   const result = runCode({
+    secretsJson: "{}",
     code: program,
-    requestsJSON: formatRequests([
+    requestsJson: formatRequests([
       { body: { number: 3 } },
       { body: { number: 3 } },
     ]),
@@ -299,8 +338,9 @@ describe("console", () => {
     `;
     expect(
       runCode({
+        secretsJson: "{}",
         code: program,
-        requestsJSON: formatRequest({ body: { number: 3 } }),
+        requestsJson: formatRequest({ body: { number: 3 } }),
         invalidIdempotencyKeys: [],
         state: JSON.stringify({ number: 4 }),
       })
@@ -352,8 +392,9 @@ describe("console", () => {
     `;
     expect(
       runCode({
+        secretsJson: "{}",
         code: program,
-        requestsJSON: formatRequests([
+        requestsJson: formatRequests([
           { body: { number: 3 } },
           { body: { number: 3 } },
         ]),

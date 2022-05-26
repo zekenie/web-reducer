@@ -99,7 +99,10 @@ services:
       PORT: 3001
       RUNNER_URL: http://code_runner:3002
       JWT_SECRET: asdf
+      SECRET_ACCESS_KEY_KEY: aaaa
+      SECRETS_URL: http://secrets:3003
     depends_on:
+      - secrets
       - redis
       - migrator
   http_tests:

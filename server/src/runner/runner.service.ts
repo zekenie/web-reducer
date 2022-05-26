@@ -1,6 +1,8 @@
 import { getCodeByWriteKey, getKeysForHook } from "../hook/hook.db";
 import { HookWorkflowState } from "../hook/hook.types";
 import { getRequestToRun } from "../request/request.db";
+import { _dangerouslyExposeSecretsInPlaintextForNamespace } from "../secret/secret.remote";
+import { getAccessKeyForHook } from "../secret/secret.service";
 import { createState, fetchState, isIdempotencyKeyOk } from "../state/state.db";
 import { readStateHistory } from "../state/state.service";
 import { StateHistory } from "../state/state.types";
@@ -20,7 +22,12 @@ export async function runHook(requestId: string): Promise<void> {
     return;
   }
 
-  const state = await fetchState({ hookId, versionId });
+  const [state, secrets] = await Promise.all([
+    fetchState({ hookId, versionId }),
+    _dangerouslyExposeSecretsInPlaintextForNamespace({
+      accessKey: await getAccessKeyForHook({ hookId }),
+    }),
+  ]);
 
   const {
     state: newState,
@@ -30,6 +37,7 @@ export async function runHook(requestId: string): Promise<void> {
     error,
   } = await runCode({
     code,
+    secrets,
     request: {
       id: requestId,
       body: request.body,

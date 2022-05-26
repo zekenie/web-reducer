@@ -1,8 +1,9 @@
-import { decrypt, encrypt } from "../crypto/crypto.service";
+import { decrypt, encrypt, sha1 } from "../crypto/crypto.service";
 import { generateToken } from "../token/token.service";
 import * as db from "./namespace.db";
 import * as secretsDb from "../secret/secret.db";
 import { NamespaceNotFoundError } from "./namespace.errors";
+import { mapValues } from "lodash";
 
 export async function createNamespace(): Promise<NamespaceCreatedContract> {
   const accessKey = await generateToken();
@@ -44,13 +45,15 @@ export async function getEncryptionSecretForNamespace({
 
 export async function getSecretsForNamespace({
   accessKey,
+  mode,
 }: {
   accessKey: string;
+  mode: "public" | "private";
 }) {
   const { id, secret } = await getEncryptionSecretForNamespace({ accessKey });
   const secrets = await secretsDb.getSecretsForNamespace({ namespaceId: id });
 
-  return secrets
+  const secretsObj = secrets
     .map((s) => ({
       key: decrypt(s.encryptedKey, secret),
       value: decrypt(s.encryptedValue, secret),
@@ -58,4 +61,11 @@ export async function getSecretsForNamespace({
     .reduce((acc, obj) => {
       return { ...acc, [obj.key]: obj.value };
     }, {});
+
+  switch (mode) {
+    case "private":
+      return secretsObj;
+    case "public":
+      return mapValues(secretsObj, sha1);
+  }
 }
