@@ -1,3 +1,5 @@
+![Web Reducer Logo](./client/public/logo.svg)
+
 ## Use cases
 
 (this is an active brainstorm)
