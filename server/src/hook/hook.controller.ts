@@ -30,21 +30,21 @@ export default Router()
     }
   })
   .use(
-    "/:id",
-    makeAccessMiddleware((req) => req.params.id)
+    "/:hookId",
+    makeAccessMiddleware((req) => req.params.hookId)
   )
-  .get("/:id", async function (req, res, next) {
+  .get("/:hookId", async function (req, res, next) {
     try {
-      const hook = await service.readHook(req.params.id);
+      const hook = await service.readHook(req.params.hookId);
       res.json(hook);
     } catch (e) {
       next(e);
     }
   })
-  .get("/:id/history", async (req, res, next) => {
+  .get("/:hookId/history", async (req, res, next) => {
     try {
       const stateHistoryPage = await stateService.readStateHistoryPage(
-        req.params.id,
+        req.params.hookId,
         {
           token: req.query.token as string,
           pageSize: 40,
@@ -55,19 +55,23 @@ export default Router()
       next(e);
     }
   })
-  .post("/:id/publish", async function publishDraft(req, res, next) {
+  .post("/:hookId/publish", async function publishDraft(req, res, next) {
     try {
-      await service.publishDraft({ hookId: req.params.id });
+      await service.publishDraft({ hookId: req.params.hookId });
       res.json({});
     } catch (e) {
       next(e);
     }
   })
-  .put("/:id", validate(UpdateHook), async function updateHook(req, res, next) {
-    try {
-      await service.updateDraft(req.params.id, req.body);
-      res.json({});
-    } catch (e) {
-      next(e);
+  .put(
+    "/:hookId",
+    validate(UpdateHook),
+    async function updateHook(req, res, next) {
+      try {
+        await service.updateDraft(req.params.hookId, req.body);
+        res.json({});
+      } catch (e) {
+        next(e);
+      }
     }
-  });
+  );

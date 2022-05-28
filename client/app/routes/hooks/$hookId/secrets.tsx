@@ -8,11 +8,15 @@ import { json } from "@remix-run/node";
 import {
   Form,
   useActionData,
+  useFetcher,
   useLoaderData,
+  useOutletContext,
+  useSubmit,
   useTransition,
 } from "@remix-run/react";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
+import { HookDetail } from "~/remote/hook-client.server";
 import buildClientForJwt from "~/remote/index.server";
 
 export const loader: LoaderFunction = async ({ context, params }) => {
@@ -34,10 +38,57 @@ export const action: ActionFunction = async ({ context, request, params }) => {
   return json({ success: true });
 };
 
+const SecretRow = ({
+  keyStr,
+  valueStr,
+  hookId,
+}: {
+  keyStr: string;
+  valueStr: string;
+  hookId: string;
+}) => {
+  const transition = useTransition();
+  const fetcher = useFetcher();
+
+  const deleteSecret = useCallback(() => {
+    return fetcher.submit(
+      {
+        key: keyStr,
+        hookId,
+      },
+      { action: `/hooks/${hookId}/secrets/delete`, method: "post" }
+    );
+  }, [fetcher, keyStr, hookId]);
+
+  return (
+    <tr className="odd:bg-canvas-100">
+      <td className="py-1 px-3 w-24">{keyStr}</td>
+      <td className="px-3">{valueStr}</td>
+      <td className="space-x-1 flex flex-row">
+        <button
+          // type="submit"
+          className="p-1 hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-400 rounded"
+        >
+          <PencilIcon className="w-5 h-5" />
+        </button>
+        <button
+          type="button"
+          onClick={deleteSecret}
+          disabled={transition.state === "submitting"}
+          className="p-1 hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-400 rounded"
+        >
+          <BackspaceIcon className="w-5 h-5" />
+        </button>
+      </td>
+    </tr>
+  );
+};
+
 export default function Secrets() {
   const { secrets } = useLoaderData<{ secrets: Record<string, string> }>();
   const transition = useTransition();
   const actionData = useActionData();
+  const { hook } = useOutletContext<{ hook: HookDetail }>();
 
   const ref = useRef<HTMLFormElement>(null);
 
@@ -54,32 +105,20 @@ export default function Secrets() {
         className="text-sm font-mono table-fixed w-full max-w-full"
       >
         <thead>
-          <th className="text-left py-1 px-3 w-24">Key</th>
-          <th className="text-left py-1 px-3 w-24">sha1(Value)</th>
-          <th className="w-6"></th>
+          <tr>
+            <th className="text-left py-1 px-3 w-24">Key</th>
+            <th className="text-left py-1 px-3 w-24">sha1(Value)</th>
+            <th className="w-6"></th>
+          </tr>
         </thead>
         <tbody>
           {Object.keys(secrets).map((key) => (
-            <tr key={key} className="odd:bg-canvas-100">
-              <td className="py-1 px-3 w-24">{key}</td>
-              <td className="px-3">{secrets[key]}</td>
-              <td className="space-x-1 flex flex-row">
-                <button
-                  // type="submit"
-                  disabled={transition.state === "submitting"}
-                  className="p-1 hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-400 rounded"
-                >
-                  <PencilIcon className="w-5 h-5" />
-                </button>
-                <button
-                  // type="submit"
-                  disabled={transition.state === "submitting"}
-                  className="p-1 hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-400 rounded"
-                >
-                  <BackspaceIcon className="w-5 h-5" />
-                </button>
-              </td>
-            </tr>
+            <SecretRow
+              hookId={hook.id}
+              key={key}
+              keyStr={key}
+              valueStr={secrets[key]}
+            />
           ))}
           <tr>
             <td className="py-1 px-2 w-24">
