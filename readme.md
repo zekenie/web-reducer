@@ -1,5 +1,47 @@
 ![Web Reducer Logo](./client/public/logo.svg)
 
+## Service Level Diagram
+
+```mermaid
+flowchart LR
+    Client[Remix App]
+    Browser
+    HookClient[Endpoint Clients]
+    subgraph privateNetwork[Private Network]
+
+        Server
+        Redis[(Redis)]
+        Postgres[(Postgres)]
+        SecretsDb[(SecretsDb)]
+        Worker
+        Secrets[Secrets Service]
+        subgraph isolated-docker
+            Runner
+        end
+    end
+
+    click Client "https://github.com/zekenie/web-reducer/tree/main/client"
+    click Server "https://github.com/zekenie/web-reducer/tree/main/server"
+    click Worker "https://github.com/zekenie/web-reducer/tree/main/server"
+    click Secrets "https://github.com/zekenie/web-reducer/tree/main/secrets"
+    click Runner "https://github.com/zekenie/web-reducer/tree/main/runner"
+
+
+    Client <--> Server
+    Server --> Secrets
+    HookClient <--> Client
+    Secrets <--> SecretsDb
+    Server <--> Redis
+    Server <--> Postgres
+    Worker <--> Redis
+    Worker <--> Postgres
+    Worker <--> Runner
+    Browser <--> Client
+    Redis
+
+classDef selected stroke-width:4px;
+```
+
 ## Use cases
 
 (this is an active brainstorm)

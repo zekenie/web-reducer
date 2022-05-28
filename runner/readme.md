@@ -1,4 +1,4 @@
-# Remix Client
+# Runner
 
 ```mermaid
 flowchart LR
@@ -38,7 +38,5 @@ flowchart LR
     Redis
 
 classDef selected stroke-width:4px;
-class Client selected;
+class Runner selected;
 ```
-
-- [Remix Docs](https://remix.run/docs)
