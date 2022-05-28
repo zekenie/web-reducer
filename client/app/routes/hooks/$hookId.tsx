@@ -48,7 +48,7 @@ export default function Hook() {
             <Tab to="./keys">Keys</Tab>
           </Tabs>
 
-          <div className="overflow-y-scroll flex flex-col flex-1 flex-grow p-2">
+          <div className="overflow-y-scroll flex flex-col flex-1 flex-grow">
             <Outlet context={{ hook }} />
           </div>
         </div>

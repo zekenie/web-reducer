@@ -1,5 +1,124 @@
-// aka requests
+import {
+  BackspaceIcon,
+  PencilIcon,
+  PlusCircleIcon,
+} from "@heroicons/react/outline";
+import type { LoaderFunction, ActionFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import {
+  Form,
+  useActionData,
+  useLoaderData,
+  useTransition,
+} from "@remix-run/react";
+import { useEffect, useRef } from "react";
+import toast from "react-hot-toast";
+import buildClientForJwt from "~/remote/index.server";
+
+export const loader: LoaderFunction = async ({ context, params }) => {
+  const client = buildClientForJwt(context.creds.jwt);
+
+  return {
+    secrets: await client.secrets.list({ hookId: params.hookId! }),
+  };
+};
+
+export const action: ActionFunction = async ({ context, request, params }) => {
+  const client = buildClientForJwt(context.creds.jwt);
+  const body = await request.formData();
+  await client.secrets.set({
+    hookId: params.hookId!,
+    key: body.get("key") as string,
+    value: body.get("value") as string,
+  });
+  return json({ success: true });
+};
 
 export default function Secrets() {
-  return <div>secrets</div>;
+  const { secrets } = useLoaderData<{ secrets: Record<string, string> }>();
+  const transition = useTransition();
+  const actionData = useActionData();
+
+  const ref = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (actionData?.success) {
+      toast("Your secret's safe with me");
+      ref.current && ref.current.reset();
+    }
+  }, [actionData]);
+  return (
+    <Form method="post" ref={ref}>
+      <table
+        style={{ borderCollapse: "separate", borderSpacing: "0" }}
+        className="text-sm font-mono table-fixed w-full max-w-full"
+      >
+        <thead>
+          <th className="text-left py-1 px-3 w-24">Key</th>
+          <th className="text-left py-1 px-3 w-24">sha1(Value)</th>
+          <th className="w-6"></th>
+        </thead>
+        <tbody>
+          {Object.keys(secrets).map((key) => (
+            <tr key={key} className="odd:bg-canvas-100">
+              <td className="py-1 px-3 w-24">{key}</td>
+              <td className="px-3">{secrets[key]}</td>
+              <td className="space-x-1 flex flex-row">
+                <button
+                  // type="submit"
+                  disabled={transition.state === "submitting"}
+                  className="p-1 hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-400 rounded"
+                >
+                  <PencilIcon className="w-5 h-5" />
+                </button>
+                <button
+                  // type="submit"
+                  disabled={transition.state === "submitting"}
+                  className="p-1 hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-400 rounded"
+                >
+                  <BackspaceIcon className="w-5 h-5" />
+                </button>
+              </td>
+            </tr>
+          ))}
+          <tr>
+            <td className="py-1 px-2 w-24">
+              <input
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    return;
+                  }
+                  e.currentTarget.value = (e.currentTarget.value + e.key)
+                    .toUpperCase()
+                    .split(" ")
+                    .join("_");
+                  e.preventDefault();
+                  return false;
+                }}
+                name="key"
+                className="w-full p-1"
+                placeholder="new key"
+              />
+            </td>
+            <td className="py-1 px-2 w-24">
+              <input
+                name="value"
+                className="w-full p-1"
+                placeholder="new value"
+              />
+            </td>
+            <td className="w-6">
+              <button
+                type="submit"
+                disabled={transition.state === "submitting"}
+                className="p-1 hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-400 rounded"
+              >
+                <PlusCircleIcon className="w-5 h-5" />
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </Form>
+  );
 }

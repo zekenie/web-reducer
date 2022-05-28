@@ -1,3 +1,4 @@
-- wait, why can't I make any http requests?
+- wait, why can't I... (make any http requests, import npm packages, etc)?
 - what should i use this for?
 - is my data safe?
+- what kind of requests can i make to web reducer

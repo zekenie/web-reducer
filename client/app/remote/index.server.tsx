@@ -2,6 +2,7 @@ import type { Headers } from "@remix-run/node";
 import authClientFactory, { Credentials } from "./auth-client.server";
 import hookClientFactory from "./hook-client.server";
 import { HttpJsonClient } from "./http-json-client.server";
+import secretClientFactory from "./secret-client.server";
 
 /**
  * This file basically exists to merge HttpClient and credentials
@@ -26,5 +27,6 @@ export default function buildClientForJwt(jwt: string) {
   return {
     auth,
     hooks: hookClientFactory(httpClient),
+    secrets: secretClientFactory(httpClient),
   };
 }

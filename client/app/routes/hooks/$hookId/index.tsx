@@ -1,11 +1,6 @@
-import {
-  ArrowLeftIcon,
-  ArrowUpIcon,
-  ClipboardCopyIcon,
-} from "@heroicons/react/outline";
 import type { LoaderFunction } from "@remix-run/node";
 import { useLoaderData, useOutletContext, useParams } from "@remix-run/react";
-import { FC, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import CopyableCode, {
   VariableSelect,
   VariableValue,
