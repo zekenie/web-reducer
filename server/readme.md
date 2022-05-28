@@ -18,11 +18,11 @@ flowchart LR
         end
     end
 
-    click Client "https://github.com/zekenie/web-reducer/tree/main/client"
-    click Server "https://github.com/zekenie/web-reducer/tree/main/server"
-    click Worker "https://github.com/zekenie/web-reducer/tree/main/server"
-    click Secrets "https://github.com/zekenie/web-reducer/tree/main/secrets"
-    click Runner "https://github.com/zekenie/web-reducer/tree/main/runner"
+    click Client "https://github.com/zekenie/web-reducer/tree/main/client#readme"
+    click Server "https://github.com/zekenie/web-reducer/tree/main/server#readme"
+    click Worker "https://github.com/zekenie/web-reducer/tree/main/server#readme"
+    click Secrets "https://github.com/zekenie/web-reducer/tree/main/secrets#readme"
+    click Runner "https://github.com/zekenie/web-reducer/tree/main/runner#readme"
 
 
     Client <--> Server
