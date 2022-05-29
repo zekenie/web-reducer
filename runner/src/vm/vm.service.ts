@@ -1,178 +1,95 @@
-import { last } from "lodash";
-import vm2 from "vm2";
-import { formatStacktrace } from "../stacktrace/stacktrace.service";
 import * as crypto from "crypto";
+import vm2 from "vm2";
+import { Artifacts } from "./artifacts";
 
-type LogLevels = "warn" | "error" | "log" | "trace" | "debug" | "info";
-
-const levels = ["warn", "error", "log", "trace", "debug", "info"] as Readonly<
-  LogLevels[]
->;
-
-type MessageLogger = (...messages: string[]) => void;
-
-type ConsoleMessage = {
-  level: LogLevels;
-  messages: string[];
-  timestamp: number;
-};
-
-class VMConsole {
-  error: MessageLogger;
-  warn: MessageLogger;
-  log: MessageLogger;
-  trace: MessageLogger;
-  debug: MessageLogger;
-  info: MessageLogger;
-  constructor(private artifacts: Artifacts) {
-    for (const level of levels) {
-      this[level] = (...messages: string[]) => {
-        if (this.artifacts.latestArtifact)
-          this.artifacts.latestArtifact.log({
-            level,
-            messages: messages.map(this.formatMessage),
-            timestamp: Date.now(),
-          });
-      };
-    }
-  }
-
-  private formatMessage(message: any) {
-    if (typeof message === "object") {
-      try {
-        return JSON.stringify(message, null, 2);
-      } catch (e) {
-        return "[Unserializable object]";
+const codeBread = {
+  response: {
+    code: (code: string, requestsJson: string) =>
+      `(function(requests) {
+      artifacts.expectLength(requests.length);
+      function reducer() {}
+      function isAuthentic() { return true; }
+      function responder(request) {
+        return {
+          status: 202,
+          body: { id: request.id }
+        }
+      }
+      function getIdempotencyKey(request) { return request.id; }
+      ${code}
+      for (const request of requests) {
+        const frame = artifacts.open(request.id);
+        try {
+          frame.setResponse(responder(request));
+        } catch(e) {
+          frame.setError(e)
+          frame.setResponse({
+            statusCode: 500
+          })
+        }
+      }
+    })(${requestsJson})`,
+    offset: 11,
+  },
+  reducer: {
+    code: (
+      code: string,
+      state: string | undefined,
+      requestsJson: string,
+      secretsJson: string
+    ) =>
+      `(function(state, requests, secrets) {
+    artifacts.expectLength(requests.length);
+    function reducer() {}
+    function isAuthentic() { return true; }
+    function responder(request) {
+      return {
+        status: 202,
+        body: { id: request.id }
       }
     }
-    if (message.toString) {
-      return message.toString();
-    }
-  }
-}
+    function getIdempotencyKey(request) { return request.id; }
+    ${code}
+    return requests.reduce((acc, request, i, requests) => {
+      const frame = artifacts.open(request.id);
+      const head = acc[acc.length - 1] || { state: state };
 
-class RequestArtifact {
-  private open: boolean = true;
-  private console: ConsoleMessage[] = [];
+      let isAuthenticResult = null;
+      let idempotencyKey = null;
 
-  private idempotencyKey?: string;
-  private state?: unknown;
-  private error?: Error | unknown | null;
-  private authentic: boolean = true;
+      try {
+        try {
+          isAuthenticResult = isAuthentic(request, secrets)
+          frame.setAuthentic(isAuthenticResult);
+        } catch(e) {
+          frame.setAuthentic(false);
+          throw e;
+        }
+        
+        idempotencyKey = getIdempotencyKey(request, secrets);
+        frame.setIdempotencyKey(idempotencyKey);
 
-  constructor(private readonly id: string) {}
+        const shouldIgnoreRequest = !isAuthenticResult
+          || invalidIdempotencyKeys.includes(idempotencyKey);
 
-  log(message: ConsoleMessage) {
-    this.console.push(message);
-  }
+        if (shouldIgnoreRequest) {
+          frame.setState(head.state);
+          return [...acc, { error: null, state: head.state }];
+        }
 
-  isOpen() {
-    return this.open;
-  }
-
-  close() {
-    this.open = false;
-    Object.freeze(this);
-  }
-
-  setIdempotencyKey(key: string) {
-    this.idempotencyKey = key;
-  }
-
-  setState(state: unknown) {
-    this.state = state;
-  }
-
-  setError(err: Error | unknown | null) {
-    this.error = err;
-  }
-
-  setAuthentic(authentic: boolean) {
-    this.authentic = authentic;
-  }
-
-  report({ filename, codeLength }: { filename: string; codeLength: number }) {
-    return {
-      id: this.id,
-      idempotencyKey: this.idempotencyKey,
-      authentic: this.authentic,
-      state: this.state,
-      console: this.console,
-      error: formatError(this.error, { filename, codeLength }),
-    };
-  }
-}
-
-class Artifacts {
-  public console: VMConsole = new VMConsole(this);
-  private requestArtifacts: { [id: string]: RequestArtifact } = {};
-  // for order
-  private ids: string[] = [];
-
-  private expectedLength: number;
-
-  get done() {
-    return this.allClosed && this.expectedLength === this.length;
-  }
-
-  get length() {
-    return Object.values(this.requestArtifacts).length;
-  }
-
-  get allClosed() {
-    return Object.values(this.requestArtifacts).every(
-      (artifact) => !artifact.isOpen
-    );
-  }
-
-  report({ filename, codeLength }: { filename: string; codeLength: number }) {
-    return this.ids
-      .map((id) => this.requestArtifacts[id])
-      .map((artifact) => artifact.report({ filename, codeLength }));
-  }
-
-  expectLength(len: number) {
-    this.expectedLength = len;
-  }
-
-  get latestArtifact() {
-    const lastId = last(this.ids);
-    if (lastId) {
-      return this.requestArtifacts[lastId];
-    }
-    return null;
-  }
-
-  open(id: string) {
-    // this.currentId = id;
-    this.ids.push(id);
-    this.requestArtifacts[id] = new RequestArtifact(id);
-    return this.requestArtifacts[id];
-  }
-}
-
-function formatError(
-  error: Error | unknown | undefined,
-  context: { filename: string; codeLength: number }
-) {
-  if (!error) {
-    return null;
-  }
-  if (error instanceof Error) {
-    return {
-      message: error.message,
-      name: error.name,
-      stacktrace: formatStacktrace({
-        error: error,
-        programFile: context.filename,
-        lineNumberMap: (num) => num - 4,
-        lineNumberFilter: (line) => !line || line < context.codeLength + 4,
-      }),
-    };
-  } else {
-    return { name: "Error", message: "unknown error" };
-  }
-}
+        const nextState = reducer(head.state, request, secrets);
+        frame.setState(nextState);
+        return [...acc, { error: null, state: nextState }];
+      } catch(e) {
+        frame.setError(e);
+        frame.setState(head.state)
+        return [...acc, { error: e, state: head.state }];
+      }
+    }, []);
+  })(${state}, ${requestsJson}, ${secretsJson})`,
+    offset: 11,
+  },
+};
 
 export function runCode({
   code,
@@ -181,6 +98,7 @@ export function runCode({
   secretsJson,
   invalidIdempotencyKeys,
   requestsJson,
+  mode,
   filename = "hook.js",
 }: Readonly<{
   code: string;
@@ -189,6 +107,7 @@ export function runCode({
   state?: string;
   invalidIdempotencyKeys: string[];
   timeout?: number;
+  mode: "reducer" | "response"; // or side-effects?
   filename?: string;
 }>) {
   const codeLength = code.split("\n").length;
@@ -204,49 +123,19 @@ export function runCode({
     },
   });
   const start = new Date();
-  const codeWithRuntime = `(function(state, requests) {
-    artifacts.expectLength(requests.length);
-    function isAuthentic() { return true; }
-    function getIdempotencyKey(request) { return request.id; }
-    ${code}
-    return requests.reduce((acc, request, i, requests) => {
-      const frame = artifacts.open(request.id);
-      const head = acc[acc.length - 1] || { state: state };
-
-      let isAuthenticResult = null;
-      let idempotencyKey = null;
-
-      try {
-      
-        try {
-          isAuthenticResult = isAuthentic(request)
-          frame.setAuthentic(isAuthenticResult);
-        } catch(e) {
-          frame.setAuthentic(false);
-          throw e;
-        }
-        
-        idempotencyKey = getIdempotencyKey(request);
-        frame.setIdempotencyKey(idempotencyKey);
-
-        const shouldIgnoreRequest = !isAuthenticResult
-          || invalidIdempotencyKeys.includes(idempotencyKey);
-
-        if (shouldIgnoreRequest) {
-          frame.setState(head.state);
-          return [...acc, { error: null, state: head.state }];
-        }
-
-        const nextState = reducer(head.state, request);
-        frame.setState(nextState);
-        return [...acc, { error: null, state: nextState }];
-      } catch(e) {
-        frame.setError(e);
-        frame.setState(head.state)
-        return [...acc, { error: e, state: head.state }];
-      }
-    }, []);
-  })(${state}, ${requestsJson})`;
+  let codeWithRuntime;
+  if (mode === "reducer") {
+    codeWithRuntime = codeBread.reducer.code(
+      code,
+      state,
+      requestsJson,
+      secretsJson
+    );
+  } else if (mode === "response") {
+    codeWithRuntime = codeBread.response.code(code, requestsJson);
+  } else {
+    throw new Error("invalid mode");
+  }
   vm.run(codeWithRuntime, filename);
 
   const end = new Date();
@@ -256,8 +145,10 @@ export function runCode({
     throw new Error("timeout");
   }
 
-  return artifacts.report({ codeLength, filename }).map((report) => ({
-    ...report,
-    ms: Math.round(ms / artifacts.length),
-  }));
+  return artifacts
+    .report({ codeLength, filename, offset: codeBread[mode].offset })
+    .map((report) => ({
+      ...report,
+      ms: Math.round(ms / artifacts.length),
+    }));
 }

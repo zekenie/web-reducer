@@ -44,6 +44,7 @@ export async function runHook(requestId: string): Promise<void> {
       headers: request.headers,
       createdAt: request.createdAt,
     },
+    mode: "reducer",
     state: state?.state,
   });
 

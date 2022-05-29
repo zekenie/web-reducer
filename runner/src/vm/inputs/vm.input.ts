@@ -1,4 +1,11 @@
-import { IsJSON, IsOptional, IsString, MaxLength } from "class-validator";
+import {
+  IsEnum,
+  IsIn,
+  IsJSON,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from "class-validator";
 
 export default class VMInput {
   @IsString()
@@ -20,4 +27,8 @@ export default class VMInput {
   @IsString()
   @MaxLength(10 * 1000)
   readonly secretsJson: string;
+
+  @IsIn(["reducer", "response"])
+  @IsString()
+  readonly mode: "reducer" | "response";
 }

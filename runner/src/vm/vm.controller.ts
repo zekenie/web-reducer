@@ -14,6 +14,7 @@ export default Router()
         invalidIdempotencyKeys: [],
         secretsJson: body.secretsJson,
         state: body.state,
+        mode: body.mode,
       });
       res.json(payload);
     } catch (e) {
@@ -32,6 +33,7 @@ export default Router()
           invalidIdempotencyKeys: body.invalidIdempotencyKeys,
           state: body.state,
           secretsJson: body.secretsJson,
+          mode: "reducer",
         });
         res.json(payload);
       } catch (e) {

@@ -7,6 +7,7 @@ kanban-plugin: basic
 ## Considering
 
 - [ ] [[JS or React library]]
+- [ ] requests empty state -> "Curl it for me" button
 
 
 ## Todo
@@ -26,6 +27,7 @@ kanban-plugin: basic
 
 ## In Progress
 
+- [ ] [[Custom Responses]]<br><br>- [x] runner has `responder` method<br>- [ ] server uses `responder` method on runner
 
 
 ## Done

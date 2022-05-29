@@ -1,327 +1,444 @@
 import { formatRequest, formatRequests } from "./test-helpers";
 import { runCode } from "./vm.service";
 
-it("runs hello world", () => {
-  const helloWorld = `
-    function reducer() {
-      return "hello world"
-    }
-  `;
-  expect(
-    runCode({
-      secretsJson: "{}",
-      code: helloWorld,
-      requestsJson: formatRequest(),
-      invalidIdempotencyKeys: [],
-      state: "{}",
-    })
-  ).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        state: "hello world",
-        id: expect.any(String),
-        ms: expect.any(Number),
-        error: null,
-      }),
-    ])
-  );
-});
+describe("responder", () => {
+  it("runs hello world", () => {
+    const helloWorld = `
+      function responder(request) {
+        return {
+          statusCode: 200,
+          body: { hello: 'world' }
+        }
+      }
+    `;
 
-it("works with state and event", () => {
-  const program = `
-    function reducer(state, { body }) {
-      return { number: state.number + body.number }
-    }
-  `;
-  expect(
-    runCode({
-      secretsJson: "{}",
-      code: program,
-      requestsJson: formatRequest({ body: { number: 3 } }),
-      invalidIdempotencyKeys: [],
-      state: JSON.stringify({ number: 4 }),
-    })
-  ).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        id: expect.any(String),
-        ms: expect.any(Number),
-        error: null,
-        state: { number: 7 },
-      }),
-    ])
-  );
-});
-
-it("has access to secret data", () => {
-  const program = `
-    function reducer(state, { body }) {
-      return { number: secrets.num + state.number + body.number }
-    }
-  `;
-
-  expect(
-    runCode({
-      secretsJson: `{"num": 1}`,
-      code: program,
-      requestsJson: formatRequest({ body: { number: 3 } }),
-      invalidIdempotencyKeys: [],
-      state: JSON.stringify({ number: 4 }),
-    })
-  ).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        id: expect.any(String),
-        ms: expect.any(Number),
-        authentic: true,
-        error: null,
-        state: { number: 8 },
-      }),
-    ])
-  );
-});
-
-it("is authentic when no `isAuthentic` function is passed", () => {
-  const program = `
-    function reducer(state, { body }) {
-      return { number: state.number + body.number }
-    }
-  `;
-  expect(
-    runCode({
-      secretsJson: "{}",
-      code: program,
-      requestsJson: formatRequest({ body: { number: 3 } }),
-      invalidIdempotencyKeys: [],
-      state: JSON.stringify({ number: 4 }),
-    })
-  ).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        id: expect.any(String),
-        ms: expect.any(Number),
-        authentic: true,
-        error: null,
-        state: { number: 7 },
-      }),
-    ])
-  );
-});
-
-it("is not authentic when `isAuthentic` returns false", () => {
-  const program = `
-    function isAuthentic() { return false; }
-    function reducer(state, { body }) {
-      return { number: state.number + body.number }
-    }
-  `;
-  expect(
-    runCode({
-      secretsJson: "{}",
-      code: program,
-      requestsJson: formatRequest({ body: { number: 3 } }),
-      invalidIdempotencyKeys: [],
-      state: JSON.stringify({ number: 4 }),
-    })
-  ).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        id: expect.any(String),
-        ms: expect.any(Number),
-        authentic: false,
-        error: null,
-        state: { number: 4 },
-      }),
-    ])
-  );
-});
-
-it("is authentic when `isAuthentic` returns true", () => {
-  const program = `
-    function isAuthentic() { return true; }
-    function reducer(state, { body }) {
-      return { number: state.number + body.number }
-    }
-  `;
-  expect(
-    runCode({
-      secretsJson: "{}",
-      code: program,
-      requestsJson: formatRequest({ body: { number: 3 } }),
-      invalidIdempotencyKeys: [],
-      state: JSON.stringify({ number: 4 }),
-    })
-  ).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        id: expect.any(String),
-        ms: expect.any(Number),
-        authentic: true,
-        error: null,
-        state: { number: 7 },
-      }),
-    ])
-  );
-});
-
-it("is not authentic when `isAuthentic` throws", () => {
-  const program = `
-    function isAuthentic() { throw new Error() }
-    function reducer(state, { body }) {
-      return { number: state.number + body.number }
-    }
-  `;
-  expect(
-    runCode({
-      secretsJson: "{}",
-      code: program,
-      requestsJson: formatRequest({ body: { number: 3 } }),
-      invalidIdempotencyKeys: [],
-      state: JSON.stringify({ number: 4 }),
-    })
-  ).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        id: expect.any(String),
-        ms: expect.any(Number),
-        authentic: false,
-        error: {
-          message: "",
-          name: "Error",
-          stacktrace: expect.stringContaining("hook.js:2"),
-        },
-        state: { number: 4 },
-      }),
-    ])
-  );
-});
-
-it("finds idempotency tokens", () => {
-  const program = `
-
-    function getIdempotencyKey({ headers }) {
-      return headers["x-idempotency-token"]
-    }
-
-    function reducer(state, { body }) {
-      return { number: state.number + body.number }
-    }
-  `;
-  expect(
-    runCode({
-      secretsJson: "{}",
-      code: program,
-      requestsJson: formatRequest({
-        headers: { "x-idempotency-token": "foo" },
-        body: { number: 3 },
-      }),
-      invalidIdempotencyKeys: [],
-      state: JSON.stringify({ number: 4 }),
-    })
-  ).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        id: expect.any(String),
-        idempotencyKey: "foo",
-        ms: expect.any(Number),
-        error: null,
-        state: { number: 7 },
-      }),
-    ])
-  );
-});
-
-it("returns errors with stack and message", () => {
-  const program = `                  // line 1
-    function reducer(state, event) { // line 2
-      throw new TypeError('oh no')   // line 3
-    }
-  `;
-  expect(
-    runCode({
-      secretsJson: "{}",
-      code: program,
-      requestsJson: formatRequest({ body: { number: 3 } }),
-      invalidIdempotencyKeys: [],
-      state: JSON.stringify({ number: 4 }),
-    })
-  ).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        id: expect.any(String),
-        ms: expect.any(Number),
-        error: {
-          message: "oh no",
-          name: "TypeError",
-          stacktrace: expect.stringContaining("hook.js:3"),
-        },
-        state: { number: 4 },
-      }),
-    ])
-  );
-});
-
-it("filters out our code from stacktraces", () => {
-  const program = `                  // line 1
-    function reducer(state, event) { // line 2
-      throw new TypeError('oh no')   // line 3
-    }
-  `;
-  const result = runCode({
-    secretsJson: "{}",
-    code: program,
-    requestsJson: formatRequest({ body: { number: 3 } }),
-    invalidIdempotencyKeys: [],
-    state: JSON.stringify({ number: 4 }),
+    expect(
+      runCode({
+        secretsJson: "{}",
+        mode: "response",
+        code: helloWorld,
+        requestsJson: formatRequest(),
+        invalidIdempotencyKeys: [],
+        state: "{}",
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          ms: expect.any(Number),
+          error: null,
+          response: {
+            statusCode: 200,
+            body: { hello: "world" },
+          },
+        }),
+      ])
+    );
   });
-  expect(JSON.stringify(result)).not.toContain("vm.service");
-  expect(JSON.stringify(result)).not.toContain("vm2");
+
+  it("does not run reducer", () => {
+    const code = `
+      function reducer() {
+        return { foo: 'bar' }
+      }
+      function responder(request) {
+        return {
+          statusCode: 200,
+          body: { hello: 'world' }
+        }
+      }
+    `;
+
+    expect(
+      runCode({
+        secretsJson: "{}",
+        mode: "response",
+        code: code,
+        requestsJson: formatRequest(),
+        invalidIdempotencyKeys: [],
+        state: "{}",
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          ms: expect.any(Number),
+          state: undefined,
+          error: null,
+          response: {
+            statusCode: 200,
+            body: { hello: "world" },
+          },
+        }),
+      ])
+    );
+  });
+
+  it("returns errors with stack and message", () => {
+    const program = `                  // line 1
+      function responder(request) {    // line 2
+        throw new TypeError('oh no')   // line 3
+      }
+    `;
+    expect(
+      runCode({
+        secretsJson: "{}",
+        mode: "response",
+        code: program,
+        requestsJson: formatRequest({ body: { number: 3 } }),
+        invalidIdempotencyKeys: [],
+        state: JSON.stringify({ number: 4 }),
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+          ms: expect.any(Number),
+          error: {
+            message: "oh no",
+            name: "TypeError",
+            stacktrace: expect.stringContaining("hook.js:3"),
+          },
+          state: undefined,
+        }),
+      ])
+    );
+  });
 });
 
-it("times out code that doesn't finish", () => {
-  const program = `
-    while(true) {}
-    function reducer(state, event) {
-    }
-  `;
+describe("reducer", () => {
+  it("runs hello world", () => {
+    const helloWorld = `
+      function reducer() {
+        return "hello world"
+      }
+    `;
+    expect(
+      runCode({
+        secretsJson: "{}",
+        mode: "reducer",
+        code: helloWorld,
+        requestsJson: formatRequest(),
+        invalidIdempotencyKeys: [],
+        state: "{}",
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          state: "hello world",
+          id: expect.any(String),
+          ms: expect.any(Number),
+          error: null,
+        }),
+      ])
+    );
+  });
 
-  expect(() => {
-    runCode({
+  it("works with state and event", () => {
+    const program = `
+      function reducer(state, { body }) {
+        return { number: state.number + body.number }
+      }
+    `;
+    expect(
+      runCode({
+        secretsJson: "{}",
+        mode: "reducer",
+        code: program,
+        requestsJson: formatRequest({ body: { number: 3 } }),
+        invalidIdempotencyKeys: [],
+        state: JSON.stringify({ number: 4 }),
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+          ms: expect.any(Number),
+          error: null,
+          state: { number: 7 },
+        }),
+      ])
+    );
+  });
+
+  it("has access to secret data", () => {
+    const program = `
+      function reducer(state, { body }, secrets) {
+        return { number: secrets.num + state.number + body.number }
+      }
+    `;
+
+    expect(
+      runCode({
+        secretsJson: `{"num": 1}`,
+        mode: "reducer",
+        code: program,
+        requestsJson: formatRequest({ body: { number: 3 } }),
+        invalidIdempotencyKeys: [],
+        state: JSON.stringify({ number: 4 }),
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+          ms: expect.any(Number),
+          authentic: true,
+          error: null,
+          state: { number: 8 },
+        }),
+      ])
+    );
+  });
+
+  it("is authentic when no `isAuthentic` function is passed", () => {
+    const program = `
+      function reducer(state, { body }) {
+        return { number: state.number + body.number }
+      }
+    `;
+    expect(
+      runCode({
+        secretsJson: "{}",
+        mode: "reducer",
+        code: program,
+        requestsJson: formatRequest({ body: { number: 3 } }),
+        invalidIdempotencyKeys: [],
+        state: JSON.stringify({ number: 4 }),
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+          ms: expect.any(Number),
+          authentic: true,
+          error: null,
+          state: { number: 7 },
+        }),
+      ])
+    );
+  });
+
+  it("is not authentic when `isAuthentic` returns false", () => {
+    const program = `
+      function isAuthentic() { return false; }
+      function reducer(state, { body }) {
+        return { number: state.number + body.number }
+      }
+    `;
+    expect(
+      runCode({
+        secretsJson: "{}",
+        mode: "reducer",
+        code: program,
+        requestsJson: formatRequest({ body: { number: 3 } }),
+        invalidIdempotencyKeys: [],
+        state: JSON.stringify({ number: 4 }),
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+          ms: expect.any(Number),
+          authentic: false,
+          error: null,
+          state: { number: 4 },
+        }),
+      ])
+    );
+  });
+
+  it("is authentic when `isAuthentic` returns true", () => {
+    const program = `
+      function isAuthentic() { return true; }
+      function reducer(state, { body }) {
+        return { number: state.number + body.number }
+      }
+    `;
+    expect(
+      runCode({
+        secretsJson: "{}",
+        mode: "reducer",
+        code: program,
+        requestsJson: formatRequest({ body: { number: 3 } }),
+        invalidIdempotencyKeys: [],
+        state: JSON.stringify({ number: 4 }),
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+          ms: expect.any(Number),
+          authentic: true,
+          error: null,
+          state: { number: 7 },
+        }),
+      ])
+    );
+  });
+
+  it("is not authentic when `isAuthentic` throws", () => {
+    const program = `
+      function isAuthentic() { throw new Error() }
+      function reducer(state, { body }) {
+        return { number: state.number + body.number }
+      }
+    `;
+    expect(
+      runCode({
+        secretsJson: "{}",
+        mode: "reducer",
+        code: program,
+        requestsJson: formatRequest({ body: { number: 3 } }),
+        invalidIdempotencyKeys: [],
+        state: JSON.stringify({ number: 4 }),
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+          ms: expect.any(Number),
+          authentic: false,
+          error: {
+            message: "",
+            name: "Error",
+            stacktrace: expect.stringContaining("hook.js:2"),
+          },
+          state: { number: 4 },
+        }),
+      ])
+    );
+  });
+
+  it("finds idempotency tokens", () => {
+    const program = `
+  
+      function getIdempotencyKey({ headers }) {
+        return headers["x-idempotency-token"]
+      }
+  
+      function reducer(state, { body }) {
+        return { number: state.number + body.number }
+      }
+    `;
+    expect(
+      runCode({
+        secretsJson: "{}",
+        mode: "reducer",
+        code: program,
+        requestsJson: formatRequest({
+          headers: { "x-idempotency-token": "foo" },
+          body: { number: 3 },
+        }),
+        invalidIdempotencyKeys: [],
+        state: JSON.stringify({ number: 4 }),
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+          idempotencyKey: "foo",
+          ms: expect.any(Number),
+          error: null,
+          state: { number: 7 },
+        }),
+      ])
+    );
+  });
+
+  it("returns errors with stack and message", () => {
+    const program = `                  // line 1
+      function reducer(state, event) { // line 2
+        throw new TypeError('oh no')   // line 3
+      }
+    `;
+    expect(
+      runCode({
+        secretsJson: "{}",
+        mode: "reducer",
+        code: program,
+        requestsJson: formatRequest({ body: { number: 3 } }),
+        invalidIdempotencyKeys: [],
+        state: JSON.stringify({ number: 4 }),
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+          ms: expect.any(Number),
+          error: {
+            message: "oh no",
+            name: "TypeError",
+            stacktrace: expect.stringContaining("hook.js:3"),
+          },
+          state: { number: 4 },
+        }),
+      ])
+    );
+  });
+
+  it("filters out our code from stacktraces", () => {
+    const program = `                  // line 1
+      function reducer(state, event) { // line 2
+        throw new TypeError('oh no')   // line 3
+      }
+    `;
+    const result = runCode({
       secretsJson: "{}",
+      mode: "reducer",
       code: program,
       requestsJson: formatRequest({ body: { number: 3 } }),
       invalidIdempotencyKeys: [],
       state: JSON.stringify({ number: 4 }),
     });
-  }).toThrow("Script execution timed out after 250ms");
-});
-
-it("accepts multiple requests", () => {
-  const program = `
-  function reducer(state, { body }) {
-    return { number: state.number + body.number }
-  }
-`;
-  const result = runCode({
-    secretsJson: "{}",
-    code: program,
-    requestsJson: formatRequests([
-      { body: { number: 3 } },
-      { body: { number: 3 } },
-    ]),
-    invalidIdempotencyKeys: [],
-    state: JSON.stringify({ number: 4 }),
+    expect(JSON.stringify(result)).not.toContain("vm.service");
+    expect(JSON.stringify(result)).not.toContain("vm2");
   });
-  expect(result).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        id: expect.any(String),
-        ms: expect.any(Number),
-        error: null,
-        state: { number: 10 },
-      }),
-    ])
-  );
+
+  it("times out code that doesn't finish", () => {
+    const program = `
+      while(true) {}
+      function reducer(state, event) {
+      }
+    `;
+
+    expect(() => {
+      runCode({
+        secretsJson: "{}",
+        mode: "reducer",
+        code: program,
+        requestsJson: formatRequest({ body: { number: 3 } }),
+        invalidIdempotencyKeys: [],
+        state: JSON.stringify({ number: 4 }),
+      });
+    }).toThrow("Script execution timed out after 250ms");
+  });
+
+  it("accepts multiple requests", () => {
+    const program = `
+    function reducer(state, { body }) {
+      return { number: state.number + body.number }
+    }
+  `;
+    const result = runCode({
+      secretsJson: "{}",
+      mode: "reducer",
+      code: program,
+      requestsJson: formatRequests([
+        { body: { number: 3 } },
+        { body: { number: 3 } },
+      ]),
+      invalidIdempotencyKeys: [],
+      state: JSON.stringify({ number: 4 }),
+    });
+    expect(result).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+          ms: expect.any(Number),
+          error: null,
+          state: { number: 10 },
+        }),
+      ])
+    );
+  });
 });
 
 describe("console", () => {
@@ -339,6 +456,7 @@ describe("console", () => {
     expect(
       runCode({
         secretsJson: "{}",
+        mode: "reducer",
         code: program,
         requestsJson: formatRequest({ body: { number: 3 } }),
         invalidIdempotencyKeys: [],
@@ -393,6 +511,7 @@ describe("console", () => {
     expect(
       runCode({
         secretsJson: "{}",
+        mode: "reducer",
         code: program,
         requestsJson: formatRequests([
           { body: { number: 3 } },

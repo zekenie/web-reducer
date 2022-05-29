@@ -31,18 +31,21 @@ export async function runCode({
   code,
   request,
   secrets,
+  mode,
   state,
 }: {
   code: string;
   request: WebhookRequest;
   state: unknown;
   secrets: Record<string, string>;
+  mode: "reducer" | "response";
 }): Promise<CodeResponse> {
   const res = await client.post<CodeResponse>("/", {
     code,
     requestJson: JSON.stringify(request),
     state: state ? JSON.stringify(state) : undefined,
     secretsJson: JSON.stringify(secrets),
+    mode,
   });
   return res.data;
 }
