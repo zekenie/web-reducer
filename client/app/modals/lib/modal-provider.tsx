@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import type { ModalOpener } from ".";
-import { register } from "../test-modal";
+import * as testModal from "../test-modal";
 
 type ModalControls = {
   pushModal: <T extends keyof Modal.ModalTypes>(
@@ -136,4 +136,4 @@ const ModalProvider: FC = ({ children }) => {
 
 export default ModalProvider;
 
-register();
+testModal.register();

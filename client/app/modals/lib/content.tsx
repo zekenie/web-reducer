@@ -1,6 +1,6 @@
 import { XIcon } from "@heroicons/react/outline";
 import type { FC } from "react";
-import { useModals } from "./ModalProvider";
+import { useModals } from "./modal-provider";
 
 export const ModalHeader: FC<{ title: string }> = ({ title }) => {
   const { closeModal } = useModals();

@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -35,11 +39,38 @@ const validate_middleware_1 = __importDefault(require("../middleware/validate.mi
 const express_1 = require("express");
 const service = __importStar(require("./vm.service"));
 const vm_input_1 = __importDefault(require("./inputs/vm.input"));
-exports.default = (0, express_1.Router)().post("/", (0, validate_middleware_1.default)(vm_input_1.default), function updateHook(req, res, next) {
+const bulk_vm_input_1 = __importDefault(require("./inputs/bulk-vm.input"));
+exports.default = (0, express_1.Router)()
+    .post("/", (0, validate_middleware_1.default)(vm_input_1.default), function vmController(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
+        const body = req.body;
         try {
-            service.runCode(req.body);
-            res.json({});
+            const [payload] = service.runCode({
+                code: body.code,
+                requestsJson: `[${body.requestJson}]`,
+                invalidIdempotencyKeys: [],
+                secretsJson: body.secretsJson,
+                state: body.state,
+            });
+            res.json(payload);
+        }
+        catch (e) {
+            next(e);
+        }
+    });
+})
+    .post("/bulk", (0, validate_middleware_1.default)(bulk_vm_input_1.default), function vmBulkController(req, res, next) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const body = req.body;
+        try {
+            const payload = service.runCode({
+                code: body.code,
+                requestsJson: body.requestsJson,
+                invalidIdempotencyKeys: body.invalidIdempotencyKeys,
+                state: body.state,
+                secretsJson: body.secretsJson,
+            });
+            res.json(payload);
         }
         catch (e) {
             next(e);

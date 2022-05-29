@@ -1,0 +1,1 @@
+[Simple implementation](https://dev.to/abhinpai/bloom-filter-in-javascript-1efe)

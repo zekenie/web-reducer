@@ -1,0 +1,102 @@
+{
+  "main": {
+    "id": "3d314afd4be4edc7",
+    "type": "split",
+    "children": [
+      {
+        "id": "bd97e0216e7da7e7",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "readmes/readme.md",
+            "mode": "source"
+          }
+        }
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "817bd103fb5c3fdd",
+    "type": "split",
+    "children": [
+      {
+        "id": "67cd53e633998525",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "cdbc4b6aa2a6ac58",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {}
+            }
+          },
+          {
+            "id": "29050bfa80132b94",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "b469a915dd802928",
+    "type": "split",
+    "children": [
+      {
+        "id": "5357f4b95950d0bd",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9292e2bc073303b8",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "readmes/readme.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "active": "bd97e0216e7da7e7",
+  "lastOpenFiles": [
+    "readmes/readme.md",
+    "examples/bloom filter.md",
+    "ideas/Metrics.md",
+    "Feature Board.md",
+    "examples/Simple form submit.md",
+    "examples/Personal dashboard.md",
+    "Tech Investments.md",
+    "Requests table.md",
+    "ideas/State branches.md",
+    "ideas/Side Effects.md"
+  ]
+}

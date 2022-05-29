@@ -9,7 +9,7 @@ import {
   ScrollRestoration,
   useLoaderData,
 } from "@remix-run/react";
-import ModalProvider from "./modals/ModalProvider";
+import ModalProvider from "./modals/lib/modal-provider";
 import { json } from "@remix-run/node";
 import { Toaster } from "react-hot-toast";
 

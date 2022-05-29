@@ -3,6 +3,7 @@ FROM node@sha256:1a9a71ea86aad332aa7740316d4111ee1bd4e890df47d3b5eff3e5bded3b3d1
 WORKDIR /usr/src/app
 COPY package.json /usr/src/app/package.json
 COPY yarn.lock /usr/src/app/yarn.lock
+COPY docker-entrypoint.sh /usr/src/app/docker-entrypoint.sh
 RUN yarn install --immutable
 
 
@@ -24,5 +25,6 @@ RUN yarn build
 RUN rm -rf src
 # Do not give container root access
 USER node
+ENTRYPOINT ["./docker-entrypoint.sh"]
 
-CMD ["dumb-init", "node", "dist/index.js"]
+CMD ["node", "dist/index.js"]

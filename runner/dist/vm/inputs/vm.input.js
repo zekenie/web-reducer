@@ -16,11 +16,17 @@ __decorate([
 __decorate([
     (0, class_validator_1.IsJSON)(),
     (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.MaxLength)(100 * 1000)
 ], VMInput.prototype, "state", void 0);
 __decorate([
     (0, class_validator_1.IsJSON)(),
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MaxLength)(100 * 1000)
-], VMInput.prototype, "event", void 0);
+    (0, class_validator_1.MaxLength)(115 * 1000)
+], VMInput.prototype, "requestJson", void 0);
+__decorate([
+    (0, class_validator_1.IsJSON)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MaxLength)(10 * 1000)
+], VMInput.prototype, "secretsJson", void 0);
 exports.default = VMInput;

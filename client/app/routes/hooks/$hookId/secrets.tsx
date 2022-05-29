@@ -3,7 +3,7 @@ import {
   PencilIcon,
   PlusCircleIcon,
 } from "@heroicons/react/outline";
-import type { LoaderFunction, ActionFunction } from "@remix-run/node";
+import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Form,
@@ -11,12 +11,12 @@ import {
   useFetcher,
   useLoaderData,
   useOutletContext,
-  useSubmit,
   useTransition,
 } from "@remix-run/react";
 import { useCallback, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
-import { HookDetail } from "~/remote/hook-client.server";
+import { useModals } from "~/modals/lib/modal-provider";
+import type { HookDetail } from "~/remote/hook-client.server";
 import buildClientForJwt from "~/remote/index.server";
 
 export const loader: LoaderFunction = async ({ context, params }) => {
@@ -50,7 +50,18 @@ const SecretRow = ({
   const transition = useTransition();
   const fetcher = useFetcher();
 
-  const deleteSecret = useCallback(() => {
+  const { pushModal } = useModals();
+  const deleteSecret = useCallback(async () => {
+    const confirmed = await pushModal({
+      name: "confirm",
+      props: {
+        title: `Confirm deleting ${keyStr}`,
+        body: "This secret value cannot be recovered. When you delete a secret, old requests are not re-processed. This change only effects new requests.",
+      },
+    });
+    if (!confirmed) {
+      return;
+    }
     return fetcher.submit(
       {
         key: keyStr,
@@ -58,7 +69,7 @@ const SecretRow = ({
       },
       { action: `/hooks/${hookId}/secrets/delete`, method: "post" }
     );
-  }, [fetcher, keyStr, hookId]);
+  }, [fetcher, keyStr, hookId, pushModal]);
 
   return (
     <tr className="odd:bg-canvas-100">

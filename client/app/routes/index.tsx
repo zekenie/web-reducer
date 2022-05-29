@@ -1,6 +1,6 @@
 import type { LoaderFunction } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import { useModals } from "~/modals/ModalProvider";
+import { useModals } from "~/modals/lib/modal-provider";
 import type { HookOverview } from "~/remote/hook-client.server";
 import buildClientForJwt from "~/remote/index.server";
 
