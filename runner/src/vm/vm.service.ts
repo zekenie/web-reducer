@@ -1,6 +1,7 @@
 import { last } from "lodash";
 import vm2 from "vm2";
 import { formatStacktrace } from "../stacktrace/stacktrace.service";
+import * as crypto from "crypto";
 
 type LogLevels = "warn" | "error" | "log" | "trace" | "debug" | "info";
 
@@ -196,6 +197,7 @@ export function runCode({
     timeout,
     sandbox: {
       artifacts,
+      crypto,
       invalidIdempotencyKeys,
       console: artifacts.console,
       secrets: JSON.parse(secretsJson),

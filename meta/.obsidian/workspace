@@ -7,10 +7,9 @@
         "id": "bd97e0216e7da7e7",
         "type": "leaf",
         "state": {
-          "type": "markdown",
+          "type": "kanban",
           "state": {
-            "file": "readmes/readme.md",
-            "mode": "source"
+            "file": "Feature Board.md"
           }
         }
       }
@@ -68,7 +67,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "readmes/readme.md",
+                "file": "Feature Board.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -88,10 +87,10 @@
   },
   "active": "bd97e0216e7da7e7",
   "lastOpenFiles": [
+    "Feature Board.md",
     "readmes/readme.md",
     "examples/bloom filter.md",
     "ideas/Metrics.md",
-    "Feature Board.md",
     "examples/Simple form submit.md",
     "examples/Personal dashboard.md",
     "Tech Investments.md",

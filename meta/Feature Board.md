@@ -18,10 +18,10 @@ kanban-plugin: basic
 - [ ] Deployment
 - [ ] Real publish UI
 - [ ] Request detail view/modal
-- [ ] Import crypto into runtime
 - [ ] Public websocket endpoint
 - [ ] Edit secret interface
 - [ ] Delete requests
+- [ ] restrict outbound network traffic from runner
 
 
 ## In Progress
@@ -30,6 +30,7 @@ kanban-plugin: basic
 
 ## Done
 
+- [ ] Import crypto into runtime
 
 
 

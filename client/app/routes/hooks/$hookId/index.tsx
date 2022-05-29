@@ -53,7 +53,7 @@ export default function Requests() {
   }, [addMessageToRecords, hookId]);
 
   if (loadedRecords.length === 0) {
-    return <EmptyState readKeys={hook.readKeys} siteUrl={siteUrl} />;
+    return <EmptyState writeKeys={hook.writeKeys} siteUrl={siteUrl} />;
   }
   return (
     <div>
@@ -68,10 +68,10 @@ export default function Requests() {
 
 function EmptyState({
   siteUrl,
-  readKeys,
+  writeKeys,
 }: {
   siteUrl: string;
-  readKeys: string[];
+  writeKeys: string[];
 }) {
   return (
     <div className="py-32 m-2 flex items-center justify-center space-y-4 rounded-lg 0 text-canvas-500 flex-col ">
@@ -103,7 +103,7 @@ function EmptyState({
         </div>
         <div>
           &nbsp;&nbsp;{siteUrl}/
-          <VariableSelect selected={readKeys[0]} options={readKeys} />
+          <VariableSelect selected={writeKeys[0]} options={writeKeys} />
           {/* <VariableValue initialValue="gXm0UijDJH3yLpY8JObYN" /> */}
         </div>
       </CopyableCode>
