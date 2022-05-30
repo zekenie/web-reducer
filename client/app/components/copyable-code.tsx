@@ -21,11 +21,21 @@ const CopyableCode: FC = ({ children }) => {
         placeholder.classList.toggle("hidden");
       }
     }
+
+    // this is for elements like a span containing the bash `$`
+    function toggleVisibilityOfNoCopyElements() {
+      for (const elem of contentRef.current!.querySelectorAll(".no-copy")) {
+        elem.classList.toggle("hidden");
+      }
+    }
+
     toggleSelects();
+    toggleVisibilityOfNoCopyElements();
     toast.success("It's on your clipboard", {
       icon: <ClipboardCopyIcon className="w-5 h-5 text-fern-600" />,
     });
     await navigator.clipboard.writeText(contentRef.current.innerText);
+    toggleVisibilityOfNoCopyElements();
     toggleSelects();
   }, [contentRef]);
   return (

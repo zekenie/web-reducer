@@ -82,14 +82,14 @@ function EmptyState({
 
       <CopyableCode>
         <div>
-          <span className="text-fern-900">$</span> curl -X POST \
+          <span className="text-fern-900 no-copy">$</span> curl -X POST \
         </div>{" "}
         <div>
-          &nbsp;&nbsp;-d '
+          -d '
           <VariableValue initialValue={JSON.stringify({ foo: "bar" })} />' \
         </div>
         <div>
-          &nbsp;&nbsp;-H 'Content-Type:{" "}
+          -H 'Content-Type:{" "}
           <VariableSelect
             selected="application/json"
             options={[
@@ -102,7 +102,7 @@ function EmptyState({
           ' \
         </div>
         <div>
-          &nbsp;&nbsp;{siteUrl}/
+          {siteUrl}/
           <VariableSelect selected={writeKeys[0]} options={writeKeys} />
           {/* <VariableValue initialValue="gXm0UijDJH3yLpY8JObYN" /> */}
         </div>

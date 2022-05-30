@@ -31,6 +31,7 @@ kanban-plugin: basic
 
 ## Done
 
+- [ ] fix copyable code element to work
 - [ ] [[Custom Responses]]<br><br>- [x] runner has `responder` method<br>- [x] server uses `responder` method on runner<br>- [x] write test of custom response in integration test
 - [ ] Import crypto into runtime
 
