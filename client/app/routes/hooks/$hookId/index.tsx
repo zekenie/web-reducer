@@ -5,6 +5,7 @@ import CopyableCode, {
   VariableSelect,
   VariableValue,
 } from "~/components/copyable-code";
+import RequestsTable from "~/components/hook/requests-table";
 import setupWebsocket from "~/remote/authenticated-websocket.client";
 import type {
   HookDetail,
@@ -56,13 +57,14 @@ export default function Requests() {
     return <EmptyState writeKeys={hook.writeKeys} siteUrl={siteUrl} />;
   }
   return (
-    <div>
-      {loadedRecords.map((r) => (
-        <div key={r.requestId}>
-          {r.requestId} - {r.bodyHash}
-        </div>
-      ))}
-    </div>
+    <RequestsTable requests={loadedRecords} />
+    // <div>
+    //   {loadedRecords.map((r) => (
+    //     <div key={r.requestId}>
+    //       {r.requestId} - {r.bodyHash}
+    //     </div>
+    //   ))}
+    // </div>
   );
 }
 

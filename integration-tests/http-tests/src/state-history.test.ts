@@ -47,6 +47,32 @@ describe("existing hooks", () => {
     expect(state1.createdAt).toBeGreaterThan(state2.createdAt);
   });
 
+  it("only shows current version's history", async () => {
+    const body1 = { number: 4 };
+    const body2 = { number: 3 };
+    const { api } = await buildHook({ bodies: [body1, body2] });
+    await api.settled(body1);
+    await api.settled(body2);
+
+    await api.update({ code: `function reducer() { return { foo: 'bar' } }` });
+    await api.publish();
+    await allQueuesDrained();
+    await allQueuesDrained();
+    const stateHistory = await api.history();
+
+    expect(stateHistory.nextToken).toBeFalsy();
+    expect(stateHistory.objects).toHaveLength(2);
+
+    const [state1, state2] = stateHistory.objects;
+
+    expect(state1.state).toEqual({ foo: "bar" });
+    expect(state1.body).toEqual(body2);
+    expect(state2.state).toEqual({ foo: "bar" });
+    expect(state2.body).toEqual(body1);
+
+    expect(state1.createdAt).toBeGreaterThan(state2.createdAt);
+  });
+
   it("`hasNext` when there are more records", async () => {
     const pool = getPool();
     const reqs = Array.from({ length: 42 }, (_, index) => ({ index }));

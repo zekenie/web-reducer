@@ -75,6 +75,11 @@ export async function getStateHistoryPage(
   // how does this work with page 1???
 
   const res = await pool.query<StateHistory & { fullCount: number }>(sql`
+    with "publishedVersion" as (
+      select * from "version"
+      where "workflowState" = ${VersionWorkflowState.PUBLISHED}
+      and "hookId" = ${hookId}
+    )
     select
       "requestId",
       state,
@@ -84,12 +89,12 @@ export async function getStateHistoryPage(
       "request"."createdAt",
       count(*) OVER() AS "fullCount"
     from state
-    join version
-      on version."hookId" = state."hookId"
-    join request
+    
+     join request
       on request.id = state."requestId"
+    join "publishedVersion"
+      on "state"."versionId" = "publishedVersion"."id"
     where "state"."hookId" = ${hookId}
-    and version."workflowState" = ${VersionWorkflowState.PUBLISHED}
     ${generateSqlFilterExpressionForToken(paginationArgs.token)}
     order by "request"."createdAt" desc
     limit ${paginationArgs.pageSize}

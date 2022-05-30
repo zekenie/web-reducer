@@ -16,11 +16,11 @@ export default function Index() {
   return (
     <>
       <h1>Hook ids</h1>
-      <button
+      {/* <button
         onClick={() => pushModal({ name: "test", props: { text: "foo" } })}
       >
         open modal
-      </button>
+      </button> */}
       <ul>
         {hooks.map((hook) => (
           <li key={hook.id}>

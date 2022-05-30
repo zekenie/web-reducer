@@ -8,6 +8,8 @@ kanban-plugin: basic
 
 - [ ] [[JS or React library]]
 - [ ] requests empty state -> "Curl it for me" button
+- [ ] public html page for read key
+- [ ] refactor runtime code to use class
 
 
 ## Todo
@@ -22,11 +24,12 @@ kanban-plugin: basic
 - [ ] Edit secret interface
 - [ ] Delete requests
 - [ ] restrict outbound network traffic from runner
+- [ ] requests table needs to reload when bulk update happens
 
 
 ## In Progress
 
-- [ ] Requests table<br>- [ ] Pagination<br>- [ ] Websocket updates
+- [ ] Requests table<br>- [ ] Pagination<br>- [x] Websocket updates
 
 
 ## Done
