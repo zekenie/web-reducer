@@ -10,6 +10,7 @@ import {
   queueNameForHookId as runnerQueueNameForHookId,
 } from "../runner/runner-hash.helper";
 import { UnableToResolveSettledRequest } from "./request.errors";
+import { runCode } from "../runner/vm.remote";
 
 export async function captureRequest(params: requestDb.CaptureRequest) {
   const { requestId, hookId } = await requestDb.captureRequest(params);
@@ -34,6 +35,15 @@ export async function handleRequest({
   contentType: string;
   writeKey: string;
 }) {
+  const codeToRun = await hookDb.getCodeByWriteKey(writeKey);
+  const { response } = await runCode({
+    code: codeToRun.code,
+    mode: "response",
+    request,
+    secrets: {},
+    state: undefined,
+  });
+
   await enqueue(
     {
       name: "request",
@@ -45,6 +55,7 @@ export async function handleRequest({
     },
     getRequestJobIdForRequestId(request.id)
   );
+  return response;
 }
 
 export function getRequestJobIdForRequestId(requestId: string): string {

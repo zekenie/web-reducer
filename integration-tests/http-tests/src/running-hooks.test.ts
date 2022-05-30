@@ -97,4 +97,29 @@ describe("existing hooks", () => {
       expect(state).toEqual({ number: 13 });
     });
   });
+  describe("custom responses", () => {
+    it("responds with responder function", async () => {
+      const body1 = { number: 4 };
+      const { api, context, authenticatedClient } = await buildHook({
+        code: `
+          function responder(request) {
+            return {
+              statusCode: 201,
+              body: request.body
+            }
+          }
+          function reducer (oldState = { number: 0 }, req) { return { number: Number(secrets.number) + oldState.number + req.body.number } }
+        `,
+      });
+      await api.setSecret("number", "3");
+      const { data, status } = await authenticatedClient.post(
+        `/${context.writeKey}`,
+        body1,
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      expect(status).toEqual(201);
+      expect(data).toEqual({ number: 4 });
+    });
+  });
 });

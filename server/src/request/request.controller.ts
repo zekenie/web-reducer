@@ -30,7 +30,7 @@ export default Router()
   .post("/:writeKey", limiter, async function handleRequest(req, res, next) {
     try {
       writeKeyCounter.add(1);
-      await service.handleRequest({
+      const responseFromRunner = await service.handleRequest({
         request: {
           body: req.body,
           headers: req.headers,
@@ -40,8 +40,8 @@ export default Router()
         writeKey: req.params.writeKey,
         contentType: req.headers["content-type"]!,
       });
-      res.status(202);
-      res.json({ id: getStore().id });
+      res.status(responseFromRunner?.statusCode || 202);
+      res.json(responseFromRunner?.body || {});
     } catch (e) {
       next(e);
     }

@@ -7,10 +7,9 @@
         "id": "bd97e0216e7da7e7",
         "type": "leaf",
         "state": {
-          "type": "markdown",
+          "type": "kanban",
           "state": {
-            "file": "examples/bloom filter.md",
-            "mode": "source"
+            "file": "Feature Board.md"
           }
         }
       }
@@ -68,7 +67,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "examples/bloom filter.md",
+                "file": "Feature Board.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -88,15 +87,15 @@
   },
   "active": "bd97e0216e7da7e7",
   "lastOpenFiles": [
-    "examples/bloom filter.md",
     "Feature Board.md",
+    "examples/Card games.md",
+    "examples/bloom filter.md",
     "examples/Simple form submit.md",
     "readmes/readme.md",
     "ideas/Metrics.md",
     "examples/Personal dashboard.md",
     "Tech Investments.md",
     "Requests table.md",
-    "ideas/State branches.md",
-    "ideas/Side Effects.md"
+    "ideas/State branches.md"
   ]
 }

@@ -12,7 +12,6 @@ kanban-plugin: basic
 
 ## Todo
 
-- [ ] Requests table<br>- [ ] Pagination<br>- [ ] Websocket updates
 - [ ] CRUD for read/write keys
 - [ ] Hooks list view
 - [ ] Signup flow
@@ -27,11 +26,12 @@ kanban-plugin: basic
 
 ## In Progress
 
-- [ ] [[Custom Responses]]<br><br>- [x] runner has `responder` method<br>- [ ] server uses `responder` method on runner
+- [ ] Requests table<br>- [ ] Pagination<br>- [ ] Websocket updates
 
 
 ## Done
 
+- [ ] [[Custom Responses]]<br><br>- [x] runner has `responder` method<br>- [x] server uses `responder` method on runner<br>- [x] write test of custom response in integration test
 - [ ] Import crypto into runtime
 
 

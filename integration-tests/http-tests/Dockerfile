@@ -11,4 +11,4 @@ COPY ./docker-entrypoint.sh /usr/src/app/docker-entrypoint.sh
 USER node
 ENTRYPOINT ["./docker-entrypoint.sh"]
 
-CMD yarn jest --bail --runInBand $JEST_ARGS
+CMD yarn jest --bail --runInBand $JEST_ARGS --detectOpenHandles

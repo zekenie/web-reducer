@@ -24,6 +24,11 @@ type CodeResponse = {
   id: string;
   idempotencyKey?: string;
   authentic: boolean;
+  response?: {
+    statusCode: number;
+    body?: any;
+    headers?: any;
+  };
   console: ConsoleMessage[];
 };
 

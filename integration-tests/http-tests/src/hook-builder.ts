@@ -310,5 +310,5 @@ export async function buildHook<PostBody, State>({
   }
   await allQueuesDrained();
 
-  return { context, api };
+  return { context, api, authenticatedClient: authedApi.authenticatedClient };
 }
