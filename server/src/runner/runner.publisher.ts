@@ -22,3 +22,14 @@ export async function publishState({
   };
   await connection.publish(`state.${hookId}`, JSON.stringify(message));
 }
+
+export async function publishBulkUpdate({
+  hookId,
+}: {
+  hookId: string;
+}): Promise<void> {
+  await connection.publish(
+    `bulk-update.${hookId}`,
+    JSON.stringify({ type: "bulk-update", hookId })
+  );
+}

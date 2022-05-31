@@ -80,7 +80,7 @@ describe("authenticated socket", () => {
       expect((err as Error).message).toMatch("403");
     });
 
-    it("receives a message when new request is processed", async () => {
+    it("receives a new-request message when new request is processed", async () => {
       const ws = new WebSocket(
         `${process.env.WEB_URL!.split("http").join("ws")}/hook-events?hookId=${
           hook.id
@@ -111,6 +111,33 @@ describe("authenticated socket", () => {
             stateHash: expect.any(String),
             bodyHash: expect.any(String),
           }),
+        })
+      );
+      ws.close();
+    });
+
+    it("receives a bulk-update message after publishing a new version", async () => {
+      const ws = new WebSocket(
+        `${process.env.WEB_URL!.split("http").join("ws")}/hook-events?hookId=${
+          hook.id
+        }`,
+        {
+          headers: {
+            cookie: cookieForCreds(api.creds),
+          },
+        }
+      );
+      await convertEventToPromise("upgrade", ws);
+      await api.hook.update(hook.id, {
+        code: "function reducer(state, request) { return {foo: 3}; }",
+      });
+      await api.hook.publish(hook.id);
+      const [msg]: Buffer[] = await convertEventToPromise("message", ws);
+      const asJson = JSON.parse(msg.toString());
+      expect(asJson).toEqual(
+        expect.objectContaining({
+          type: "bulk-update",
+          hookId: hook.id,
         })
       );
       ws.close();

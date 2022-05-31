@@ -26,7 +26,12 @@ type NewRequestMessage = {
   hookId: string;
 };
 
-type SocketMessage = NewRequestMessage; // | OtherMessage
+type BulkUpdateMessage = {
+  type: "bulk-update";
+  hookId: string;
+};
+
+type SocketMessage = NewRequestMessage | BulkUpdateMessage; // | OtherMessage
 
 const wss = new WebSocketServer({ noServer: true, path: "/hook-events" });
 
@@ -85,6 +90,7 @@ const listeners = {
     if (this.websocketsForHookIds[hookId].size === 1) {
       // setup redis listener
       redisConnection.subscribe(`state.${hookId}`);
+      redisConnection.subscribe(`bulk-update.${hookId}`);
     }
   },
   remove(hookId: string, ws: WebSocket) {
@@ -96,6 +102,7 @@ const listeners = {
       delete this.websocketsForHookIds[hookId];
       // remove redis listener
       redisConnection.unsubscribe(`state.${hookId}`);
+      redisConnection.unsubscribe(`bulk-update.${hookId}`);
     }
   },
 
@@ -111,13 +118,10 @@ const listeners = {
   },
 };
 
-redisConnection.on(
-  "message",
-  (channel: `state.${string}`, message: SocketMessage) => {
-    const [_, hookId] = channel.split(".");
-    listeners.emit(hookId, message);
-  }
-);
+redisConnection.on("message", (channel: string, message: SocketMessage) => {
+  const [type, hookId] = channel.split(".");
+  listeners.emit(hookId, message);
+});
 
 export default function attachWebsocketToServer(server: Server): void {
   server.on("upgrade", async function upgrade(request, socket, head) {

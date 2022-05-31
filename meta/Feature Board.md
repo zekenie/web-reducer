@@ -10,6 +10,7 @@ kanban-plugin: basic
 - [ ] requests empty state -> "Curl it for me" button
 - [ ] public html page for read key
 - [ ] refactor runtime code to use class
+- [ ] #security should typescript compile happen in thread?
 
 
 ## Todo
@@ -24,19 +25,19 @@ kanban-plugin: basic
 - [ ] Public websocket endpoint
 - [ ] Edit secret interface
 - [ ] Delete requests
-- [ ] restrict outbound network traffic from runner
-- [ ] requests table needs to reload when bulk update happens
+- [ ] #security restrict outbound network traffic from runner
+- [ ] requests table needs to reload when bulk update happens<br><br>- [ ] ws event<br>- [ ] ui update
 - [ ] typescript compiling should be in a thread
 
 
 ## In Progress
 
-- [ ] monaco editor intellisense
 - [ ] Requests table<br>- [ ] Pagination<br>- [x] Websocket updates
 
 
 ## Done
 
+- [ ] monaco editor intellisense
 - [ ] fix copyable code element to work
 - [ ] [[Custom Responses]]<br><br>- [x] runner has `responder` method<br>- [x] server uses `responder` method on runner<br>- [x] write test of custom response in integration test
 - [ ] Import crypto into runtime

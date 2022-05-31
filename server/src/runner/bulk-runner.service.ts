@@ -19,6 +19,7 @@ import {
   checkValidityOfIdempotencyKeys,
   fetchState,
 } from "../state/state.db";
+import { publishBulkUpdate } from "./runner.publisher";
 import { runCodeBulk } from "./vm.remote";
 
 export async function runBulk(
@@ -122,5 +123,6 @@ export async function runBulk(
     return runBulk(hookId, onProgress, attempts + 1);
   } else {
     await unpauseHook({ hookId });
+    await publishBulkUpdate({ hookId });
   }
 }
