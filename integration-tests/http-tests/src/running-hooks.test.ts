@@ -49,6 +49,21 @@ describe("existing hooks", () => {
     expect(state).toEqual({ number: 7 });
   });
 
+  it("works with typescript", async () => {
+    const body1 = { number: 4 };
+    const body2 = { number: 3 };
+    const { api } = await buildHook({
+      bodies: [body1, body2],
+      code: `function reducer (oldState = { number: 0 }, req): { number: number } { return { number: oldState.number + req.body.number } }`,
+    });
+
+    await api.settled(body2);
+
+    const state = await api.read();
+
+    expect(state).toEqual({ number: 7 });
+  });
+
   it("captures but does not process requests if hook is paused", async () => {
     const { api, context } = await buildHook();
 

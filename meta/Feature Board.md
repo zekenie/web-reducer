@@ -19,16 +19,19 @@ kanban-plugin: basic
 - [ ] Signup flow
 - [ ] Deployment
 - [ ] Real publish UI
+- [ ] don't let publish happen if editor has severe errors
 - [ ] Request detail view/modal
 - [ ] Public websocket endpoint
 - [ ] Edit secret interface
 - [ ] Delete requests
 - [ ] restrict outbound network traffic from runner
 - [ ] requests table needs to reload when bulk update happens
+- [ ] typescript compiling should be in a thread
 
 
 ## In Progress
 
+- [ ] monaco editor intellisense
 - [ ] Requests table<br>- [ ] Pagination<br>- [x] Websocket updates
 
 

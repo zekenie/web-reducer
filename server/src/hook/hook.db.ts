@@ -77,12 +77,12 @@ export async function getHookNameCollisions({ names }: { names: string[] }) {
 
 export async function updateDraft(
   id: string,
-  input: UpdateHook
+  input: UpdateHook & { compiledCode: string }
 ): Promise<void> {
   const pool = getPool();
   await pool.any(sql`
     update version
-    set code = ${input.code}
+    set code = ${input.code}, "compiledCode" = ${input.compiledCode}
     where "workflowState" = 'draft'
       and "hookId" = ${id}
   `);
@@ -190,7 +190,7 @@ export async function getCodeByWriteKey(writeKey: string): Promise<CodeToRun> {
         version.id as "versionId",
         hook."workflowState",
         version."hookId" as "hookId",
-        code
+        "compiledCode" as code
       from version
       join "key"
         on "key"."hookId" = version."hookId"

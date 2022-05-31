@@ -18,6 +18,7 @@ function EditorSwitch({
   const options = {
     fontSize: 14,
     minimap: { enabled: false },
+    formatOnType: true,
   };
   switch (mode) {
     case "draft":
@@ -25,7 +26,36 @@ function EditorSwitch({
         <Editor
           options={options}
           onChange={onChange}
-          defaultLanguage="javascript"
+          defaultLanguage="typescript"
+          onValidate={console.log}
+          beforeMount={(monaco) => {
+            monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+              target: monaco.languages.typescript.ScriptTarget.ESNext,
+              strict: true,
+            });
+
+            const libUri = "ts:filename/types.ts";
+            const libSource = `
+              type WrResponse<T> = { headers?: any; statusCode?: number; body?: T }
+              type WrRequest<T> = { headers: any; id: string; body: T }
+              interface ReducerFunction<State = any, ReqBody = any> {
+                (state: State, req: WrRequest<ReqBody>): State 
+              }
+              interface ResponderFunction<ReqBody = any, ResBody = any> {
+                (req: WrRequest<ReqBody>): WrResponse<ResBody> 
+              }
+            `;
+
+            monaco.languages.typescript.typescriptDefaults.addExtraLib(
+              libSource,
+              libUri
+            );
+            monaco.editor.createModel(
+              libSource,
+              "typescript",
+              monaco.Uri.parse(libUri)
+            );
+          }}
           defaultValue={hook.draft}
         />
       );
@@ -33,8 +63,8 @@ function EditorSwitch({
       return (
         <DiffEditor
           original={hook.published}
-          originalLanguage="javascript"
-          modifiedLanguage="javascript"
+          originalLanguage="typescript"
+          modifiedLanguage="typescript"
           modified={hook.draft}
           options={{ ...options, renderSideBySide: false, readOnly: true }}
         />

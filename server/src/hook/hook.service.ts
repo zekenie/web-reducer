@@ -8,6 +8,7 @@ import { generateUnusedHookName } from "./hook-name.service";
 import * as db from "./hook.db";
 import { HookDetail } from "./hook.types";
 import UpdateHook from "./inputs/update-hook.input";
+import * as ts from "typescript";
 
 export async function listHooks({ userId }: { userId: string }) {
   return db.listHooks({ userId });
@@ -56,7 +57,10 @@ export async function createHook({
 }
 
 export async function updateDraft(hookId: string, input: UpdateHook) {
-  await db.updateDraft(hookId, input);
+  const { outputText: compiledCode } = ts.transpileModule(input.code, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS },
+  });
+  await db.updateDraft(hookId, { ...input, compiledCode });
 }
 
 export async function publishDraft({ hookId }: { hookId: string }) {
