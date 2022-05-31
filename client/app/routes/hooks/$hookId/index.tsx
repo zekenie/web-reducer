@@ -1,5 +1,10 @@
 import type { LoaderFunction } from "@remix-run/node";
-import { useLoaderData, useOutletContext, useParams } from "@remix-run/react";
+import {
+  useFetcher,
+  useLoaderData,
+  useOutletContext,
+  useParams,
+} from "@remix-run/react";
 import { useCallback, useEffect, useState } from "react";
 import CopyableCode, {
   VariableSelect,
@@ -12,27 +17,27 @@ import type {
   PaginatedTokenResponse,
   Request,
 } from "~/remote/hook-client.server";
-import buildClientForJwt from "~/remote/index.server";
+// import buildClientForJwt from "~/remote/index.server";
+import { loader } from "./history";
 
-export const loader: LoaderFunction = async ({ context, params }) => {
-  const client = buildClientForJwt(context.creds.jwt);
+export { loader };
 
-  return {
-    siteUrl: process.env.SITE_URL,
-    history: await client.hooks.history(params.hookId!),
-  };
-};
-
-type SocketMessage = {
-  type: "new-request";
-  request: Request;
-  readKeys: string[];
-  hookId: string;
-};
+type SocketMessage =
+  | {
+      type: "new-request";
+      request: Request;
+      readKeys: string[];
+      hookId: string;
+    }
+  | {
+      type: "bulk-update";
+      hookId: string;
+    };
 
 export default function Requests() {
   const { hook } = useOutletContext<{ hook: HookDetail }>();
   const { hookId } = useParams();
+  const fetcher = useFetcher();
   const { siteUrl, history: paginatedHistory } = useLoaderData<{
     siteUrl: string;
     history: PaginatedTokenResponse<Request>;
@@ -41,31 +46,41 @@ export default function Requests() {
     paginatedHistory.objects
   );
 
-  const addMessageToRecords = useCallback((message: Request) => {
-    setLoadedRecords((loadedRecords) => [message, ...loadedRecords]);
-  }, []);
+  useEffect(() => {
+    if (fetcher.data) {
+      setLoadedRecords(fetcher.data.history.objects);
+    }
+  }, [fetcher]);
+
+  const handleSocketMessage = useCallback(
+    (message: SocketMessage) => {
+      switch (message.type) {
+        case "new-request":
+          setLoadedRecords((loadedRecords) => [
+            message.request,
+            ...loadedRecords,
+          ]);
+          break;
+        case "bulk-update":
+          fetcher.load(`/hooks/${hook.id}/history`);
+          break;
+      }
+    },
+    [fetcher, hook.id]
+  );
 
   useEffect(() => {
     const { close } = setupWebsocket<SocketMessage>({
       hookId: hookId!,
-      onMessage: (sm) => addMessageToRecords(sm.request),
+      onMessage: (sm) => handleSocketMessage(sm),
     });
     return close;
-  }, [addMessageToRecords, hookId]);
+  }, [handleSocketMessage, hookId]);
 
   if (loadedRecords.length === 0) {
     return <EmptyState writeKeys={hook.writeKeys} siteUrl={siteUrl} />;
   }
-  return (
-    <RequestsTable requests={loadedRecords} />
-    // <div>
-    //   {loadedRecords.map((r) => (
-    //     <div key={r.requestId}>
-    //       {r.requestId} - {r.bodyHash}
-    //     </div>
-    //   ))}
-    // </div>
-  );
+  return <RequestsTable requests={loadedRecords} />;
 }
 
 function EmptyState({
