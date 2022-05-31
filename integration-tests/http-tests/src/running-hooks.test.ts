@@ -64,6 +64,21 @@ describe("existing hooks", () => {
     expect(state).toEqual({ number: 7 });
   });
 
+  it("works when there is no code", async () => {
+    const body1 = { number: 4 };
+    const body2 = { number: 3 };
+    const { api } = await buildHook({
+      bodies: [body1, body2],
+      code: "",
+    });
+
+    await api.settled(body2);
+
+    const state = await api.read();
+
+    expect(state).toEqual(null);
+  });
+
   it("captures but does not process requests if hook is paused", async () => {
     const { api, context } = await buildHook();
 

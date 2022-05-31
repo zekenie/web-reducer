@@ -57,9 +57,12 @@ export async function createHook({
 }
 
 export async function updateDraft(hookId: string, input: UpdateHook) {
-  const { outputText: compiledCode } = ts.transpileModule(input.code, {
-    compilerOptions: { module: ts.ModuleKind.CommonJS },
-  });
+  const compiledCode =
+    input.code.trim() === ""
+      ? ""
+      : ts.transpileModule(input.code, {
+          compilerOptions: { module: ts.ModuleKind.CommonJS },
+        }).outputText;
   await db.updateDraft(hookId, { ...input, compiledCode });
 }
 
