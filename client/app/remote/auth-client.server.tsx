@@ -5,6 +5,17 @@ export type Credentials = {
   refreshToken: string;
 };
 
+export type User = {
+  id: string;
+  email?: string;
+};
+
+type UserWorkflowState = "guest" | "user";
+
+export type UserDetails = User & {
+  workflowState: UserWorkflowState;
+};
+
 const authClientFactory = (httpClient: HttpJsonClient) => ({
   async createGuestUser(): Promise<Credentials> {
     return httpClient.post<Credentials>("/auth/guest-user");
@@ -30,6 +41,10 @@ const authClientFactory = (httpClient: HttpJsonClient) => ({
     return httpClient.post<Credentials>("/auth/validate-signin-token", {
       token,
     });
+  },
+
+  async me(): Promise<UserDetails> {
+    return httpClient.get<UserDetails>("/auth/me");
   },
 });
 

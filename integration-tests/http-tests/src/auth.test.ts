@@ -307,4 +307,36 @@ describe("auth", () => {
 
     it.todo("works with existing user");
   });
+
+  describe("/me", () => {
+    it("rejects unauthenticated requests", async () => {
+      const res = await unauthenticatedServerClient.get("/auth/me", {
+        validateStatus: () => true,
+      });
+      expect(res.status).toEqual(401);
+    });
+    it("returns user details for authed user", async () => {
+      const api = await buildAuthenticatedApi({ guest: false });
+      const res = await api.authenticatedClient.get("/auth/me");
+      expect(res.status).toEqual(200);
+      expect(res.data).toEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+          email: expect.any(String),
+          workflowState: "user",
+        })
+      );
+    });
+    it("returns user details for guest user", async () => {
+      const api = await buildAuthenticatedApi({ guest: true });
+      const res = await api.authenticatedClient.get("/auth/me");
+      expect(res.status).toEqual(200);
+      expect(res.data).toEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+          workflowState: "guest",
+        })
+      );
+    });
+  });
 });

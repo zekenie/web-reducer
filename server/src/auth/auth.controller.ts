@@ -8,6 +8,7 @@ import ValidateSignIn from "./inputs/validate-signin.input";
 import RefreshToken from "./inputs/refresh-token.input";
 import createHttpError from "http-errors";
 import jwtLib from "jsonwebtoken";
+import { getUserDetails } from "../user/user.service";
 
 export default Router()
   .post("/guest-user", async (req, res, next) => {
@@ -57,6 +58,15 @@ export default Router()
     }
   })
   .use(makeAuthMiddleware())
+  .get("/me", async (req, res, next) => {
+    try {
+      const { userId } = getStore();
+      const details = await getUserDetails({ userId });
+      res.json(details);
+    } catch (e) {
+      next(e);
+    }
+  })
   .post("/signin", validate(SignIn), async (req, res, next) => {
     try {
       await service.initiateSignin({
