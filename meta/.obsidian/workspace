@@ -38,7 +38,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "tag:#security",
+                "query": "",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -47,8 +47,7 @@
               }
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "horizontal",
@@ -89,13 +88,13 @@
   "active": "bd97e0216e7da7e7",
   "lastOpenFiles": [
     "Feature Board.md",
-    "examples/Card games.md",
+    "Tech Investments.md",
     "examples/bloom filter.md",
+    "examples/Card games.md",
     "examples/Simple form submit.md",
     "readmes/readme.md",
     "ideas/Metrics.md",
     "examples/Personal dashboard.md",
-    "Tech Investments.md",
     "Requests table.md",
     "ideas/State branches.md"
   ]

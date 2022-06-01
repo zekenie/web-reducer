@@ -1,5 +1,25 @@
 ![Web Reducer Logo](./client/public/logo.svg)
 
+## What is WebReducer
+
+WebReducer is the simplest way to get a stateful endpoint online. You define a few functions that configure the behavior of your endpoint and we handle the rest. You can think of it like an HTTP endpoint + Redux reducer, if that makes any sense to you.
+
+Here's a pseudo-code version of how WebReducer works:
+
+```js
+server.on("request", async (req, res) => {
+  const yourResponse = yourResponderFunction(req.body);
+  res.status(yourResponse.statusCode);
+  res.send(yourResponse.body);
+  const currentState = await lookupCurrentState();
+  const yourSecrets = await lookupYourSecrets();
+  const nextState = yourReducerFunction(currentState, req.body, yourSecrets);
+  await saveNextState(nextState);
+});
+```
+
+In reality, it's a lot more complex than this. But this can give you an adequate mental model of the system
+
 ## Service Level Diagram
 
 ```mermaid

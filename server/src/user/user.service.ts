@@ -1,15 +1,11 @@
-/**
- * This method is used to merge a visitor (unauthed user) into a user account
- * - Merges access
- */
-export async function absorbUnauthenticatedAccount({
+import { getUserById } from "./user.db";
+import { UserDetails } from "./user.types";
+
+export async function getUserDetails({
   userId,
-  visitorId,
 }: {
   userId: string;
-  visitorId: string;
-}): Promise<void> {
-  // start transaction
-  // assign access from visitor to user
-  // lock visitor
+}): Promise<UserDetails> {
+  const user = await getUserById(userId);
+  return { ...user, workflowState: user.email ? "user" : "guest" };
 }
