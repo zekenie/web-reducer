@@ -8,30 +8,42 @@
     <script src="https://bundle.run/@tailwindcss/forms"></script>
   </head>
   <body>
-    <div class="w-screen h-screen flex items-center justify-center">
-      <div class="space-y-4 flex flex-col items-center max-w-xl">
-        <img class="max-w-lg" src="logo.png" alt="HookReducer.com" />
-        <h2 class="text-center font-mono text-xl text-[#2E5262]">
+    <div class="w-screen h-screen flex mt-4 sm:mt-0 sm:items-center justify-center">
+      <div class="space-y-4 flex flex-col px-2 max-w-xl">
+        <img class="sm:max-w-lg max-w-xs sm:self-center" src="logo.svg" alt="WebReducer.dev" />
+        <h2 class="sm:text-center font-mono text-xl text-[#2E5262]">
           Ingest and process webhooks insanely easily. Coming soon.
           <a
             class="underline"
             target="_blank"
             href="https://offbyone.us/posts/hook-reducer/"
             >Read more</a
-          >.
+          >. <a
+          class="underline"
+          target="_blank"
+          href="https://offbyone.us/posts/micro-business-update/"
+          >And more</a
+        >. <a
+        class="underline"
+        target="_blank"
+        href="https://offbyone.us/posts/web-reducer-update-3/"
+        >And even more</a
+      >.
         </h2>
 
-        <div class="h-12"></div>
+        <div class="h-2 sm:h-12"></div>
 
-        <form name="contact" class="space-y-2 max-w-md" method="POST" data-netlify="true">
+        <form name="contact" class="space-y-2 sm:self-center max-w-md" method="POST" data-netlify="true">
 
-          <div class="flex flex-row space-x-2">
+          <div class="flex flex-col sm:flex-row space-y-2 sm:space-x-2">
             <label class="sr-only">Your Email:</label>
             <input class="flex-1 rounded border p-3 font-mono" placeholder="email" type="email" name="email" /></label>
-            <button class="rounded font-semibold text-white bg-[#5ABC76] border p-3 font-mono" type="submit">Get Notified</button>
+            <button class="rounded font-semibold text-white bg-[#5ABC76] border p-3 font-mono" type="submit">
+              Get Notified
+            </button>
           </div>
 
-          <div class="font-mono text-gray-400 px-3">No spam. I'm probably going to copy and paste your email into a gmail compose window.</div>
+          <div class="font-mono text-gray-400 px-3 sm:text-center">No spam. I'm probably going to copy and paste your email into a gmail compose window.</div>
          
          
           <p>
