@@ -11,6 +11,7 @@ kanban-plugin: basic
 - [ ] fix nodemon on server
 - [ ] fix lagging connection on integration tests
 - [ ] make server process configurable as to weather it runs workers or server
+- [ ] add eslint-consistent-type-imports project-wide
 
 
 ## gonna do

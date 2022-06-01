@@ -12,6 +12,7 @@ import {
 import ModalProvider from "./modals/lib/modal-provider";
 import { json } from "@remix-run/node";
 import { Toaster } from "react-hot-toast";
+import { AppWithNav } from "./components/header";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
@@ -40,7 +41,9 @@ export default function App() {
       <body>
         <ModalProvider>
           <div className="flex flex-col h-screen overflow-hidden">
-            <Outlet />
+            <AppWithNav>
+              <Outlet />
+            </AppWithNav>
           </div>
           <Toaster position="bottom-right" />
         </ModalProvider>

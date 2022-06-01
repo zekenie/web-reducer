@@ -9,7 +9,7 @@
         "state": {
           "type": "kanban",
           "state": {
-            "file": "Feature Board.md"
+            "file": "Tech Investments.md"
           }
         }
       }
@@ -67,7 +67,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Feature Board.md",
+                "file": "Tech Investments.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -87,8 +87,8 @@
   },
   "active": "bd97e0216e7da7e7",
   "lastOpenFiles": [
-    "Feature Board.md",
     "Tech Investments.md",
+    "Feature Board.md",
     "examples/bloom filter.md",
     "examples/Card games.md",
     "examples/Simple form submit.md",

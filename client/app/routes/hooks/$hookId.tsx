@@ -1,6 +1,7 @@
 import { MenuIcon } from "@heroicons/react/outline";
 import type { LoaderFunction } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
+import { InsideHeader } from "~/components/header";
 import EditorAndFooter from "~/components/hook/editor";
 import ResourceBar from "~/components/hook/resource-bar";
 import { Tab, Tabs } from "~/components/tabs";
@@ -18,24 +19,9 @@ export default function Hook() {
 
   return (
     <>
-      <header className="px-3 flex-shrink-0 py-3 border-b grid grid-cols-3">
-        <div className="flex flex-row items-center space-x-4">
-          <button
-            // onClick={() =>
-            //   pushModal({ name: "confirm", props: { text: "foo", faz: "sdf" } })
-            // }
-            className="p-3 hover:bg-canvas-50 rounded-full"
-          >
-            <MenuIcon className="w-7 h-7 self-center" />
-          </button>
-
-          <img className="w-56" alt="Hook Reducer" src="/logo.svg" />
-        </div>
-        <div className="flex items-center justify-center">
-          <ResourceBar hook={hook} />
-        </div>
-        <div />
-      </header>
+      <InsideHeader>
+        <ResourceBar hook={hook} />
+      </InsideHeader>
       <section className="flex-grow grid grid-cols-2 overflow-hidden">
         <EditorAndFooter hook={hook} />
 
