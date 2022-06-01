@@ -40,6 +40,11 @@ export default Router()
         writeKey: req.params.writeKey,
         contentType: req.headers["content-type"]!,
       });
+      if (responseFromRunner?.headers) {
+        for (const headerKey of Object.keys(responseFromRunner.headers)) {
+          res.header(headerKey, responseFromRunner.headers[headerKey]);
+        }
+      }
       res.status(responseFromRunner?.statusCode || 202);
       res.json(responseFromRunner?.body || {});
     } catch (e) {

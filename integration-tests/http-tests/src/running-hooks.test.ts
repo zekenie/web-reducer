@@ -135,14 +135,17 @@ describe("existing hooks", () => {
           function responder(request) {
             return {
               statusCode: 201,
-              body: request.body
+              body: request.body,
+              headers: {
+                "X-Powered-By": "Zeke's magic"
+              }
             }
           }
           function reducer (oldState = { number: 0 }, req) { return { number: Number(secrets.number) + oldState.number + req.body.number } }
         `,
       });
       await api.setSecret("number", "3");
-      const { data, status } = await authenticatedClient.post(
+      const { data, status, headers } = await authenticatedClient.post(
         `/${context.writeKey}`,
         body1,
         { headers: { "Content-Type": "application/json" } }
@@ -150,6 +153,11 @@ describe("existing hooks", () => {
 
       expect(status).toEqual(201);
       expect(data).toEqual({ number: 4 });
+      expect(headers).toEqual(
+        expect.objectContaining({
+          "x-powered-by": "Zeke's magic",
+        })
+      );
     });
   });
 });
