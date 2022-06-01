@@ -62,5 +62,12 @@ export default function registerWorker<T extends keyof Queue.WorkerTypes>(
 }
 
 export function runWorkers() {
-  return allWorkerFactories.map((fac) => fac());
+  const workers = allWorkerFactories.map((fac) => fac());
+  return {
+    async shutDownAllWorkers() {
+      for (const w of workers) {
+        await w.close();
+      }
+    },
+  };
 }

@@ -61,4 +61,10 @@ export function debug() {
   });
 }
 
+export async function shutDownAllQueues() {
+  for (const q of Object.values(queues)) {
+    await q.close();
+  }
+}
+
 setTimeout(debug, 100);

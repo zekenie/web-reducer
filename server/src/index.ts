@@ -7,9 +7,10 @@ import { connection as redisConnection } from "./redis";
 import { connection as redisPublisherConnection } from "./runner/runner.publisher";
 import "./worker/all-workers";
 import { runWorkers } from "./worker/workers";
+import { shutDownAllQueues } from "./worker/queues";
 
 tracing.start().then(async () => {
-  runWorkers();
+  const { shutDownAllWorkers } = runWorkers();
 
   const { default: makeServer } = await import("./server");
 
@@ -23,6 +24,8 @@ tracing.start().then(async () => {
 
       server.close(async () => {
         try {
+          await shutDownAllQueues();
+          await shutDownAllWorkers();
           await redisConnection.quit();
           await redisPublisherConnection.quit();
           const pool = getPool();
