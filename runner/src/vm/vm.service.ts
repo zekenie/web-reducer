@@ -2,20 +2,25 @@ import * as crypto from "crypto";
 import vm2 from "vm2";
 import { Artifacts } from "./artifacts";
 
+const sharedHeaderCode = `
+requests = requests.map(req => ({ ...req, query: makeQueryParams(req.queryString) }))
+artifacts.expectLength(requests.length);
+function reducer() {}
+function isAuthentic() { return true; }
+function responder(request) {
+  return {
+    status: 202,
+    body: { id: request.id }
+  }
+}
+function getIdempotencyKey(request) { return request.id; }
+`;
+
 const codeBread = {
   response: {
     code: (code: string, requestsJson: string) =>
       `(function(requests) {
-      artifacts.expectLength(requests.length);
-      function reducer() {}
-      function isAuthentic() { return true; }
-      function responder(request) {
-        return {
-          status: 202,
-          body: { id: request.id }
-        }
-      }
-      function getIdempotencyKey(request) { return request.id; }
+      ${sharedHeaderCode}
       ${code}
       for (const request of requests) {
         const frame = artifacts.open(request.id);
@@ -39,16 +44,7 @@ const codeBread = {
       secretsJson: string
     ) =>
       `(function(state, requests, secrets) {
-    artifacts.expectLength(requests.length);
-    function reducer() {}
-    function isAuthentic() { return true; }
-    function responder(request) {
-      return {
-        status: 202,
-        body: { id: request.id }
-      }
-    }
-    function getIdempotencyKey(request) { return request.id; }
+    ${sharedHeaderCode}
     ${code}
     return requests.reduce((acc, request, i, requests) => {
       const frame = artifacts.open(request.id);
@@ -113,10 +109,14 @@ export function runCode({
   const codeLength = code.split("\n").length;
   const artifacts = new Artifacts();
   const vm = new vm2.VM({
+    allowAsync: false,
+    wasm: false,
     timeout,
     sandbox: {
       artifacts,
       crypto,
+      makeQueryParams: (queryString: string) =>
+        new URLSearchParams(queryString),
       invalidIdempotencyKeys,
       console: artifacts.console,
       secrets: JSON.parse(secretsJson),
@@ -145,10 +145,17 @@ export function runCode({
     throw new Error("timeout");
   }
 
-  return artifacts
+  const ret = artifacts
     .report({ codeLength, filename, offset: codeBread[mode].offset })
     .map((report) => ({
       ...report,
       ms: Math.round(ms / artifacts.length),
     }));
+
+  console.log(
+    "console output",
+    ...ret.map((r) => r.console.map((c) => c.messages))
+  );
+
+  return ret;
 }

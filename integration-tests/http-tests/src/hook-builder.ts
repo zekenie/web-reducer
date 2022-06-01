@@ -167,10 +167,14 @@ function buildApi<PostBody, State>(context: Context) {
   });
 
   return {
-    async write(body: PostBody): Promise<string> {
+    async write(
+      body: PostBody,
+      queryParams?: Record<string, string>
+    ): Promise<string> {
       const { data } = await unauthenticatedServerClient.post<{ id: string }>(
         `/${context.writeKey}`,
-        body
+        body,
+        { params: queryParams }
       );
       bodyToIdMap.set(body, data.id);
       return data.id;

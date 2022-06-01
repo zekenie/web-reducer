@@ -71,6 +71,7 @@ export function getRequestToRun(id: string): Promise<RequestToRun | null> {
     sql`
       select
         "writeKey",
+        "queryString",
         "id",
         body,
         headers,
@@ -86,6 +87,7 @@ export type CaptureRequest = {
   request: {
     body: {};
     headers: IncomingHttpHeaders | Record<string, string>;
+    queryString: string;
   };
   writeKey: string;
 };
@@ -96,7 +98,7 @@ const insertRequestCargo = cargoQueue<CaptureRequest & { hookId: string }>(
       captureBatchSize.record(requestCaptures.length);
       const query = sql`
         insert into request
-        ("id", "contentType", "body", "headers", "writeKey", "hookId")
+        ("id", "contentType", "body", "headers", "writeKey", "hookId", "queryString")
         select * from
         ${sql.unnest(
           requestCaptures.map(
@@ -108,10 +110,11 @@ const insertRequestCargo = cargoQueue<CaptureRequest & { hookId: string }>(
                 JSON.stringify(request.headers),
                 writeKey,
                 hookId,
+                request.queryString,
               ];
             }
           ),
-          ["uuid", "varchar", "jsonb", "jsonb", "varchar", "uuid"]
+          ["uuid", "varchar", "jsonb", "jsonb", "varchar", "uuid", "text"]
         )}
       `;
       const pool = getPool();

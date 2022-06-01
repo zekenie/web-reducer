@@ -30,8 +30,11 @@ export default Router()
   .post("/:writeKey", limiter, async function handleRequest(req, res, next) {
     try {
       writeKeyCounter.add(1);
+      const originalUrl = `${req.protocol}://${req.hostname}${req.originalUrl}`;
+      const urlObj = new URL(originalUrl);
       const responseFromRunner = await service.handleRequest({
         request: {
+          queryString: urlObj.search,
           body: req.body,
           headers: req.headers,
           id: getStore().id,

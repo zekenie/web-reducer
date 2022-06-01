@@ -3,6 +3,7 @@ import { IncomingHttpHeaders } from "http";
 export type WebhookRequest = {
   id: string;
   body: {};
+  queryString: string;
   headers: IncomingHttpHeaders | Record<string, string>;
   createdAt: string;
 };

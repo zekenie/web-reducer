@@ -64,6 +64,24 @@ describe("existing hooks", () => {
     expect(state).toEqual({ number: 7 });
   });
 
+  it("works with query strings", async () => {
+    const { api } = await buildHook({
+      code: `function reducer (oldState = { number: 0 }, req) {
+        console.log(req.query.get('foo'))
+        console.log(req.body)
+        return { foo: req.query.get('foo'), number: oldState.number + req.body.number }
+      }`,
+    });
+    const body = { number: 4 };
+    await api.write(body, { foo: "bar" });
+
+    await api.settled(body);
+
+    const state = await api.read();
+
+    expect(state).toEqual({ number: 4, foo: "bar" });
+  });
+
   it("works when there is no code", async () => {
     const body1 = { number: 4 };
     const body2 = { number: 3 };
@@ -136,16 +154,12 @@ describe("existing hooks", () => {
             return {
               statusCode: 201,
               body: request.body,
-              headers: {
-                "X-Powered-By": "Zeke's magic"
-              }
             }
           }
-          function reducer (oldState = { number: 0 }, req) { return { number: Number(secrets.number) + oldState.number + req.body.number } }
+          function reducer (oldState = { number: 0 }, req) { return { number: oldState.number + req.body.number } }
         `,
       });
-      await api.setSecret("number", "3");
-      const { data, status, headers } = await authenticatedClient.post(
+      const { data, status } = await authenticatedClient.post(
         `/${context.writeKey}`,
         body1,
         { headers: { "Content-Type": "application/json" } }
@@ -153,11 +167,63 @@ describe("existing hooks", () => {
 
       expect(status).toEqual(201);
       expect(data).toEqual({ number: 4 });
+    });
+
+    it("respects custom headers in responder", async () => {
+      const body1 = { number: 4 };
+      const { api, context, authenticatedClient } = await buildHook({
+        code: `
+          function responder(request) {
+            return {
+              statusCode: 201,
+              body: request.body,
+              headers: {
+                "X-Powered-By": "Zeke's magic"
+              }
+            }
+          }
+          function reducer (oldState = { number: 0 }, req) { return { number: oldState.number + req.body.number } }
+        `,
+      });
+      const { headers } = await authenticatedClient.post(
+        `/${context.writeKey}`,
+        body1,
+        { headers: { "Content-Type": "application/json" } }
+      );
+
       expect(headers).toEqual(
         expect.objectContaining({
           "x-powered-by": "Zeke's magic",
         })
       );
+    });
+
+    it("has access to URLSearchParams in the request query", async () => {
+      const body1 = { number: 4 };
+      const { api, context, authenticatedClient } = await buildHook({
+        code: `
+          function responder(request) {
+            return {
+              statusCode: 201,
+              body: { foo: request.query.get('bar') },
+              headers: {
+                "X-Powered-By": "Zeke's magic"
+              }
+            }
+          }
+          function reducer (oldState = { number: 0 }, req) { return { number: oldState.number + req.body.number } }
+        `,
+      });
+      const { data } = await authenticatedClient.post(
+        `/${context.writeKey}`,
+        body1,
+        {
+          headers: { "Content-Type": "application/json" },
+          params: { bar: "baz" },
+        }
+      );
+
+      expect(data).toEqual({ foo: "baz" });
     });
   });
 });

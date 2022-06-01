@@ -31,13 +31,14 @@ function EditorSwitch({
           beforeMount={(monaco) => {
             monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
               target: monaco.languages.typescript.ScriptTarget.ESNext,
+              lib: ["es2020"],
               strict: true,
             });
 
             const libUri = "ts:filename/types.ts";
             const libSource = `
               type WrResponse<T> = { headers?: any; statusCode?: number; body?: T }
-              type WrRequest<T> = { headers: any; id: string; body: T }
+              type WrRequest<T> = { query: URLSearchParams; headers: any; id: string; body: T }
               interface ReducerFunction<State = any, ReqBody = any> {
                 (state: State, req: WrRequest<ReqBody>): State 
               }

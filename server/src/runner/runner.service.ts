@@ -41,6 +41,7 @@ export async function runHook(requestId: string): Promise<void> {
     request: {
       id: requestId,
       body: request.body,
+      queryString: request.queryString,
       headers: request.headers,
       createdAt: request.createdAt,
     },
