@@ -39,14 +39,14 @@ export async function runCode({
   mode,
   state,
 }: {
-  code: string;
+  code?: string;
   request: WebhookRequest;
   state: unknown;
   secrets: Record<string, string>;
   mode: "reducer" | "response";
 }): Promise<CodeResponse> {
   const res = await client.post<CodeResponse>("/", {
-    code,
+    code: code || "",
     requestJson: JSON.stringify(request),
     state: state ? JSON.stringify(state) : undefined,
     secretsJson: JSON.stringify(secrets),

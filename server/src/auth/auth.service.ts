@@ -121,7 +121,7 @@ export async function initiateSignin({
   await sendMail({
     to: email,
     from: "zeke@webreducer.dev",
-    locals: { domain: "webreducer.com", token: signinToken },
+    locals: { domain: process.env.CLIENT_URL!, token: signinToken },
     name: "signin",
   });
 }

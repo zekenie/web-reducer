@@ -62,9 +62,7 @@ export function debug() {
 }
 
 export async function shutDownAllQueues() {
-  for (const q of Object.values(queues)) {
-    await q.close();
-  }
+  return Promise.all(Object.values(queues).map((q) => q.close()));
 }
 
 setTimeout(debug, 100);

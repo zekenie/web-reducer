@@ -1,4 +1,3 @@
-import { MenuIcon } from "@heroicons/react/outline";
 import type { LoaderFunction } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
 import { InsideHeader } from "~/components/header";

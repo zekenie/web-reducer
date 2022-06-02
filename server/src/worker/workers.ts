@@ -65,9 +65,7 @@ export function runWorkers() {
   const workers = allWorkerFactories.map((fac) => fac());
   return {
     async shutDownAllWorkers() {
-      for (const w of workers) {
-        await w.close();
-      }
+      return Promise.all(workers.map((w) => w.close()));
     },
   };
 }

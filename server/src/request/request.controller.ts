@@ -32,6 +32,17 @@ export default Router()
       writeKeyCounter.add(1);
       const originalUrl = `${req.protocol}://${req.hostname}${req.originalUrl}`;
       const urlObj = new URL(originalUrl);
+      console.log({
+        request: {
+          queryString: urlObj.search,
+          body: req.body,
+          headers: req.headers,
+          id: getStore().id,
+          createdAt: new Date().toString(),
+        },
+        writeKey: req.params.writeKey,
+        contentType: req.headers["content-type"]!,
+      });
       const responseFromRunner = await service.handleRequest({
         request: {
           queryString: urlObj.search,

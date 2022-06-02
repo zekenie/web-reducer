@@ -1,7 +1,9 @@
 import { MenuIcon } from "@heroicons/react/outline";
-import { FC, RefObject, useEffect, useState } from "react";
-import { createContext, useContext, useRef } from "react";
+import type { FC } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import type { UserDetails } from "../../remote/auth-client.server";
+import UserButton from "./user-button";
 
 export const InsideHeader: FC = ({ children }) => {
   const ref = useRef<HTMLDivElement>();
@@ -16,7 +18,10 @@ export const InsideHeader: FC = ({ children }) => {
   // return createPortal(children, ref?.current || );
 };
 
-export const AppWithNav: FC = ({ children }) => {
+export const AppWithNav: FC<{ userDetails: UserDetails }> = ({
+  userDetails,
+  children,
+}) => {
   return (
     <>
       <header className="px-3 flex-shrink-0 py-3 border-b grid grid-cols-3">
@@ -32,10 +37,10 @@ export const AppWithNav: FC = ({ children }) => {
 
           <img className="w-56" alt="Hook Reducer" src="/logo.svg" />
         </div>
-        <div id="center-nav" className="flex items-center justify-center">
-          {/* <ResourceBar hook={hook} /> */}
+        <div id="center-nav" className="flex items-center justify-center" />
+        <div className="flex justify-end flex-row items-center">
+          <UserButton userDetails={userDetails} />
         </div>
-        <div />
       </header>
       {children}
     </>

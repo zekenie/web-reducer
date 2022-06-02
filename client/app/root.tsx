@@ -1,5 +1,5 @@
 import styles from "./styles/app.css";
-import type { MetaFunction } from "@remix-run/node";
+import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import {
   Links,
   LiveReload,
@@ -13,6 +13,8 @@ import ModalProvider from "./modals/lib/modal-provider";
 import { json } from "@remix-run/node";
 import { Toaster } from "react-hot-toast";
 import { AppWithNav } from "./components/header";
+import buildClientForJwt from "./remote/index.server";
+import { UserDetails } from "./remote/auth-client.server";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
@@ -20,17 +22,26 @@ export const meta: MetaFunction = () => ({
   viewport: "width=device-width,initial-scale=1",
 });
 
-export async function loader() {
+export const loader: LoaderFunction = async ({ context }) => {
+  const client = buildClientForJwt(context.creds.jwt);
+  const me = await client.auth.me();
   return json({
+    me,
     ENV: {
       AUTHENTICATED_SOCKET_URL: process.env.AUTHENTICATED_SOCKET_URL,
       SITE_URL: process.env.SITE_URL,
     },
   });
-}
+};
 
 export default function App() {
-  const data = useLoaderData();
+  const data = useLoaderData<{
+    me: UserDetails;
+    ENV: {
+      AUTHENTICATED_SOCKET_URL: string;
+      SITE_URL: string;
+    };
+  }>();
 
   return (
     <html lang="en">
@@ -41,7 +52,7 @@ export default function App() {
       <body>
         <ModalProvider>
           <div className="flex flex-col h-screen overflow-hidden">
-            <AppWithNav>
+            <AppWithNav userDetails={data.me}>
               <Outlet />
             </AppWithNav>
           </div>
