@@ -19,6 +19,15 @@ export const cookieParserMiddleware = cookieParser(process.env.COOKIE_SECRET);
 export async function getNewCredsWithRefreshToken(
   existingCreds: Credentials
 ): Promise<Credentials> {
+  console.log("about to use refresh token", {
+    method: "POST",
+    headers: {
+      Accepts: "application/json",
+      "Content-Type": "application/json",
+      Authorization: existingCreds.jwt,
+    },
+    body: JSON.stringify({ token: existingCreds.refreshToken }),
+  });
   const res = await fetch(`${process.env.BACKEND_URL}/auth/refresh-token`, {
     method: "POST",
     headers: {
@@ -28,6 +37,8 @@ export async function getNewCredsWithRefreshToken(
     },
     body: JSON.stringify({ token: existingCreds.refreshToken }),
   });
+
+  console.log("response code", res.status, "from refresh request");
 
   return res.json() as Promise<Credentials>;
 }
@@ -91,6 +102,7 @@ export default async function credentialExchange({
         return createGuestUser();
     }
   } catch (e) {
+    console.warn("credentailExchange error with strategy " + strategy, e);
     return createGuestUser();
   }
   throw new Error("unsupported strategy");

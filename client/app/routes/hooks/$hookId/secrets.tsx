@@ -1,8 +1,4 @@
-import {
-  BackspaceIcon,
-  PencilIcon,
-  PlusCircleIcon,
-} from "@heroicons/react/outline";
+import { BackspaceIcon, PlusCircleIcon } from "@heroicons/react/outline";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
@@ -14,6 +10,7 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { useCallback, useEffect, useRef } from "react";
+import { Button, Spinner } from "flowbite-react";
 import toast from "react-hot-toast";
 import { useModals } from "~/modals/lib/modal-provider";
 import type { HookDetail } from "~/remote/hook-client.server";
@@ -76,12 +73,6 @@ const SecretRow = ({
       <td className="py-1 px-3 w-24">{keyStr}</td>
       <td className="px-3">{valueStr}</td>
       <td className="space-x-1 flex flex-row">
-        <button
-          // type="submit"
-          className="p-1 hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-400 rounded"
-        >
-          <PencilIcon className="w-5 h-5" />
-        </button>
         <button
           type="button"
           onClick={deleteSecret}
@@ -158,13 +149,15 @@ export default function Secrets() {
               />
             </td>
             <td className="w-6">
-              <button
+              <Button
                 type="submit"
+                icon={PlusCircleIcon}
+                size="xs"
+                color="light"
+                outline={false}
                 disabled={transition.state === "submitting"}
-                className="p-1 hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-400 rounded"
-              >
-                <PlusCircleIcon className="w-5 h-5" />
-              </button>
+                // className="p-1 hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-400 rounded"
+              />
             </td>
           </tr>
         </tbody>

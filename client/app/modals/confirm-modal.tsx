@@ -4,6 +4,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from "./lib/content";
+import { Button } from "flowbite-react";
 import { registerModal, useModals } from "./lib/modal-provider";
 
 export type MODAL_NAME = "confirm";
@@ -41,10 +42,17 @@ const TestModal = ({
       <ModalHeader title={title} />
       <ModalBody>{body}</ModalBody>
       <ModalFooter>
-        <button onClick={() => closeModal(false)}>{cancelText}</button>
-        <button autoFocus onClick={() => closeModal(true)}>
+        <Button size="sm" color="red" onClick={() => closeModal(false)}>
+          {cancelText}
+        </Button>
+        <Button
+          size="sm"
+          color="green"
+          autoFocus
+          onClick={() => closeModal(true)}
+        >
           {confirmText}
-        </button>
+        </Button>
       </ModalFooter>
     </CenteredModalContainer>
   );

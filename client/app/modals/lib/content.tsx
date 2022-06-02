@@ -29,7 +29,7 @@ export const ModalBody: FC = ({ children }) => {
 
 export const ModalFooter: FC = ({ children }) => {
   return (
-    <div className="px-2 py-1 flex flex-row justify-end border-t bg-sky-100 space-x-2">
+    <div className="px-2 py-2 flex flex-row justify-end border-t bg-sky-100 space-x-2">
       {children}
     </div>
   );

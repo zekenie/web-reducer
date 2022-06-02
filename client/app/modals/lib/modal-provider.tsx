@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import type { ModalOpener } from ".";
-import * as testModal from "../test-modal";
+import * as testModal from "../confirm-modal";
 
 type ModalControls = {
   pushModal: <T extends keyof Modal.ModalTypes>(

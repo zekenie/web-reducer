@@ -4,6 +4,7 @@ import { useFetcher } from "@remix-run/react";
 import { debounce } from "lodash";
 import type { ComponentProps, FC } from "react";
 import { useCallback, useState } from "react";
+import { Button, Tooltip } from "flowbite-react";
 import type { HookDetail } from "~/remote/hook-client.server";
 
 function EditorSwitch({
@@ -15,6 +16,7 @@ function EditorSwitch({
   hook: HookDetail;
   onChange: ComponentProps<typeof Editor>["onChange"];
 }) {
+  const [isSetup, setIsSetup] = useState(false);
   const options = {
     fontSize: 14,
     minimap: { enabled: false },
@@ -29,6 +31,9 @@ function EditorSwitch({
           defaultLanguage="typescript"
           onValidate={console.log}
           beforeMount={(monaco) => {
+            if (isSetup) {
+              return;
+            }
             monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
               target: monaco.languages.typescript.ScriptTarget.ESNext,
               lib: ["es2020"],
@@ -56,6 +61,7 @@ function EditorSwitch({
               "typescript",
               monaco.Uri.parse(libUri)
             );
+            setIsSetup(true);
           }}
           defaultValue={hook.draft}
         />
@@ -78,7 +84,9 @@ function EditorSwitch({
 const FooterContainer: FC = ({ children }) => {
   return (
     <div className="border-t bg-canvas-50 py-0.5 px-3 flex flex-row content-between items-center text-xs">
-      <div className="flex flex-row flex-1 space-x-2">{children}</div>
+      <div className="flex flex-row flex-1 space-x-2 items-center">
+        {children}
+      </div>
       {/* 
         ideas for menu:
         - autopublish
@@ -117,7 +125,20 @@ export default function EditorAndFooter({ hook }: { hook: HookDetail }) {
         )}
         <div className="flex-1" />
         {hook.published !== hook.draft && (
-          <button onClick={publish}>Publish</button>
+          <Tooltip
+            style="dark"
+            className="max-w-sm"
+            content={
+              <p>
+                Publishing the latest changes will re-run your code against all
+                historical requests and recompute the latest state
+              </p>
+            }
+          >
+            <Button color="green" size="xs" onClick={publish}>
+              Publish
+            </Button>
+          </Tooltip>
         )}
       </FooterContainer>
     </div>

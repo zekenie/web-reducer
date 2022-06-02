@@ -3,6 +3,7 @@
     "bullmq",
     "bytea",
     "creds",
+    "flowbite",
     "hygen",
     "idempotency",
     "nilsimsa",

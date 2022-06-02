@@ -16,7 +16,6 @@ kanban-plugin: basic
 
 - [ ] CRUD for read/write keys
 - [ ] Hooks list view
-- [ ] Signup flow
 - [ ] Deployment
 - [ ] public html page for read key
 - [ ] Real publish UI
@@ -38,6 +37,7 @@ kanban-plugin: basic
 ## Done
 
 **Complete**
+- [x] Signup flow
 - [x] expose UrlSearchParams in request
 - [ ] response headers are respected
 - [ ] requests table needs to reload when bulk update happens<br><br>- [x] ws event<br>- [x] ui update

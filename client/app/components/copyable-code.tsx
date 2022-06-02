@@ -79,10 +79,10 @@ export const VariableSelect = ({
     <>
       <span className="hidden placeholder-span">{val}</span>
       <select
-        style={{ width: 9.7 * val.length }}
+        style={{ width: 9.7 * val.length, backgroundImage: "none" }}
         onClick={(e) => e.stopPropagation()}
         onChange={(e) => setVal(e.target.value)}
-        className="bg-transparent appearance-none border-b-2 border-dashed  border-canvas-400 text-canvas-400"
+        className="bg-transparent border-l-0 border-r-0 border-t-0 p-0 appearance-none border-b-2 border-dashed  border-canvas-400 text-canvas-400"
       >
         {options.map((o) => (
           <option selected={selected === o} key={o}>

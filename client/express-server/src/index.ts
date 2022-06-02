@@ -21,6 +21,7 @@ declare global {
     }
     export interface Response {
       setCreds: (creds: Credentials) => void;
+      logout: () => void;
     }
   }
 }
@@ -50,15 +51,23 @@ app.use(express.static("../public", { maxAge: "1h" }));
 
 app.use(morgan("tiny"));
 
-app.use(async (req, res, next) => {
+app.use((req, res, next) => {
   res.setCreds = (creds: Credentials) => {
     res.cookie("credentials", JSON.stringify(creds), {
       signed: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       maxAge: 1000 * 60 * 60 * 24 * 30,
     });
+
+    res.logout = () => {
+      res.clearCookie("credentials");
+    };
   };
+  next();
+});
+
+app.use(async (req, res, next) => {
   try {
     const credsString = req.signedCookies?.credentials;
     const creds = credsString ? JSON.parse(credsString) : {};
@@ -81,7 +90,11 @@ app.all(
           build: require(BUILD_DIR),
           mode: process.env.NODE_ENV,
           getLoadContext(req) {
-            return { creds: req.creds, setCreds: res.setCreds };
+            return {
+              creds: req.creds,
+              setCreds: res.setCreds,
+              logout: res.logout,
+            };
           },
         })(req, res, next);
       }
@@ -89,7 +102,11 @@ app.all(
         build: require(BUILD_DIR),
         mode: process.env.NODE_ENV,
         getLoadContext(req, res) {
-          return { creds: req.creds, setCreds: res.setCreds };
+          return {
+            creds: req.creds,
+            setCreds: res.setCreds,
+            logout: res.logout,
+          };
         },
       })
 );
