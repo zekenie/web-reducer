@@ -43,12 +43,12 @@ const CopyableCode: FC = ({ children }) => {
       onClick={copy}
       className="transform transition-transform duration-300 hover:-rotate-1 text-left border bg-sky-50 overflow-hidden relative  px-3 py-2 rounded"
     >
-      <button
+      <span
         onClick={copy}
         className="absolute bg-white  top-0 right-0 p-1 border-l border-b rounded-bl"
       >
         <ClipboardCopyIcon className="h-3.5 w-3.5" />
-      </button>
+      </span>
       <div ref={contentRef} className="font-mono text-md">
         {children}
       </div>
@@ -56,10 +56,17 @@ const CopyableCode: FC = ({ children }) => {
   );
 };
 
-export const VariableValue = ({ initialValue }: { initialValue: string }) => (
+export const VariableValue = ({
+  id,
+  initialValue,
+}: {
+  id: string;
+  initialValue: string;
+}) => (
   <span
     contentEditable
     suppressContentEditableWarning
+    id={id}
     onClick={(e) => e.stopPropagation()}
     className="border-b-2 border-dashed  border-canvas-400 text-canvas-400"
   >
@@ -69,9 +76,11 @@ export const VariableValue = ({ initialValue }: { initialValue: string }) => (
 
 export const VariableSelect = ({
   options,
+  id,
   selected,
 }: {
   selected?: string;
+  id: string;
   options: string[];
 }) => {
   const [val, setVal] = useState<string>(selected || "");
@@ -79,6 +88,7 @@ export const VariableSelect = ({
     <>
       <span className="hidden placeholder-span">{val}</span>
       <select
+        id={id}
         style={{ width: 9.7 * val.length, backgroundImage: "none" }}
         onClick={(e) => e.stopPropagation()}
         onChange={(e) => setVal(e.target.value)}

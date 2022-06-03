@@ -5,6 +5,7 @@ import { connection as redisConnection } from "../redis";
 import { getStore } from "../server/request-context.middleware";
 import { writeKeyCounter } from "./request.metrics";
 import * as service from "./request.service";
+import cors from "cors";
 
 const limiter = rateLimit({
   store: new RedisStore({
@@ -27,6 +28,7 @@ export default Router()
       next(e);
     }
   })
+  .use(cors({ origin: "*", credentials: true }))
   .post("/:writeKey", limiter, async function handleRequest(req, res, next) {
     try {
       writeKeyCounter.add(1);

@@ -123,6 +123,7 @@ export async function runBulk(
     return runBulk(hookId, onProgress, attempts + 1);
   } else {
     await unpauseHook({ hookId });
-    await publishBulkUpdate({ hookId });
+
+    setImmediate(() => publishBulkUpdate({ hookId }));
   }
 }

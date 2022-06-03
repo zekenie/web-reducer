@@ -1,0 +1,1 @@
+Perhaps we want a kv store or a set that are outside of the reducer and are more performant??

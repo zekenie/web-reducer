@@ -7,9 +7,10 @@
         "id": "bd97e0216e7da7e7",
         "type": "leaf",
         "state": {
-          "type": "kanban",
+          "type": "markdown",
           "state": {
-            "file": "Feature Board.md"
+            "file": "ideas/jq expressions in request table.md",
+            "mode": "source"
           }
         }
       }
@@ -67,7 +68,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Feature Board.md",
+                "file": "ideas/jq expressions in request table.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -87,15 +88,15 @@
   },
   "active": "bd97e0216e7da7e7",
   "lastOpenFiles": [
+    "ideas/jq expressions in request table.md",
+    "examples/Something with qr codes.md",
+    "examples/Simple form submit.md",
+    "ideas/Other data stores.md",
+    "examples/econ experiment.md",
+    "ideas/Cron requests.md",
     "Feature Board.md",
     "Tech Investments.md",
-    "examples/bloom filter.md",
-    "examples/Card games.md",
-    "examples/Simple form submit.md",
-    "readmes/readme.md",
-    "ideas/Metrics.md",
-    "examples/Personal dashboard.md",
-    "Requests table.md",
-    "ideas/State branches.md"
+    "examples/product surveys.md",
+    "examples/form builder.md"
   ]
 }

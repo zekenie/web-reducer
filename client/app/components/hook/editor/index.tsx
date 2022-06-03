@@ -45,7 +45,7 @@ function EditorSwitch({
               type WrResponse<T> = { headers?: any; statusCode?: number; body?: T }
               type WrRequest<T> = { query: URLSearchParams; headers: any; id: string; body: T }
               interface ReducerFunction<State = any, ReqBody = any> {
-                (state: State, req: WrRequest<ReqBody>): State 
+                (state: State, req: WrRequest<ReqBody>, secrets: Record<string, string>): State 
               }
               interface ResponderFunction<ReqBody = any, ResBody = any> {
                 (req: WrRequest<ReqBody>): WrResponse<ResBody> 

@@ -30,30 +30,23 @@ function areDaysDifferent(r1: PostProcessedRequest, r2: PostProcessedRequest) {
   return r1.createdAtFormattedDate !== r2.createdAtFormattedDate;
 }
 
-const DateRow = ({
-  headerRef,
-  date,
-}: {
-  date: string;
-  headerRef: RefObject<HTMLTableRowElement>;
-}) => (
-  <tr
-    className="sticky"
-    style={{ top: (headerRef.current?.clientHeight || 0) + "px" }}
-  >
-    <td
-      className="relative bg-sky-400 overflow-visible drop-shadow-sm"
-      style={{
-        height: "0px",
-      }}
-      colSpan={4}
-    >
-      <div className="flex drop-shadow-sm justify-center absolute z-10 px-1 text-xs transform translate-y-4 bottom-0 left-0 rounded-br bg-sky-400 h-4 text-canvas-500">
-        {date}
-      </div>
-    </td>
-  </tr>
-);
+const DateRow = ({ date }: { date: string }) => {
+  return (
+    <tr className="sticky" style={{ top: "28px" }}>
+      <td
+        className="relative bg-sky-400 overflow-visible drop-shadow-sm"
+        style={{
+          height: "0px",
+        }}
+        colSpan={4}
+      >
+        <div className="flex drop-shadow-sm justify-center absolute z-10 px-1 text-xs transform translate-y-4 bottom-0 left-0 rounded-br bg-sky-400 h-4 text-canvas-500">
+          {date}
+        </div>
+      </td>
+    </tr>
+  );
+};
 
 const IconForEffect = ({ effect }: { effect: Effect }) => {
   switch (effect) {
@@ -83,8 +76,6 @@ const timeFormatter = Intl.DateTimeFormat("en-US", {
 });
 
 export default function RequestsTable({ requests }: { requests: Request[] }) {
-  const headerRef = useRef<HTMLTableRowElement>(null);
-
   const postProcessedRequests: (Request & {
     createdAtFormattedDate: string;
     createdAtFormattedTime: string;
@@ -107,7 +98,7 @@ export default function RequestsTable({ requests }: { requests: Request[] }) {
       className="text-sm font-mono table-fixed w-full max-w-full"
     >
       <thead>
-        <tr ref={headerRef} className="bg-white sticky top-0">
+        <tr className="bg-white sticky top-0">
           <th className="text-left py-1 px-3 w-24">when</th>
           <th className="text-left py-1 px-3">body</th>
           <th className="text-left py-1 px-3">state</th>
@@ -115,12 +106,7 @@ export default function RequestsTable({ requests }: { requests: Request[] }) {
         </tr>
       </thead>
       <tbody>
-        {firstRow && (
-          <DateRow
-            headerRef={headerRef}
-            date={firstRow.createdAtFormattedDate}
-          />
-        )}
+        {firstRow && <DateRow date={firstRow.createdAtFormattedDate} />}
         {postProcessedRequests.map((r, i) => {
           const nextRow = postProcessedRequests[i + 1];
           const isNextDay = nextRow && areDaysDifferent(r, nextRow);
@@ -145,12 +131,7 @@ export default function RequestsTable({ requests }: { requests: Request[] }) {
                   </div>
                 </td> */}
               </tr>
-              {isNextDay && (
-                <DateRow
-                  headerRef={headerRef}
-                  date={nextRow.createdAtFormattedDate}
-                />
-              )}
+              {isNextDay && <DateRow date={nextRow.createdAtFormattedDate} />}
             </>
           );
         })}

@@ -12,6 +12,8 @@ kanban-plugin: basic
 - [ ] fix lagging connection on integration tests
 - [ ] make server process configurable as to weather it runs workers or server
 - [ ] add eslint-consistent-type-imports project-wide
+- [ ] virtualize requests table for lots of requests
+- [ ] requests table sampling
 
 
 ## gonna do

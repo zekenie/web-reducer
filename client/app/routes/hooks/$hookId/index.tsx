@@ -1,23 +1,19 @@
-import type { LoaderFunction } from "@remix-run/node";
 import {
   useFetcher,
   useLoaderData,
   useOutletContext,
   useParams,
 } from "@remix-run/react";
-import { useCallback, useEffect, useState } from "react";
-import CopyableCode, {
-  VariableSelect,
-  VariableValue,
-} from "~/components/copyable-code";
+import { useCallback, useEffect, useRef, useState } from "react";
 import RequestsTable from "~/components/hook/requests-table";
+import EmptyState from "~/components/hook/requests-table/empty-state";
+import useIntersection from "~/hooks/useIntersection";
 import setupWebsocket from "~/remote/authenticated-websocket.client";
 import type {
   HookDetail,
   PaginatedTokenResponse,
   Request,
 } from "~/remote/hook-client.server";
-// import buildClientForJwt from "~/remote/index.server";
 import { loader } from "./history";
 
 export { loader };
@@ -42,9 +38,27 @@ export default function Requests() {
     siteUrl: string;
     history: PaginatedTokenResponse<Request>;
   }>();
+  const [nextToken, setNextToken] = useState(paginatedHistory.nextToken);
   const [loadedRecords, setLoadedRecords] = useState<Request[]>(
     paginatedHistory.objects
   );
+
+  const [isLoadingNextPage, setIsLoadingNextPage] = useState(false);
+
+  const loadNextPage = useCallback(async () => {
+    if (isLoadingNextPage) {
+      return;
+    }
+    setIsLoadingNextPage(true);
+    const res = await fetch(`/hooks/${hook.id}/history?token=${nextToken}`, {
+      credentials: "same-origin",
+      headers: { accept: "application/json" },
+    });
+    const nextPage = await res.json();
+    setLoadedRecords((existing) => [...existing, ...nextPage.history.objects]);
+    setNextToken(nextPage.history.nextToken);
+    setIsLoadingNextPage(false);
+  }, [hook, nextToken, isLoadingNextPage]);
 
   useEffect(() => {
     if (fetcher.data) {
@@ -80,52 +94,27 @@ export default function Requests() {
   if (loadedRecords.length === 0) {
     return <EmptyState writeKeys={hook.writeKeys} siteUrl={siteUrl} />;
   }
-  return <RequestsTable requests={loadedRecords} />;
+  return (
+    <>
+      <RequestsTable requests={loadedRecords} />
+      {nextToken && <LoadMoreFooter onEnterViewport={loadNextPage} />}
+    </>
+  );
 }
 
-function EmptyState({
-  siteUrl,
-  writeKeys,
-}: {
-  siteUrl: string;
-  writeKeys: string[];
-}) {
+function LoadMoreFooter({ onEnterViewport }: { onEnterViewport: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isShowing = useIntersection<HTMLDivElement>(ref, "0px");
+
+  useEffect(() => {
+    if (isShowing) {
+      onEnterViewport();
+    }
+  }, [isShowing, onEnterViewport]);
+
   return (
-    <div className="py-32 m-2 flex items-center justify-center space-y-4 rounded-lg 0 text-canvas-500 flex-col ">
-      <div className="text-6xl font-extrabold font-mono text-canvas-400">
-        []
-      </div>
-      <div className="text-xl font-bold text-canvas-400">No requests yet.</div>
-
-      <CopyableCode>
-        <div>
-          <span className="text-fern-900 no-copy">$</span> curl -X POST \
-        </div>{" "}
-        <div>
-          -d '
-          <VariableValue initialValue={JSON.stringify({ foo: "bar" })} />' \
-        </div>
-        <div>
-          -H 'Content-Type:{" "}
-          <VariableSelect
-            selected="application/json"
-            options={[
-              "application/json",
-              "application/x-www-form-urlencoded",
-              "application/xml",
-              "text/plain",
-            ]}
-          />
-          ' \
-        </div>
-        <div>
-          {siteUrl}/
-          <VariableSelect selected={writeKeys[0]} options={writeKeys} />
-          {/* <VariableValue initialValue="gXm0UijDJH3yLpY8JObYN" /> */}
-        </div>
-      </CopyableCode>
-
-      {/* <div className="flex text-sm flex-row space-x-4 items-center"></div> */}
+    <div ref={ref} style={{ height: "25px", width: "100%", flexGrow: 1 }}>
+      &nbsp;
     </div>
   );
 }

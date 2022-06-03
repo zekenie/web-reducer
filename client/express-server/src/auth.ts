@@ -24,7 +24,7 @@ export async function getNewCredsWithRefreshToken(
     headers: {
       Accepts: "application/json",
       "Content-Type": "application/json",
-      Authorization: existingCreds.jwt,
+      authorization: existingCreds.jwt,
     },
     body: JSON.stringify({ token: existingCreds.refreshToken }),
   });
@@ -33,7 +33,7 @@ export async function getNewCredsWithRefreshToken(
     headers: {
       Accepts: "application/json",
       "Content-Type": "application/json",
-      Authorization: existingCreds.jwt,
+      authorization: existingCreds.jwt,
     },
     body: JSON.stringify({ token: existingCreds.refreshToken }),
   });

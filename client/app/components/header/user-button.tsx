@@ -2,8 +2,8 @@ import { LoginIcon } from "@heroicons/react/outline";
 import { Form } from "@remix-run/react";
 import { useState } from "react";
 import type { UserDetails } from "~/remote/auth-client.server";
-import { Dropdown, Button, TextInput } from "flowbite-react";
-import { useNavigate } from "react-router-dom";
+import { Dropdown, Button, TextInput, Card } from "flowbite-react";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function UserButton({
   userDetails,
@@ -25,6 +25,9 @@ export default function UserButton({
           <Dropdown.Item>Settings</Dropdown.Item>
           <Dropdown.Item>Learn</Dropdown.Item>
           <Dropdown.Item>Feedback</Dropdown.Item>
+          <Dropdown.Item onClick={() => navigate("/legal")}>
+            Legal
+          </Dropdown.Item>
           <Dropdown.Divider />
           <Dropdown.Item onClick={() => navigate("/auth/logout")}>
             Sign out
@@ -39,11 +42,34 @@ function SigninButton() {
   return (
     <Form
       method="post"
-      className={`flex flex-row space-x-2 transform duration-300 ${
-        isEmailShowing ? "translate-x-32" : ""
+      className={`relative  flex flex-row space-x-2 transform duration-300 ${
+        isEmailShowing ? "" : ""
       }`}
       action="/auth/signin"
     >
+      {isEmailShowing && (
+        <div className="absolute w-full pt-3 bottom-0 transform translate-y-full">
+          <div className="z-50 rounded-lg shadow border p-4 bg-white prose">
+            <h3>Unauthenticated endpoints are ephemeral</h3>
+            <p>
+              In order to keep your code and data, sign up. This is mainly to
+              fight abuse. I promise to never spam you. This product is fully
+              free for now. At some point soon there will be paid plans, but
+              there will always be a generous free tier.
+            </p>
+
+            <p>
+              You should read our <Link to="/legal">Terms of Service</Link>.
+              This project is{" "}
+              <a target="_blank" href="https://github.com/zekenie/web-reducer">
+                open source
+              </a>
+              .
+            </p>
+          </div>
+        </div>
+      )}
+
       {isEmailShowing && (
         <TextInput
           onKeyDown={(e) => {

@@ -1,0 +1,2 @@
+- some kind of game
+- there could be a client where the qr code changes as the state updates and some other client takes a pic and does something?
