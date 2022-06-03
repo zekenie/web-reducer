@@ -20,20 +20,22 @@ const codeBread = {
   response: {
     code: (code: string, requestsJson: string) =>
       `(function(requests) {
-      ${sharedHeaderCode}
-      ${code}
-      for (const request of requests) {
-        const frame = artifacts.open(request.id);
-        try {
-          frame.setResponse(responder(request));
-        } catch(e) {
-          frame.setError(e)
-          frame.setResponse({
-            statusCode: 500
-          })
-        }
-      }
-    })(${requestsJson})`,
+        ${sharedHeaderCode}
+        (function() {
+          ${code}
+          for (const request of requests) {
+            const frame = artifacts.open(request.id);
+            try {
+              frame.setResponse(responder(request));
+            } catch(e) {
+              frame.setError(e)
+              frame.setResponse({
+                statusCode: 500
+              })
+            }
+          }
+        })()
+      })(${requestsJson})`,
     offset: 11,
   },
   reducer: {
@@ -44,45 +46,47 @@ const codeBread = {
       secretsJson: string
     ) =>
       `(function(state, requests, secrets) {
-    ${sharedHeaderCode}
-    ${code}
-    return requests.reduce((acc, request, i, requests) => {
-      const frame = artifacts.open(request.id);
-      const head = acc[acc.length - 1] || { state: state };
+        ${sharedHeaderCode}
+        (function() {
+          ${code}
+          return requests.reduce((acc, request, i, requests) => {
+            const frame = artifacts.open(request.id);
+            const head = acc[acc.length - 1] || { state: state };
 
-      let isAuthenticResult = null;
-      let idempotencyKey = null;
+            let isAuthenticResult = null;
+            let idempotencyKey = null;
 
-      try {
-        try {
-          isAuthenticResult = isAuthentic(request, secrets)
-          frame.setAuthentic(isAuthenticResult);
-        } catch(e) {
-          frame.setAuthentic(false);
-          throw e;
-        }
-        
-        idempotencyKey = getIdempotencyKey(request, secrets);
-        frame.setIdempotencyKey(idempotencyKey);
+            try {
+              try {
+                isAuthenticResult = isAuthentic(request, secrets)
+                frame.setAuthentic(isAuthenticResult);
+              } catch(e) {
+                frame.setAuthentic(false);
+                throw e;
+              }
+              
+              idempotencyKey = getIdempotencyKey(request, secrets);
+              frame.setIdempotencyKey(idempotencyKey);
 
-        const shouldIgnoreRequest = !isAuthenticResult
-          || invalidIdempotencyKeys.includes(idempotencyKey);
+              const shouldIgnoreRequest = !isAuthenticResult
+                || invalidIdempotencyKeys.includes(idempotencyKey);
 
-        if (shouldIgnoreRequest) {
-          frame.setState(head.state);
-          return [...acc, { error: null, state: head.state }];
-        }
+              if (shouldIgnoreRequest) {
+                frame.setState(head.state);
+                return [...acc, { error: null, state: head.state }];
+              }
 
-        const nextState = reducer(head.state, request, secrets);
-        frame.setState(nextState);
-        return [...acc, { error: null, state: nextState }];
-      } catch(e) {
-        frame.setError(e);
-        frame.setState(head.state)
-        return [...acc, { error: e, state: head.state }];
-      }
-    }, []);
-  })(${state}, ${requestsJson}, ${secretsJson})`,
+              const nextState = reducer(head.state, request, secrets);
+              frame.setState(nextState);
+              return [...acc, { error: null, state: nextState }];
+            } catch(e) {
+              frame.setError(e);
+              frame.setState(head.state)
+              return [...acc, { error: e, state: head.state }];
+            }
+          }, []);
+        })()
+      })(${state}, ${requestsJson}, ${secretsJson})`,
     offset: 11,
   },
 };

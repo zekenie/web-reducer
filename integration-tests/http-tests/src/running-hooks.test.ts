@@ -64,6 +64,21 @@ describe("existing hooks", () => {
     expect(state).toEqual({ number: 7 });
   });
 
+  it("works with const declarations", async () => {
+    const body1 = { number: 4 };
+    const body2 = { number: 3 };
+    const { api } = await buildHook({
+      bodies: [body1, body2],
+      code: `const reducer: ReducerFunction = (oldState = { number: 0 }, req): { number: number } => { return { number: oldState.number + req.body.number } }`,
+    });
+
+    await api.settled(body2);
+
+    const state = await api.read();
+
+    expect(state).toEqual({ number: 7 });
+  });
+
   it("works with query strings", async () => {
     const { api } = await buildHook({
       code: `function reducer (oldState = { number: 0 }, req) {
