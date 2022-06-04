@@ -24,11 +24,12 @@ kanban-plugin: basic
 - [ ] publish on cmd + s?
 - [ ] prettier in editor
 - [ ] cap number of rows in requests table
+- [ ] why do hooks have the name they do? what's the point? can i edit it? what about description
+- [ ] can i delete a hook?
 
 
 ## Must have for launch
 
-- [ ] #bug race condition with refresh tokens used in parallel
 - [ ] CRUD for read/write keys
 - [ ] Public websocket endpoint
 - [ ] public html page for read key
@@ -47,6 +48,7 @@ kanban-plugin: basic
 ## Done
 
 **Complete**
+- [x] #bug race condition with refresh tokens used in parallel
 - [x] #bug const reducer fails because reducer was already declared
 - [x] Signup flow
 - [x] requests empty state -> "Curl it for me" button #onboarding

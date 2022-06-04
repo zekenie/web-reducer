@@ -27,7 +27,7 @@ export async function awaitNewCredsOnRefreshToken(
       authEventEmitter.removeAllListeners(outgoingToken);
       resolve(null);
     }, 1000);
-    authEventEmitter.on(outgoingToken, (creds: Credentials) => {
+    authEventEmitter.once(outgoingToken, (creds: Credentials) => {
       clearTimeout(timeout);
       resolve(creds);
       redisSubscriberConnection.unsubscribe(`refreshToken.${outgoingToken}`);
