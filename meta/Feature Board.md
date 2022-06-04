@@ -23,10 +23,12 @@ kanban-plugin: basic
 - [ ] after request have editor [start typing](https://github.com/convergencelabs/monaco-collab-ext) #onboarding
 - [ ] publish on cmd + s?
 - [ ] prettier in editor
+- [ ] cap number of rows in requests table
 
 
 ## Must have for launch
 
+- [ ] #bug race condition with refresh tokens used in parallel
 - [ ] CRUD for read/write keys
 - [ ] Public websocket endpoint
 - [ ] public html page for read key
@@ -46,7 +48,6 @@ kanban-plugin: basic
 
 **Complete**
 - [x] #bug const reducer fails because reducer was already declared
-- [x] #bug race condition with refresh tokens used in parallel
 - [x] Signup flow
 - [x] requests empty state -> "Curl it for me" button #onboarding
 - [x] expose UrlSearchParams in request

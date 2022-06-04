@@ -3,9 +3,10 @@ import {
   ExclamationCircleIcon,
   TerminalIcon,
 } from "@heroicons/react/outline";
-import { FC, RefObject, useMemo, useRef } from "react";
-import { Request } from "~/remote/hook-client.server";
 import { toSvg } from "jdenticon";
+import type { FC } from "react";
+import { Fragment, useMemo } from "react";
+import type { Request } from "~/remote/hook-client.server";
 
 type Effect = "stdout" | "errors" | "noIdempotencyKey";
 
@@ -111,8 +112,8 @@ export default function RequestsTable({ requests }: { requests: Request[] }) {
           const nextRow = postProcessedRequests[i + 1];
           const isNextDay = nextRow && areDaysDifferent(r, nextRow);
           return (
-            <>
-              <tr key={r.requestId} className="odd:bg-canvas-100">
+            <Fragment key={r.requestId}>
+              <tr className="odd:bg-canvas-100">
                 <td className="py-1 px-3">
                   <JsonPreview>{r.createdAtFormattedTime}</JsonPreview>
                 </td>
@@ -132,7 +133,7 @@ export default function RequestsTable({ requests }: { requests: Request[] }) {
                 </td> */}
               </tr>
               {isNextDay && <DateRow date={nextRow.createdAtFormattedDate} />}
-            </>
+            </Fragment>
           );
         })}
       </tbody>

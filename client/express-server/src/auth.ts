@@ -8,6 +8,10 @@
 import { fetch } from "@remix-run/node";
 import cookieParser from "cookie-parser";
 import * as jwtLib from "jsonwebtoken";
+import {
+  awaitNewCredsOnRefreshToken,
+  publishNewCreds,
+} from "./refresh-token-state";
 
 export type Credentials = {
   jwt: string;
@@ -19,28 +23,32 @@ export const cookieParserMiddleware = cookieParser(process.env.COOKIE_SECRET);
 export async function getNewCredsWithRefreshToken(
   existingCreds: Credentials
 ): Promise<Credentials> {
-  console.log("about to use refresh token", {
-    method: "POST",
-    headers: {
-      Accepts: "application/json",
-      "Content-Type": "application/json",
-      authorization: existingCreds.jwt,
-    },
-    body: JSON.stringify({ token: existingCreds.refreshToken }),
-  });
-  const res = await fetch(`${process.env.BACKEND_URL}/auth/refresh-token`, {
-    method: "POST",
-    headers: {
-      Accepts: "application/json",
-      "Content-Type": "application/json",
-      authorization: existingCreds.jwt,
-    },
-    body: JSON.stringify({ token: existingCreds.refreshToken }),
-  });
+  const promiseForNewCreds = awaitNewCredsOnRefreshToken(
+    existingCreds.refreshToken
+  );
+  try {
+    const res = await fetch(`${process.env.BACKEND_URL}/auth/refresh-token`, {
+      method: "POST",
+      headers: {
+        Accepts: "application/json",
+        "Content-Type": "application/json",
+        authorization: existingCreds.jwt,
+      },
+      body: JSON.stringify({ token: existingCreds.refreshToken }),
+    });
 
-  console.log("response code", res.status, "from refresh request");
-
-  return res.json() as Promise<Credentials>;
+    console.log("response code", res.status, "from refresh request");
+    const json: Credentials = await res.json();
+    await publishNewCreds(existingCreds.refreshToken, json);
+    return json;
+  } catch (e) {
+    const newCredsFromOtherReq = await promiseForNewCreds;
+    if (newCredsFromOtherReq) {
+      return newCredsFromOtherReq;
+    }
+    console.error("original error", e);
+    throw new Error("error refetching and no other req resolved");
+  }
 }
 
 async function createGuestUser() {
