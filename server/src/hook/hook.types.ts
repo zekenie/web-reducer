@@ -1,3 +1,5 @@
+import { KeysByType } from "../key/key.types";
+
 export enum VersionWorkflowState {
   DRAFT = "draft",
   PUBLISHED = "published",
@@ -8,11 +10,6 @@ export enum HookWorkflowState {
   LIVE = "live",
   PAUSED = "paused",
 }
-
-export type KeysByType = {
-  writeKeys: string[];
-  readKeys: string[];
-};
 
 export type HookCode = {
   [VersionWorkflowState.PUBLISHED]?: string;

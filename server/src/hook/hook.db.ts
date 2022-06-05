@@ -1,12 +1,11 @@
 import { keyBy, mapValues } from "lodash";
 import { sql } from "slonik";
 import { getPool } from "../db";
-import UpdateHook from "./inputs/update-hook.input";
+import UpdateHookInput from "./inputs/update-hook.input";
 import {
   HookCode,
   HookOverview,
   HookWorkflowState,
-  KeysByType,
   VersionWorkflowState,
 } from "./hook.types";
 import { CodeNotFoundForWriteKeyError } from "./hook.errors";
@@ -48,23 +47,6 @@ export async function getOverviewForHook({
   return row;
 }
 
-export async function getKeysForHook({
-  hookId,
-}: {
-  hookId: string;
-}): Promise<KeysByType> {
-  const pool = getPool();
-  const res = await pool.many<{ type: "read" | "write"; key: string }>(sql`
-    select key, type from "key"
-    where "hookId" = ${hookId}
-  `);
-
-  return {
-    readKeys: res.filter((row) => row.type === "read").map((r) => r.key),
-    writeKeys: res.filter((row) => row.type === "write").map((r) => r.key),
-  };
-}
-
 export async function getHookNameCollisions({ names }: { names: string[] }) {
   const pool = getPool();
   const res = await pool.query<{ name: string }>(sql`
@@ -77,7 +59,7 @@ export async function getHookNameCollisions({ names }: { names: string[] }) {
 
 export async function updateDraft(
   id: string,
-  input: UpdateHook & { compiledCode: string }
+  input: UpdateHookInput & { compiledCode: string }
 ): Promise<void> {
   const pool = getPool();
   await pool.any(sql`

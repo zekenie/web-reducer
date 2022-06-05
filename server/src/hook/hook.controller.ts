@@ -5,7 +5,10 @@ import validate from "../middleware/validate.middleware";
 import { getStore } from "../server/request-context.middleware";
 import * as stateService from "../state/state.service";
 import * as service from "./hook.service";
-import UpdateHook from "./inputs/update-hook.input";
+import * as keyService from "../key/key.service";
+import UpdateHookInput from "./inputs/update-hook.input";
+import CreateKeyInput from "./inputs/create-key.input";
+import createHttpError from "http-errors";
 
 export default Router()
   .use(makeAuthMiddleware())
@@ -65,7 +68,7 @@ export default Router()
   })
   .put(
     "/:hookId",
-    validate(UpdateHook),
+    validate(UpdateHookInput),
     async function updateHook(req, res, next) {
       try {
         await service.updateDraft(req.params.hookId, req.body);
@@ -74,4 +77,34 @@ export default Router()
         next(e);
       }
     }
-  );
+  )
+  .post(
+    "/:hookId/keys",
+    validate(CreateKeyInput),
+    async function createKey(req, res, next) {
+      try {
+        const key = await keyService.createKey({
+          hookId: req.params.hookId,
+          type: req.body.type,
+        });
+        res.status(201).json({ key });
+      } catch (e) {
+        next(e);
+      }
+    }
+  )
+  .delete("/:hookId/keys/:key", async function deleteKey(req, res, next) {
+    try {
+      const { deleted } = await keyService.deleteKey({
+        hookId: req.params.hookId,
+        key: req.params.key,
+      });
+      if (deleted) {
+        res.status(202).json({});
+      } else {
+        throw createHttpError(404);
+      }
+    } catch (e) {
+      next(e);
+    }
+  });

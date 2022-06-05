@@ -1,5 +1,6 @@
-import { getCodeByWriteKey, getKeysForHook } from "../hook/hook.db";
+import { getCodeByWriteKey } from "../hook/hook.db";
 import { HookWorkflowState } from "../hook/hook.types";
+import { getKeysForHook } from "../key/key.service";
 import { getRequestToRun } from "../request/request.db";
 import { _dangerouslyExposeSecretsInPlaintextForNamespace } from "../secret/secret.remote";
 import { getAccessKeyForHook } from "../secret/secret.service";

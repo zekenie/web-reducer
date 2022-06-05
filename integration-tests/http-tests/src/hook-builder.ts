@@ -154,6 +154,17 @@ export async function buildAuthenticatedApi(
           axiosConfig
         );
       },
+
+      async addKey({ hookId, type }: { hookId: string; type: string }) {
+        const { data } = await authenticatedClient.post<{ key: string }>(
+          `/hooks/${hookId}/keys`,
+          { type }
+        );
+        return data.key;
+      },
+      async deleteKey({ hookId, key }: { hookId: string; key: string }) {
+        await authenticatedClient.delete(`/hooks/${hookId}/keys/${key}`);
+      },
     },
   };
 }

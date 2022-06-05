@@ -1,14 +1,15 @@
 import { provisionAccess } from "../access/access.db";
 import { encrypt } from "../crypto/crypto.service";
 import { transaction } from "../db";
-import { createKey } from "../key/key.db";
 import * as secretService from "../secret/secret.remote";
 import { enqueue } from "../worker/queue.service";
 import { generateUnusedHookName } from "./hook-name.service";
 import * as db from "./hook.db";
 import { HookDetail } from "./hook.types";
-import UpdateHook from "./inputs/update-hook.input";
+import UpdateHookInput from "./inputs/update-hook.input";
 import * as ts from "typescript";
+import * as keyService from "../key/key.service";
+import { createKey } from "../key/key.service";
 
 export async function listHooks({ userId }: { userId: string }) {
   return db.listHooks({ userId });
@@ -16,7 +17,7 @@ export async function listHooks({ userId }: { userId: string }) {
 
 export async function readHook(id: string): Promise<HookDetail> {
   const code = await db.getDraftAndPublishedCode(id);
-  const keysForHook = await db.getKeysForHook({ hookId: id });
+  const keysForHook = await keyService.getKeysForHook({ hookId: id });
   const overview = await db.getOverviewForHook({ hookId: id });
   return {
     ...code,
@@ -45,7 +46,6 @@ export async function createHook({
         createKey({ type: "write", hookId }),
         createKey({ type: "read", hookId }),
       ]);
-      // return { hookId, writeKey, readKey };
       return readHook(hookId);
     });
   } catch (e) {
@@ -56,7 +56,7 @@ export async function createHook({
   }
 }
 
-export async function updateDraft(hookId: string, input: UpdateHook) {
+export async function updateDraft(hookId: string, input: UpdateHookInput) {
   const compiledCode =
     input.code.trim() === ""
       ? ""
