@@ -49,7 +49,7 @@ export type Request = {
   body: unknown;
   bodyHash: string;
   error: RuntimeError;
-  console: ConsoleMessage;
+  console: ConsoleMessage[];
   createdAt: Date;
 };
 

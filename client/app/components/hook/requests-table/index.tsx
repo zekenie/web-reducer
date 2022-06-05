@@ -124,6 +124,16 @@ export default function RequestsTable({ requests }: { requests: Request[] }) {
                 <td className="py-1 px-3">
                   <JsonPreview>{JSON.stringify(r.state)}</JsonPreview>
                 </td>
+                <td className="py-1 px-3">
+                  <div className="flex flex-row justify-center space-x-1">
+                    {r.console.length > 0 && (
+                      <TerminalIcon className="w-4 h-4" />
+                    )}
+                    {r.error && (
+                      <ExclamationCircleIcon className="w-4 h-4 text-sunglo-700" />
+                    )}
+                  </div>
+                </td>
                 {/* <td className="py-1 px-3">
                   <div className="flex flex-row justify-center space-x-1">
                     {r.effects.map((effect) => (
