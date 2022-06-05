@@ -1,9 +1,8 @@
 import { parse } from "cookie";
 import type { IncomingMessage, Server } from "http";
 import IORedis from "ioredis";
-import { URL } from "url";
+import type { URL } from "url";
 import type { WebSocket } from "ws";
-import { WebSocketServer } from "ws";
 import type { Credentials } from "./auth";
 import { getNewCredsWithRefreshToken, verifyJwt } from "./auth";
 import { unsign } from "cookie-signature";
@@ -32,8 +31,6 @@ type BulkUpdateMessage = {
 };
 
 type SocketMessage = NewRequestMessage | BulkUpdateMessage; // | OtherMessage
-
-const wss = new WebSocketServer({ noServer: true, path: "/hook-events" });
 
 /**
  * redis is probably a temporary pub sub channel.
@@ -123,51 +120,47 @@ redisConnection.on("message", (channel: string, message: SocketMessage) => {
   listeners.emit(hookId, message);
 });
 
-export default function attachWebsocketToServer(server: Server): void {
-  server.on("upgrade", async function upgrade(request, socket, head) {
-    const rejectConnection = (status = 401) => {
-      socket.write(`HTTP/1.1 ${status} Unauthorized\r\n\r\n`);
-      socket.destroy();
-    };
-    const { searchParams } = new URL(
-      request.url!,
-      `http://${request.headers.host}`
-    );
+export async function attach({
+  rejectConnection,
+  url,
+  request,
+  connect,
+}: {
+  rejectConnection: (code: number) => void;
+  connect: (onConnect: (ws: WebSocket) => void) => void;
+  request: IncomingMessage;
+  url: URL;
+}) {
+  const hookId = url.searchParams.get("hookId");
+  if (!hookId) {
+    return rejectConnection(400);
+  }
+  let creds = getCredsFromRequest(request);
 
-    const hookId = searchParams.get("hookId");
+  if (!creds) {
+    return rejectConnection(401);
+  }
 
-    if (!hookId) {
-      return rejectConnection(400);
-    }
-    let creds = getCredsFromRequest(request);
-
-    if (!creds) {
+  if (!verifyJwt(creds.jwt)) {
+    try {
+      creds = await getNewCredsWithRefreshToken(creds);
+    } catch (e) {
       return rejectConnection(401);
     }
+  }
 
-    if (!verifyJwt(creds.jwt)) {
-      try {
-        creds = await getNewCredsWithRefreshToken(creds);
-      } catch (e) {
-        return rejectConnection();
-      }
-    }
-
-    if (
-      !(await doesUserHaveHookAccess({
-        creds,
-        hookId,
-      }))
-    ) {
-      return rejectConnection(403);
-    }
-
-    wss.handleUpgrade(request, socket, head, (ws) => {
-      wss.emit("connection", ws, request);
-      listeners.add(hookId, ws);
-      ws.on("close", () => {
-        listeners.remove(hookId, ws);
-      });
+  if (
+    !(await doesUserHaveHookAccess({
+      creds,
+      hookId,
+    }))
+  ) {
+    return rejectConnection(403);
+  }
+  connect((ws) => {
+    listeners.add(hookId, ws);
+    ws.on("close", () => {
+      listeners.remove(hookId, ws);
     });
   });
 }

@@ -9,10 +9,14 @@ import { createRequestHandler } from "@remix-run/express";
 import type { Credentials } from "./auth";
 import { cookieParserMiddleware } from "./auth";
 import credentialExchange from "./auth";
-import attachWebsocketToServer, {
+import {
   redisConnection,
+  attach as attachAuthenticatedSocket,
 } from "./authenticated-sockets";
+import { attach as attachUnauthenticatedSocket } from "./unauthenticated-sockets";
 import helmet from "helmet";
+import { WebSocketServer } from "ws";
+import type { WebSocket } from "ws";
 
 declare global {
   namespace Express {
@@ -116,7 +120,39 @@ const server = app.listen(port, () => {
   console.log(`Express server listening on port ${port}`);
 });
 
-attachWebsocketToServer(server);
+const wss = new WebSocketServer({ noServer: true });
+
+wss.on("error", (e) => console.error("socket error", e));
+
+server.on("upgrade", async function upgrade(request, socket, head) {
+  const url = new URL(request.url!, `http://${request.headers.host}`);
+  const rejectConnection = (status = 401) => {
+    socket.write(`HTTP/1.1 ${status} Unauthorized\r\n\r\n`);
+    socket.destroy();
+  };
+  const connect = (onConnect: (ws: WebSocket) => void) => {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      ws.on("error", (e) => console.error("ws socket error", e));
+      wss.emit("connection", ws, request);
+      onConnect(ws);
+    });
+  };
+  switch (url.pathname) {
+    case "/hook-events":
+      await attachAuthenticatedSocket({
+        rejectConnection,
+        request,
+        url,
+        connect,
+      });
+      break;
+    case "/state-events":
+      await attachUnauthenticatedSocket({ rejectConnection, url, connect });
+      break;
+    default:
+      rejectConnection(404);
+  }
+});
 
 function purgeRequireCache() {
   // purge require cache on requests for "server side HMR" this won't let

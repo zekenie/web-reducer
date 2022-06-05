@@ -37,6 +37,12 @@ describe("existing hooks", () => {
     await api.settled(res2.data.id);
   });
 
+  it("reads state as null when no requests have been made", async () => {
+    const { api } = await buildHook();
+    const state = await api.read();
+    expect(state).toEqual(null);
+  });
+
   it("accepts requests and eventually modifies the state", async () => {
     const body1 = { number: 4 };
     const body2 = { number: 3 };

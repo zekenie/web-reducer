@@ -10,7 +10,7 @@ const pool = getPool();
 
 describe("auth", () => {
   beforeEach(async () => {
-    await cleanup();
+    await cleanup("server");
   });
 
   afterAll(async () => {

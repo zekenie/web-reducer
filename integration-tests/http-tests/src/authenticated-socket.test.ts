@@ -22,10 +22,24 @@ function cookieForCreds(creds: Credentials) {
   );
 }
 
-function convertEventToPromise<T>(event: string, ws: WebSocket) {
+export function convertEventToPromise<T>(event: string, ws: WebSocket) {
   return new Promise<T[]>((resolve) => {
     ws.on(event, (...args) => {
       resolve(args);
+    });
+  });
+}
+
+export function convertMessageEventToPromise<T = any>(
+  ws: WebSocket,
+  matcher: (e: T) => boolean
+): Promise<T> {
+  return new Promise<T>((resolve) => {
+    ws.on("message", (messageBuffer) => {
+      const message = JSON.parse(messageBuffer.toString()) as T;
+      if (matcher(message)) {
+        resolve(message);
+      }
     });
   });
 }
@@ -44,7 +58,8 @@ describe("authenticated socket", () => {
       const ws = new WebSocket(
         `${process.env.WEB_URL!.split("http").join("ws")}/hook-events?hookId=${
           hook.id
-        }`
+        }`,
+        { perMessageDeflate: false }
       );
       const [err] = await convertEventToPromise("error", ws);
       expect((err as Error).message).toMatch("401");
@@ -70,7 +85,9 @@ describe("authenticated socket", () => {
         `${process.env
           .WEB_URL!.split("http")
           .join("ws")}/hook-events?hookId=${randomUUID()}`,
+
         {
+          perMessageDeflate: false,
           headers: {
             cookie: cookieForCreds(api.creds),
           },
@@ -86,6 +103,7 @@ describe("authenticated socket", () => {
           hook.id
         }`,
         {
+          perMessageDeflate: false,
           headers: {
             cookie: cookieForCreds(api.creds),
           },
@@ -99,9 +117,10 @@ describe("authenticated socket", () => {
       await allQueuesDrained();
 
       await api.hook.writeKey(hook.writeKeys[0], {});
-
-      const [msg]: Buffer[] = await convertEventToPromise("message", ws);
-      const asJson = JSON.parse(msg.toString());
+      const asJson = await convertMessageEventToPromise(
+        ws,
+        (msg) => msg.type === "new-request"
+      );
       expect(asJson).toEqual(
         expect.objectContaining({
           type: "new-request",
@@ -122,6 +141,7 @@ describe("authenticated socket", () => {
           hook.id
         }`,
         {
+          perMessageDeflate: false,
           headers: {
             cookie: cookieForCreds(api.creds),
           },
@@ -132,8 +152,10 @@ describe("authenticated socket", () => {
         code: "function reducer(state, request) { return {foo: 3}; }",
       });
       await api.hook.publish(hook.id);
-      const [msg]: Buffer[] = await convertEventToPromise("message", ws);
-      const asJson = JSON.parse(msg.toString());
+      const asJson = await convertMessageEventToPromise(
+        ws,
+        (msg) => msg.type === "bulk-update"
+      );
       expect(asJson).toEqual(
         expect.objectContaining({
           type: "bulk-update",

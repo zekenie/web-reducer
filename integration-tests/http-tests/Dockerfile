@@ -7,8 +7,6 @@ COPY tsconfig.json /usr/src/app/tsconfig.json
 COPY jest.config.js /usr/src/app/jest.config.js
 COPY src/ /usr/src/app/src/
 COPY ./docker-entrypoint.sh /usr/src/app/docker-entrypoint.sh
-# Do not give container root access
-USER node
 ENTRYPOINT ["./docker-entrypoint.sh"]
 
 CMD yarn jest --bail --runInBand $JEST_ARGS --detectOpenHandles

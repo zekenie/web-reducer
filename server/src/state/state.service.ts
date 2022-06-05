@@ -6,9 +6,14 @@ import * as stateDb from "./state.db";
 import { StateHistory, StateHistoryContract } from "./state.types";
 // @ts-ignore
 import { Nilsimsa } from "nilsimsa";
+import { isReadKeyValid } from "../key/key.db";
 
 export async function readState(readKey: string) {
-  return stateDb.readCurrentState(readKey);
+  const [keyValid, stateRecord] = await Promise.all([
+    isReadKeyValid(readKey),
+    stateDb.readCurrentState(readKey),
+  ]);
+  return { keyValid, state: stateRecord?.state };
 }
 
 export async function readStateHistoryPage(

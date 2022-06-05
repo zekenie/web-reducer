@@ -1,0 +1,15 @@
+{
+  "server": [
+    "state",
+    "version",
+    "signinToken",
+    "signin",
+    "request",
+    "refreshToken",
+    "key",
+    "access",
+    "user",
+    "hook"
+  ],
+  "secrets": ["secret", "namespace"]
+}

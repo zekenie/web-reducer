@@ -4,6 +4,7 @@
     "outDir": "./dist",
     "types": ["jest", "node"],
     "experimentalDecorators": true,
+    "resolveJsonModule": true,
     "strictPropertyInitialization": false
   },
   "include": [

@@ -1,23 +1,24 @@
+import { uniqueId } from "lodash";
 import { getPool } from "./db";
 import { cleanup } from "./db/cleanup";
 import { clear } from "./server-internals";
 
-const pool = getPool();
-
 export function serverTestSetup() {
+  const id = uniqueId();
+  const pool = getPool(id);
   beforeEach(async () => {
-    await cleanup();
+    await cleanup("server");
     await clear();
   });
 
   afterAll(async () => {
-    return pool.end();
+    await pool.end();
   });
 }
 
 export function secretsTestSetup() {
   beforeEach(async () => {
-    await cleanup(process.env.SECRETS_DATABASE_URL!);
+    await cleanup("secrets");
   });
 
   afterAll(async () => {

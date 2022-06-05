@@ -20,7 +20,16 @@ export async function publishState({
     hookId,
     readKeys,
   };
-  await connection.publish(`state.${hookId}`, JSON.stringify(message));
+  const pipeline = connection
+    .pipeline()
+    .publish(`state.${hookId}`, JSON.stringify(message));
+
+  const pipelineWithReadKeys = readKeys.reduce((p, readKey) => {
+    const m = { type: "new-state", state: request.state };
+    return p.publish(`read-key.${readKey}`, JSON.stringify(m));
+  }, pipeline);
+
+  await pipelineWithReadKeys.exec();
 }
 
 export async function publishBulkUpdate({

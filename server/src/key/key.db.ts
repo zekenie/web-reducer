@@ -1,6 +1,6 @@
 import { getPool } from "../db";
 import { sql } from "slonik";
-import { nanoid } from "nanoid/async";
+import { generateToken } from "../token/token.service";
 
 export async function createKey({
   type,
@@ -10,7 +10,7 @@ export async function createKey({
   hookId: string;
 }): Promise<string> {
   const pool = getPool();
-  const key = await nanoid();
+  const key = await generateToken();
   await pool.any(sql`
     insert into key
     ("createdAt", "type", "key", "hookId")
@@ -19,4 +19,14 @@ export async function createKey({
   `);
 
   return key;
+}
+
+export async function isReadKeyValid(readKey: string): Promise<boolean> {
+  const pool = getPool();
+  const row = await pool.maybeOne(sql`
+    select id from "key"
+    where type = 'read'
+    and "key" = ${readKey}
+  `);
+  return !!row;
 }

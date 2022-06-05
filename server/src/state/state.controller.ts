@@ -5,10 +5,13 @@ export default Router().get(
   "/:readKey",
   async function handleRequest(req, res, next) {
     try {
-      const stateRecord = await service.readState(req.params.readKey);
-      if (stateRecord) {
+      const { keyValid, state } = await service.readState(req.params.readKey);
+      if (keyValid && !state) {
         res.status(200);
-        res.json(stateRecord.state);
+        res.json(null);
+      } else if (state) {
+        res.status(200);
+        res.json(state);
       } else {
         res.status(404);
         res.json({
