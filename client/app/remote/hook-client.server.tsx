@@ -89,6 +89,16 @@ const hookClientFactory = (httpClient: HttpJsonClient) => ({
   async publish({ id }: { id: string }): Promise<void> {
     await httpClient.post(`/hooks/${id}/publish`);
   },
+
+  async addKey({ id, type }: { id: string; type: string }) {
+    const data = await httpClient.post<{ key: string }>(`/hooks/${id}/keys`, {
+      type,
+    });
+    return data.key;
+  },
+  async deleteKey({ id, key }: { id: string; key: string }) {
+    await httpClient.delete(`/hooks/${id}/keys/${key}`);
+  },
 });
 
 export default hookClientFactory;

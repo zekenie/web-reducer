@@ -9,8 +9,8 @@ import {
   useOutletContext,
   useTransition,
 } from "@remix-run/react";
+import { Button } from "flowbite-react";
 import { useCallback, useEffect, useRef } from "react";
-import { Button, Spinner } from "flowbite-react";
 import toast from "react-hot-toast";
 import { useModals } from "~/modals/lib/modal-provider";
 import type { HookDetail } from "~/remote/hook-client.server";
@@ -156,7 +156,6 @@ export default function Secrets() {
                 color="light"
                 outline={false}
                 disabled={transition.state === "submitting"}
-                // className="p-1 hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-400 rounded"
               />
             </td>
           </tr>

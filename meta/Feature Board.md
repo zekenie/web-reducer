@@ -41,12 +41,12 @@ kanban-plugin: basic
 
 ## In Progress
 
-- [ ] CRUD for read/write keys
 
 
 ## Done
 
 **Complete**
+- [x] CRUD for read/write keys
 - [x] #bug throwing errors in reducer crashes server
 - [x] Requests table<br>- [x] Pagination<br>- [x] Websocket updates<br>- [x] console output<br>- [ ] Idempotency key violation?
 - [x] Public websocket endpoint
