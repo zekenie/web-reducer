@@ -30,24 +30,24 @@ kanban-plugin: basic
 
 ## Must have for launch
 
-- [ ] CRUD for read/write keys
+- [ ] #bug race condition for bulk update updating the UI
 - [ ] public html page for read key
 - [ ] Deployment
 - [ ] Request detail view/modal
 - [ ] Hooks list view
 - [ ] how are read/write keys actuall hit?
 - [ ] server crashes on runner error. [best practice for uncaught exceptions](https://www.honeybadger.io/blog/errors-nodejs/#uncaught-exceptions-and-unhandled-promise-rejections)
-- [ ] #bug race condition for bulk update
-- [ ] #bug throwing errors in reducer crashes server
 
 
 ## In Progress
 
+- [ ] CRUD for read/write keys
 
 
 ## Done
 
 **Complete**
+- [x] #bug throwing errors in reducer crashes server
 - [x] Requests table<br>- [x] Pagination<br>- [x] Websocket updates<br>- [x] console output<br>- [ ] Idempotency key violation?
 - [x] Public websocket endpoint
 - [x] #bug race condition with refresh tokens used in parallel

@@ -85,6 +85,28 @@ describe("existing hooks", () => {
     expect(state).toEqual({ number: 7 });
   });
 
+  it("can throw an error", async () => {
+    const body1 = { number: 4 };
+    const { api } = await buildHook({
+      bodies: [body1],
+      code: `const reducer: ReducerFunction = (oldState = { number: 0 }, req): { number: number } => {
+        throw new Error('this is an error');
+      }`,
+    });
+
+    await api.settled(body1);
+
+    const stateHistory = await api.history();
+    const [firstReq] = stateHistory.objects;
+    expect(firstReq.error).toEqual(
+      expect.objectContaining({
+        stacktrace: expect.any(String),
+        name: "Error",
+        message: "this is an error",
+      })
+    );
+  });
+
   it("works with query strings", async () => {
     const { api } = await buildHook({
       code: `function reducer (oldState = { number: 0 }, req) {

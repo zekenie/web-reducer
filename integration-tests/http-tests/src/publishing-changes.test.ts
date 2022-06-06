@@ -69,6 +69,48 @@ describe("/publish", () => {
       expect(stateAfterPublish).toEqual({ number: 2 });
     });
 
+    it("bulk processes existing requests with a code change throwing an error", async () => {
+      const bodies = [{ number: 4 }, { number: 4 }];
+      const { api, context } = await buildHook({
+        bodies,
+      });
+      await api.settled(bodies[0]);
+      await api.settled(bodies[1]);
+      const stateBeforeUpdate = await api.read();
+
+      await api.update({
+        code: `function reducer(oldState = { number: 0 }, req) {
+          throw new Error('this is an error')
+          console.log(oldState);
+          console.log(req);
+          return { number: oldState.number + 1 };
+        }`,
+      });
+
+      expect(stateBeforeUpdate).toEqual({ number: 8 });
+
+      const stateAfterUpdateButBeforePublish = await api.read();
+      expect(stateAfterUpdateButBeforePublish).toEqual({ number: 8 });
+
+      await api.publish();
+      await allQueuesDrained();
+      await allQueuesDrained();
+
+      const stateAfterPublish = await api.read();
+
+      expect(stateAfterPublish).toEqual(null);
+
+      const stateHistory = await api.history();
+      const [firstReq] = stateHistory.objects;
+      expect(firstReq.error).toEqual(
+        expect.objectContaining({
+          stacktrace: expect.any(String),
+          name: "Error",
+          message: "this is an error",
+        })
+      );
+    });
+
     it.todo("resumes request execution");
   });
 });

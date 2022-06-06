@@ -47,9 +47,20 @@ type Context = {
   hookId: string;
 };
 
+export type RuntimeError = {
+  name: string;
+  message: string;
+  stacktrace?: string;
+};
+
 type PaginatedHookHistory<PostBody, State> = {
   nextToken: string | null;
-  objects: { state: State; body: PostBody; createdAt: number }[];
+  objects: {
+    state: State;
+    body: PostBody;
+    createdAt: number;
+    error: RuntimeError | undefined;
+  }[];
 };
 
 export function hashToken(token: string): string {

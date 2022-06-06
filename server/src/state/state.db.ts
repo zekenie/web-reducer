@@ -195,15 +195,17 @@ export async function bulkCreateState({
     insert into state
     (state, error, console, "executionTime", "hookId", "requestId", "versionId")
     select * from ${sql.unnest(
-      requests.map((request) => [
-        JSON.stringify(request.state),
-        JSON.stringify(request.error as {}),
-        JSON.stringify(request.console),
-        request.executionTime,
-        hookId,
-        request.id,
-        versionId,
-      ]),
+      requests.map((request) => {
+        return [
+          JSON.stringify(request.state || null),
+          JSON.stringify(request.error || null),
+          JSON.stringify(request.console),
+          request.executionTime,
+          hookId,
+          request.id,
+          versionId,
+        ];
+      }),
       ["jsonb", "jsonb", "jsonb", "int4", "uuid", "uuid", "uuid"]
     )}
     returning id
