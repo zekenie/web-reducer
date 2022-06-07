@@ -31,16 +31,19 @@ kanban-plugin: basic
 ## Must have for launch
 
 - [ ] #bug race condition for bulk update updating the UI
-- [ ] public html page for read key
 - [ ] Deployment
 - [ ] Request detail view/modal
 - [ ] Hooks list view
-- [ ] how are read/write keys actuall hit?
+- [ ] how are read/write keys actually hit?
 - [ ] server crashes on runner error. [best practice for uncaught exceptions](https://www.honeybadger.io/blog/errors-nodejs/#uncaught-exceptions-and-unhandled-promise-rejections)
+- [ ] if you make requests with a write key, then delete the write key, then recompute state, those requests are not counted! #bug<br><br>Solutions:<br>- soft delete the write keys?<br>- store an association of requests to hook?<br>---<br>- Could this be a feature?
+- [ ] webhooks may be put requests right? we shouldn't assume post.
+- [ ] bulk updates need to emit new state event to public `ws`
 
 
 ## In Progress
 
+- [ ] public html page for read key<br>- use [this library](https://github.com/xyc/react-object-inspector)?<br>- Or perhpas [this library](https://github.com/iendeavor/object-visualizer) that does not require react?<br>- template engine eta looks modern
 
 
 ## Done

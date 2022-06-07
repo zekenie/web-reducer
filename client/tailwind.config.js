@@ -68,6 +68,7 @@ module.exports = {
   content: [
     "./app/**/*.{ts,tsx}",
     "node_modules/flowbite-react/**/*.{js,jsx,ts,tsx}",
+    // "./express-server/read-key-template.html", // no idea why but this is not working...
   ],
   theme: {
     extend: {

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link
+      type="text/css"
+      rel="stylesheet"
+      href="/object-visualizer/index.min.css"
+    />
+    <link type="text/css" rel="stylesheet" href="/app.css" />
+  </head>
+
+  <body>
+    <div class="max-w-4xl mx-auto">
+      <div class="flex flex-row items-center justify-between">
+        <img src="/logo.svg" class="w-56 py-4" />
+        <div class="flex flex-row items-center space-x-2">
+          <span> Live updates </span>
+          <input id="live-updates-checkbox" type="checkbox" checked />
+        </div>
+      </div>
+      <pre></pre>
+    </div>
+    <script src="/object-visualizer/object-visualizer.iife.min.js"></script>
+    <script type="module">
+
+      const pre = document.querySelector('pre');
+      const data = ObjectVisualizer.reactive(<%~ JSON.stringify(it.state, null, 2) %>);
+      ObjectVisualizer.mount(data, pre, {
+        rootName: "state",
+        expandOnCreatedAndUpdated() {
+          return true;
+        }
+      })
+
+      const domQueries = {
+        shouldUpdateObject: () => {
+          const checkbox = document.querySelector("#live-updates-checkbox");
+          return checkbox.checked
+        }
+      }
+
+      const sockets = (() => {
+        function establishConnection(url, onMessage) {
+          const socket = new WebSocket(
+            url
+          );
+
+          socket.addEventListener("error", (err) => {
+            socket.close();
+          });
+
+          socket.addEventListener("message", (message) => {
+            onMessage(JSON.parse(message.data))
+          });
+
+          return socket;
+        }
+
+        function sleep(ms) {
+          return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+
+        function setupWebsocket(url, onMessage) {
+
+
+          let socket = establishConnection(url, onMessage);
+
+          let backoff = 200;
+
+          async function reattachOnClose() {
+            await sleep(backoff);
+            backoff *= 2;
+            socket = establishConnection(url, onMessage);
+          }
+
+          socket.addEventListener("close", reattachOnClose);
+
+          return {
+            close() {
+              socket.removeEventListener("close", reattachOnClose);
+              socket.close();
+            },
+          };
+          return { setupWebsocket }
+        }
+      })()
+
+      sockets.setupWebsocket("<%= it.socketUrl %>", function modifyObject(newObj) {
+        if (domQueries.shouldUpdateObject()) {
+          Object.assign(data, newObj.state)
+        }
+      })
+    </script>
+  </body>
+</html>

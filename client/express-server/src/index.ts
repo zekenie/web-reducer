@@ -17,6 +17,7 @@ import { attach as attachUnauthenticatedSocket } from "./unauthenticated-sockets
 import helmet from "helmet";
 import { WebSocketServer } from "ws";
 import type { WebSocket } from "ws";
+import { readKeyHandler } from "./read-key";
 
 declare global {
   namespace Express {
@@ -52,8 +53,13 @@ app.use(
 // Everything else (like favicon.ico) is cached for an hour. You may want to be
 // more aggressive with this caching.
 app.use(express.static("../public", { maxAge: "1h" }));
-
+app.use(
+  "/object-visualizer",
+  express.static("./node_modules/object-visualizer/dist", { maxAge: "1y" })
+);
 app.use(morgan("tiny"));
+
+app.get("/read/:readKey", readKeyHandler);
 
 app.use((req, res, next) => {
   res.setCreds = (creds: Credentials) => {
