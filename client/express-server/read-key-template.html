@@ -12,13 +12,24 @@
   <body>
     <div class="max-w-4xl mx-auto">
       <div class="flex flex-row items-center justify-between">
-        <img src="/logo.svg" class="w-56 py-4" />
+        <a href="/" target="_blank">
+          <img src="/logo.svg" class="w-56 py-4" />
+        </a>
         <div class="flex flex-row items-center space-x-2">
           <span> Live updates </span>
           <input id="live-updates-checkbox" type="checkbox" checked />
         </div>
       </div>
       <pre></pre>
+      <div class="text-sm text-canvas-500 mt-4">
+        (If you hit this URL from
+        <span class="font-mono bg-canvas-50 rounded px-0.5">$ curl</span> or
+        with a
+        <span class="font-mono bg-canvas-50 rounded px-0.5"
+          >Accept: application/json</span
+        >
+        header, you will just get the JSON payload, and not this page)
+      </div>
     </div>
     <script src="/object-visualizer/object-visualizer.iife.min.js"></script>
     <script type="module">
