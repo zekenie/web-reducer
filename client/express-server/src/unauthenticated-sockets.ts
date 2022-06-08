@@ -3,7 +3,9 @@ import type { WebSocket } from "ws";
 
 type UnauthenticatedSocketMessage = { type: "new-state"; state: unknown };
 
-export const redisConnection = new IORedis(process.env.REDIS_URL!);
+export const redisConnection = new IORedis(process.env.REDIS_URL!, {
+  family: process.env.NODE_ENV! === "production" ? 6 : undefined,
+});
 
 async function isReadKeyValid({
   readKey,

@@ -2,8 +2,12 @@ import IORedis from "ioredis";
 import { Credentials } from "./auth";
 import { EventEmitter } from "events";
 
-export const redisSubscriberConnection = new IORedis(process.env.REDIS_URL!);
-export const redisPublisherConnection = new IORedis(process.env.REDIS_URL!);
+export const redisSubscriberConnection = new IORedis(process.env.REDIS_URL!, {
+  family: process.env.NODE_ENV! === "production" ? 6 : undefined,
+});
+export const redisPublisherConnection = new IORedis(process.env.REDIS_URL!, {
+  family: process.env.NODE_ENV! === "production" ? 6 : undefined,
+});
 
 export async function publishNewCreds(
   existingRefreshToken: string,

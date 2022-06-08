@@ -37,7 +37,9 @@ type SocketMessage = NewRequestMessage | BulkUpdateMessage; // | OtherMessage
  * maybe switch to Kafka at greater scale...
  */
 
-export const redisConnection = new IORedis(process.env.REDIS_URL!);
+export const redisConnection = new IORedis(process.env.REDIS_URL!, {
+  family: process.env.NODE_ENV! === "production" ? 6 : undefined,
+});
 
 function getCredsFromRequest(req: IncomingMessage): Credentials | null {
   if (!req.headers.cookie) {

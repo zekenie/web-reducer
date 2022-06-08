@@ -3,7 +3,9 @@ import { StateHistory } from "../state/state.types";
 
 // separate connection from bull so that we're not in pub mode
 // and don't conflict with their settings
-export const connection = new IORedis(process.env.REDIS_URL);
+export const connection = new IORedis(process.env.REDIS_URL, {
+  family: process.env.NODE_ENV! === "production" ? 6 : undefined,
+});
 
 export async function publishState({
   request,
