@@ -1,3 +1,4 @@
+fly.toml
 **/*.test.ts
 .git
 node_modules

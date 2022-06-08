@@ -17,8 +17,6 @@ WORKDIR /usr/src/app
 COPY --chown=node:node --from=build /usr/src/app/node_modules /usr/src/app/node_modules
 COPY --chown=node:node --from=build /usr/src/app/express-server/node_modules /usr/src/app/express-server/node_modules
 COPY --chown=node:node . /usr/src/app
-ENV PORT 3000
-EXPOSE 3000
 RUN yarn build
 RUN cd ./express-server && yarn build
 RUN rm -rf express-server/src

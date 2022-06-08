@@ -37,6 +37,8 @@ services:
       - 6379:6379
   code_runner:
     build: ../runner
+    environment:
+      PORT: 3002
     ports:
       - 3002:3002
   web:

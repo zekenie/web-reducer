@@ -57,6 +57,7 @@ app.use(
   "/object-visualizer",
   express.static("./node_modules/object-visualizer/dist", { maxAge: "1y" })
 );
+app.get("/heartbeat", (req, res) => res.json({ ok: true }));
 app.use(morgan("tiny"));
 
 app.get("/read/:readKey", readKeyHandler);

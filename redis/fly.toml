@@ -1,0 +1,7 @@
+# fly.toml file generated for web-reducer-redis on 2022-06-08T11:42:03-05:00
+
+app = "web-reducer-redis"
+
+[metrics]
+  port = 9091
+  path = "/metrics"

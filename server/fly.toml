@@ -1,0 +1,44 @@
+# fly.toml file generated for web-reducer-server on 2022-06-07T15:26:15-05:00
+
+app = "web-reducer-server"
+
+kill_signal = "SIGINT"
+kill_timeout = 5
+processes = []
+
+[env]
+  PORT = 8080
+
+[experimental]
+  allowed_public_ports = []
+  auto_rollback = true
+
+[deploy]
+  release_command = "yarn migrate up"
+
+[[services]]
+  internal_port = 8080
+  processes = ["app"]
+  protocol = "tcp"
+  script_checks = []
+  [[services.http_checks]]
+    interval = 10000
+    grace_period = "5s"
+    method = "get"
+    path = "/heartbeat"
+    protocol = "http"
+    restart_limit = 0
+    timeout = 2000
+    tls_skip_verify = true
+    [services.http_checks.headers]
+
+  [services.concurrency]
+    hard_limit = 25
+    soft_limit = 20
+    type = "connections"
+
+  [[services.tcp_checks]]
+    grace_period = "1s"
+    interval = "15s"
+    restart_limit = 0
+    timeout = "2s"

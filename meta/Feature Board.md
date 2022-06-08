@@ -13,6 +13,7 @@ kanban-plugin: basic
 - [ ] should state be cached in redis? we could do readkeys with postgres down (and faster), we could have lastState on responder.... lots to like
 - [ ] should there be a way to do self requests from the ui to test? going to curl is annoying? request modal?
 - [ ] Should we consider using []this data grid library](https://grid.glideapps.com/)
+- [ ] have a qr endpoint for the img
 
 
 ## Todo
@@ -26,12 +27,12 @@ kanban-plugin: basic
 - [ ] cap number of rows in requests table
 - [ ] why do hooks have the name they do? what's the point? can i edit it? what about description
 - [ ] can i delete a hook?
+- [ ] modal to test request
 
 
 ## Must have for launch
 
 - [ ] #bug race condition for bulk update updating the UI
-- [ ] Deployment
 - [ ] Request detail view/modal
 - [ ] Hooks list view
 - [ ] how are read/write keys actually hit?
@@ -43,12 +44,13 @@ kanban-plugin: basic
 
 ## In Progress
 
-- [ ] public html page for read key<br>- use [this library](https://github.com/xyc/react-object-inspector)?<br>- Or perhpas [this library](https://github.com/iendeavor/object-visualizer) that does not require react?<br>- template engine eta looks modern
+- [ ] Deployment
 
 
 ## Done
 
 **Complete**
+- [x] public html page for read key<br>- use [this library](https://github.com/xyc/react-object-inspector)?<br>- Or perhpas [this library](https://github.com/iendeavor/object-visualizer) that does not require react?<br>- template engine eta looks modern
 - [x] CRUD for read/write keys
 - [x] #bug throwing errors in reducer crashes server
 - [x] Requests table<br>- [x] Pagination<br>- [x] Websocket updates<br>- [x] console output<br>- [ ] Idempotency key violation?
