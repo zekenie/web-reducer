@@ -1,4 +1,9 @@
-import { BackspaceIcon, PlusCircleIcon } from "@heroicons/react/outline";
+import {
+  BackspaceIcon,
+  ClipboardCopyIcon,
+  InformationCircleIcon,
+  PlusCircleIcon,
+} from "@heroicons/react/outline";
 import {
   Form,
   useActionData,
@@ -8,8 +13,8 @@ import {
 } from "@remix-run/react";
 import type { ActionFunction } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
-import { Button, Select } from "flowbite-react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { Alert, Button, Select } from "flowbite-react";
+import { Fragment, useCallback, useEffect, useMemo, useRef } from "react";
 import toast from "react-hot-toast";
 import { useModals } from "~/modals/lib/modal-provider";
 import type { HookDetail } from "~/remote/hook-client.server";
@@ -56,11 +61,29 @@ const KeyRow = ({
     );
   }, [fetcher, keyObj, hookId, pushModal]);
 
+  const copy = useCallback(async () => {
+    const host = window.location.host;
+    await navigator.clipboard.writeText(`${host}/${keyObj.type}/${keyObj.key}`);
+    toast.success("It's on your clipboard", {
+      icon: <ClipboardCopyIcon className="w-5 h-5 text-fern-600" />,
+    });
+  }, [keyObj]);
+
   return (
     <tr className="odd:bg-canvas-100">
       <td className="py-1 px-3 w-24">{keyObj.type}</td>
-      <td className="px-3">{keyObj.key}</td>
-      <td className="space-x-1 flex flex-row">
+      <td className="px-3 flex flex-row space-x-2 items-center">
+        {keyObj.key}{" "}
+        <button
+          type="button"
+          onClick={copy}
+          disabled={transition.state === "submitting"}
+          className="p-1 hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-400 rounded"
+        >
+          <ClipboardCopyIcon className="w-5 h-5" />
+        </button>
+      </td>
+      <td className="">
         <button
           type="button"
           onClick={deleteKey}
@@ -98,43 +121,73 @@ export default function Keys() {
     }[];
   }, [hook]);
   return (
-    <Form method="post" ref={ref}>
-      <table
-        style={{ borderCollapse: "separate", borderSpacing: "0" }}
-        className="text-sm font-mono table-fixed w-full max-w-full"
+    <>
+      <Alert
+        rounded={false}
+        color="blue"
+        onDismiss={() => {}}
+        additionalContent={
+          <Fragment>
+            <div className="mt-2 mb-4 text-sm text-blue-700 ">
+              There is a URL for every key. If someone has access to that URL,
+              they will be able to read or write to this hook. If you delete a
+              key, that access will be revoked. Read keys can also be used by
+              our websocket endpoint to get realtime updates.
+            </div>
+            {/* <div className="flex">
+              <button
+                type="button"
+                className="rounded-lg border border-blue-700 bg-transparent px-3 py-1.5 text-center text-xs font-medium text-blue-700 hover:bg-blue-800 hover:text-white focus:ring-4 focus:ring-blue-300 "
+              >
+                Dismiss
+              </button>
+            </div> */}
+          </Fragment>
+        }
+        icon={InformationCircleIcon}
       >
-        <thead>
-          <tr>
-            <th className="text-left py-1 px-3 w-24">Type</th>
-            <th className="text-left py-1 px-3 w-24">Key</th>
-            <th className="w-6"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {keyObjs.map((keyObj) => (
-            <KeyRow hookId={hook.id} key={keyObj.key} keyObj={keyObj} />
-          ))}
-          <tr>
-            <td className="py-1 px-2 w-24">
-              <Select name="type">
-                <option value="read">Read</option>
-                <option value="write">Write</option>
-              </Select>
-            </td>
-            <td className="py-1 px-2 w-24"></td>
-            <td className="w-6">
-              <Button
-                type="submit"
-                icon={PlusCircleIcon}
-                size="xs"
-                color="light"
-                outline={false}
-                disabled={transition.state === "submitting"}
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </Form>
+        <h3 className="text-lg font-medium text-blue-700 ">
+          Keys let you read and write data
+        </h3>
+      </Alert>
+      <Form method="post" ref={ref}>
+        <table
+          style={{ borderCollapse: "separate", borderSpacing: "0" }}
+          className="text-sm font-mono table-fixed w-full max-w-full"
+        >
+          <thead>
+            <tr>
+              <th className="text-left py-1 px-3 w-24">Type</th>
+              <th className="text-left py-1 px-3 w-24">Key</th>
+              <th className="w-6"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {keyObjs.map((keyObj) => (
+              <KeyRow hookId={hook.id} key={keyObj.key} keyObj={keyObj} />
+            ))}
+            <tr>
+              <td className="py-1 px-2 w-24">
+                <Select name="type">
+                  <option value="read">Read</option>
+                  <option value="write">Write</option>
+                </Select>
+              </td>
+              <td className="py-1 px-2 w-24"></td>
+              <td className="w-6">
+                <Button
+                  type="submit"
+                  icon={PlusCircleIcon}
+                  size="xs"
+                  color="light"
+                  outline={false}
+                  disabled={transition.state === "submitting"}
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </Form>
+    </>
   );
 }
