@@ -72,8 +72,6 @@
         }
 
         function setupWebsocket(url, onMessage) {
-
-
           let socket = establishConnection(url, onMessage);
 
           let backoff = 200;
@@ -94,7 +92,11 @@
           };
           return { setupWebsocket }
         }
+
+        return { setupWebsocket };
       })()
+
+      console.log({ sockets })
 
       sockets.setupWebsocket("<%= it.socketUrl %>", function modifyObject(newObj) {
         if (domQueries.shouldUpdateObject()) {
