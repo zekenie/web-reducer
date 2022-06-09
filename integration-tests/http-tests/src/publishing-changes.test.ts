@@ -62,7 +62,6 @@ describe("/publish", () => {
 
       await api.publish();
       await allQueuesDrained();
-      await allQueuesDrained();
 
       const stateAfterPublish = await api.read();
 
@@ -93,7 +92,6 @@ describe("/publish", () => {
       expect(stateAfterUpdateButBeforePublish).toEqual({ number: 8 });
 
       await api.publish();
-      await allQueuesDrained();
       await allQueuesDrained();
 
       const stateAfterPublish = await api.read();

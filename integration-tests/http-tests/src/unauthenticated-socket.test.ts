@@ -43,16 +43,10 @@ describe("unauthenticated websocket", () => {
     await api.hook.publish(hook.id);
     await allQueuesDrained();
 
-    // await api.hook.writeKey(hook.writeKeys[0], {});
-    // await allQueuesDrained();
     const conStr = `${process.env
       .WEB_URL!.split("http")
       .join("ws")}/state-events?readKey=${hook.readKeys[0]}`;
     const ws = new WebSocket(conStr);
-    // ws.on(
-    //   "unexpected-response",
-    //   console.log.bind(console, "unexpected-response")
-    // );
     await convertEventToPromise("upgrade", ws);
     await api.hook.writeKey(hook.writeKeys[0], {});
 

@@ -119,7 +119,10 @@ export async function runBulk(
       100
     );
     await streamRequestsForHook(hookId, cq.push);
-    await cq.drain();
+    if (cq.started) {
+      // if we wait for this when there are 1 requests, it will never resolve
+      await cq.drain();
+    }
   });
 
   const remainingUnprocessedRequests = await countPendingRequests({ hookId });

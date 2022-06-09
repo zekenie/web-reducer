@@ -57,7 +57,6 @@ describe("existing hooks", () => {
     await api.update({ code: `function reducer() { return { foo: 'bar' } }` });
     await api.publish();
     await allQueuesDrained();
-    await allQueuesDrained();
     const stateHistory = await api.history();
 
     expect(stateHistory.nextToken).toBeFalsy();

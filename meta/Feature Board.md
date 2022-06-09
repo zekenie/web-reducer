@@ -12,7 +12,7 @@ kanban-plugin: basic
 - [ ] If we stored latest state in redis, we could have access to it in responder
 - [ ] should state be cached in redis? we could do readkeys with postgres down (and faster), we could have lastState on responder.... lots to like
 - [ ] should there be a way to do self requests from the ui to test? going to curl is annoying? request modal?
-- [ ] Should we consider using []this data grid library](https://grid.glideapps.com/)
+- [ ] Should we consider using [this data grid library](https://grid.glideapps.com/)
 - [ ] have a qr endpoint for the img
 
 
@@ -42,17 +42,18 @@ kanban-plugin: basic
 - [ ] need to be able to send email
 - [ ] #bug if you return req from reducer you get a 500 error
 - [ ] error when navigating back and forth to editor pages ![[Pasted image 20220609110251.png]] #bug
+- [ ] should > 399 res codes go into queue?
 
 
 ## In Progress
 
-- [ ] bulk updates need to emit new state event to public `ws`
-- [ ] #bug race condition for bulk update updating the UI
 
 
 ## Done
 
 **Complete**
+- [x] #bug race condition for bulk update updating the UI
+- [x] bulk updates need to emit new state event to public `ws`
 - [x] #bug when you make a request with no content type you get an error
 - [x] ![[Pasted image 20220609103937.png]] #bug
 - [x] how are read/write keys actually hit?
