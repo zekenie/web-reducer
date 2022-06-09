@@ -35,21 +35,26 @@ kanban-plugin: basic
 - [ ] #bug race condition for bulk update updating the UI
 - [ ] Request detail view/modal
 - [ ] Hooks list view
-- [ ] how are read/write keys actually hit?
 - [ ] server crashes on runner error. [best practice for uncaught exceptions](https://www.honeybadger.io/blog/errors-nodejs/#uncaught-exceptions-and-unhandled-promise-rejections)
 - [ ] if you make requests with a write key, then delete the write key, then recompute state, those requests are not counted! #bug<br><br>Solutions:<br>- soft delete the write keys?<br>- store an association of requests to hook?<br>---<br>- Could this be a feature?
 - [ ] webhooks may be put requests right? we shouldn't assume post.
-- [ ] bulk updates need to emit new state event to public `ws`
+- [ ] dismissible info panels
+- [ ] domain setup
+- [ ] need to be able to send email
+- [ ] #bug if you return req from reducer you get a 500 error
+- [ ] ![[Pasted image 20220609103937.png]] #bug
 
 
 ## In Progress
 
-- [ ] Deployment
+- [ ] bulk updates need to emit new state event to public `ws`
 
 
 ## Done
 
 **Complete**
+- [x] how are read/write keys actually hit?
+- [x] Deployment
 - [x] public html page for read key<br>- use [this library](https://github.com/xyc/react-object-inspector)?<br>- Or perhpas [this library](https://github.com/iendeavor/object-visualizer) that does not require react?<br>- template engine eta looks modern
 - [x] CRUD for read/write keys
 - [x] #bug throwing errors in reducer crashes server

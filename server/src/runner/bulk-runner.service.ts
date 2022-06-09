@@ -6,6 +6,7 @@ import {
   isHookPaused,
   unpauseHook,
 } from "../hook/hook.db";
+import { getKeysForHook } from "../key/key.service";
 import {
   countPendingRequests,
   countRequestsForHook,
@@ -14,6 +15,7 @@ import {
 import { WebhookRequest } from "../request/request.types";
 import { _dangerouslyExposeSecretsInPlaintextForNamespace } from "../secret/secret.remote";
 import { getAccessKeyForHook } from "../secret/secret.service";
+
 import {
   bulkCreateState,
   checkValidityOfIdempotencyKeys,
@@ -21,6 +23,7 @@ import {
 } from "../state/state.db";
 import { publishBulkUpdate } from "./runner.publisher";
 import { runCodeBulk } from "./vm.remote";
+import { readState } from "../state/state.service";
 
 export async function runBulk(
   hookId: string,
@@ -124,6 +127,13 @@ export async function runBulk(
   } else {
     await unpauseHook({ hookId });
 
-    setImmediate(() => publishBulkUpdate({ hookId }));
+    setImmediate(async () => {
+      const { readKeys } = await getKeysForHook({ hookId });
+      if (!readKeys.length) {
+        return;
+      }
+      const { state } = await readState(readKeys[0]);
+      publishBulkUpdate({ hookId, state });
+    });
   }
 }

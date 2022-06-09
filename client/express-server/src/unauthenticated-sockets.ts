@@ -1,7 +1,9 @@
 import IORedis from "ioredis";
 import type { WebSocket } from "ws";
 
-type UnauthenticatedSocketMessage = { type: "new-state"; state: unknown };
+type UnauthenticatedSocketMessage =
+  | { type: "new-state"; state: unknown }
+  | { type: "bulk-update"; state: unknown };
 
 export const redisConnection = new IORedis(process.env.REDIS_URL!, {
   family: process.env.NODE_ENV! === "production" ? 6 : undefined,
@@ -12,7 +14,7 @@ async function isReadKeyValid({
 }: {
   readKey: string;
 }): Promise<boolean> {
-  const res = await fetch(`${process.env.BACKEND_URL}/${readKey}`, {
+  const res = await fetch(`${process.env.BACKEND_URL}/read/${readKey}`, {
     method: "GET",
     headers: {
       Accepts: "application/json",
@@ -34,10 +36,7 @@ const listeners = {
     this.websocketsForReadKeys[readKey].add(ws);
     if (this.websocketsForReadKeys[readKey].size === 1) {
       // setup redis listener
-      const subscribeResult = await redisConnection.subscribe(
-        `read-key.${readKey}`
-      );
-      // redisConnection.subscribe("*");
+      await redisConnection.subscribe(`read-key.${readKey}`);
     }
   },
   async remove(readKey: string, ws: WebSocket) {

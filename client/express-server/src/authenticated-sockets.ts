@@ -28,6 +28,7 @@ type NewRequestMessage = {
 type BulkUpdateMessage = {
   type: "bulk-update";
   hookId: string;
+  state: unknown;
 };
 
 type SocketMessage = NewRequestMessage | BulkUpdateMessage; // | OtherMessage

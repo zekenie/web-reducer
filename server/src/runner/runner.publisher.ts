@@ -36,11 +36,13 @@ export async function publishState({
 
 export async function publishBulkUpdate({
   hookId,
+  state,
 }: {
   hookId: string;
+  state: unknown;
 }): Promise<void> {
   await connection.publish(
     `bulk-update.${hookId}`,
-    JSON.stringify({ type: "bulk-update", hookId })
+    JSON.stringify({ type: "bulk-update", hookId, state })
   );
 }
