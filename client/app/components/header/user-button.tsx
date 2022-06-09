@@ -42,14 +42,14 @@ function SigninButton() {
   return (
     <Form
       method="post"
-      className={`relative  flex flex-row space-x-2 transform duration-300 ${
+      className={`relative z-50 flex flex-row space-x-2 transform duration-300 ${
         isEmailShowing ? "" : ""
       }`}
       action="/auth/signin"
     >
       {isEmailShowing && (
         <div className="absolute w-full pt-3 bottom-0 transform translate-y-full">
-          <div className="z-50 rounded-lg shadow border p-4 bg-white prose">
+          <div className="rounded-lg shadow border p-4 bg-white prose">
             <h3>Unauthenticated endpoints are ephemeral</h3>
             <p>
               In order to keep your code and data, sign up. This is mainly to
