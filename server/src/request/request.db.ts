@@ -105,7 +105,7 @@ const insertRequestCargo = cargoQueue<CaptureRequest & { hookId: string }>(
             ({ id, contentType, request, writeKey, hookId }) => {
               return [
                 id,
-                contentType,
+                contentType || null,
                 JSON.stringify(request.body),
                 JSON.stringify(request.headers),
                 writeKey,
