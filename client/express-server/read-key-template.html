@@ -96,8 +96,6 @@
         return { setupWebsocket };
       })()
 
-      console.log({ sockets })
-
       sockets.setupWebsocket("<%= it.socketUrl %>", function modifyObject(newObj) {
         if (domQueries.shouldUpdateObject()) {
           Object.assign(data, newObj.state)
