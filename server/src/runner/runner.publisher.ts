@@ -37,12 +37,23 @@ export async function publishState({
 export async function publishBulkUpdate({
   hookId,
   state,
+  readKeys,
 }: {
+  readKeys: string[];
   hookId: string;
   state: unknown;
 }): Promise<void> {
-  await connection.publish(
-    `bulk-update.${hookId}`,
-    JSON.stringify({ type: "bulk-update", hookId, state })
-  );
+  const pipeline = connection
+    .pipeline()
+    .publish(
+      `bulk-update.${hookId}`,
+      JSON.stringify({ type: "bulk-update", hookId, state })
+    );
+
+  const pipelineWithReadKeys = readKeys.reduce((p, readKey) => {
+    const m = { type: "bulk-update", state };
+    return p.publish(`read-key.bulk-update.${readKey}`, JSON.stringify(m));
+  }, pipeline);
+
+  await pipelineWithReadKeys.exec();
 }

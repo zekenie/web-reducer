@@ -90,7 +90,7 @@ export async function getStateHistoryPage(
       count(*) OVER() AS "fullCount"
     from state
     
-     join request
+    join request
       on request.id = state."requestId"
     join "publishedVersion"
       on "state"."versionId" = "publishedVersion"."id"

@@ -32,7 +32,6 @@ kanban-plugin: basic
 
 ## Must have for launch
 
-- [ ] #bug race condition for bulk update updating the UI
 - [ ] Request detail view/modal
 - [ ] Hooks list view
 - [ ] server crashes on runner error. [best practice for uncaught exceptions](https://www.honeybadger.io/blog/errors-nodejs/#uncaught-exceptions-and-unhandled-promise-rejections)
@@ -42,17 +41,20 @@ kanban-plugin: basic
 - [ ] domain setup
 - [ ] need to be able to send email
 - [ ] #bug if you return req from reducer you get a 500 error
-- [ ] ![[Pasted image 20220609103937.png]] #bug
+- [ ] error when navigating back and forth to editor pages ![[Pasted image 20220609110251.png]] #bug
 
 
 ## In Progress
 
 - [ ] bulk updates need to emit new state event to public `ws`
+- [ ] #bug race condition for bulk update updating the UI
 
 
 ## Done
 
 **Complete**
+- [x] #bug when you make a request with no content type you get an error
+- [x] ![[Pasted image 20220609103937.png]] #bug
 - [x] how are read/write keys actually hit?
 - [x] Deployment
 - [x] public html page for read key<br>- use [this library](https://github.com/xyc/react-object-inspector)?<br>- Or perhpas [this library](https://github.com/iendeavor/object-visualizer) that does not require react?<br>- template engine eta looks modern

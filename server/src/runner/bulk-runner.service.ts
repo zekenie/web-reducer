@@ -1,6 +1,7 @@
 import { cargoQueue } from "async";
 import { last } from "lodash";
-import { transaction } from "../db";
+import { sql } from "slonik";
+import { getPool, transaction } from "../db";
 import {
   getPublishedCodeByHook,
   isHookPaused,
@@ -15,15 +16,14 @@ import {
 import { WebhookRequest } from "../request/request.types";
 import { _dangerouslyExposeSecretsInPlaintextForNamespace } from "../secret/secret.remote";
 import { getAccessKeyForHook } from "../secret/secret.service";
-
 import {
   bulkCreateState,
   checkValidityOfIdempotencyKeys,
   fetchState,
 } from "../state/state.db";
+import { readState } from "../state/state.service";
 import { publishBulkUpdate } from "./runner.publisher";
 import { runCodeBulk } from "./vm.remote";
-import { readState } from "../state/state.service";
 
 export async function runBulk(
   hookId: string,
@@ -119,6 +119,7 @@ export async function runBulk(
       100
     );
     await streamRequestsForHook(hookId, cq.push);
+    await cq.drain();
   });
 
   const remainingUnprocessedRequests = await countPendingRequests({ hookId });
@@ -127,13 +128,11 @@ export async function runBulk(
   } else {
     await unpauseHook({ hookId });
 
-    setImmediate(async () => {
-      const { readKeys } = await getKeysForHook({ hookId });
-      if (!readKeys.length) {
-        return;
-      }
-      const { state } = await readState(readKeys[0]);
-      publishBulkUpdate({ hookId, state });
-    });
+    const { readKeys } = await getKeysForHook({ hookId });
+    if (!readKeys.length) {
+      return;
+    }
+    const { state } = await readState(readKeys[0]);
+    await publishBulkUpdate({ hookId, state, readKeys });
   }
 }

@@ -1,4 +1,5 @@
 import IORedis from "ioredis";
+import { last } from "lodash";
 import type { WebSocket } from "ws";
 
 type UnauthenticatedSocketMessage =
@@ -37,6 +38,7 @@ const listeners = {
     if (this.websocketsForReadKeys[readKey].size === 1) {
       // setup redis listener
       await redisConnection.subscribe(`read-key.${readKey}`);
+      await redisConnection.subscribe(`read-key.bulk-update.${readKey}`);
     }
   },
   async remove(readKey: string, ws: WebSocket) {
@@ -48,6 +50,7 @@ const listeners = {
       delete this.websocketsForReadKeys[readKey];
       // remove redis listener
       await redisConnection.unsubscribe(`read-key.${readKey}`);
+      await redisConnection.unsubscribe(`read-key.bulk-update.${readKey}`);
     }
   },
 
@@ -57,7 +60,9 @@ const listeners = {
     }
     for (const ws of this.websocketsForReadKeys[readKey]) {
       if (ws.readyState === ws.OPEN) {
-        ws.send(message);
+        ws.send(message, console.log);
+      } else {
+        listeners.remove(readKey, ws);
       }
     }
   },
@@ -66,7 +71,8 @@ const listeners = {
 redisConnection.on(
   "message",
   (channel: string, message: UnauthenticatedSocketMessage) => {
-    const [type, readKey] = channel.split(".");
+    const args = channel.split(".");
+    const readKey = last(args) as string;
     listeners.emit(readKey, message);
   }
 );
@@ -92,7 +98,7 @@ export async function attach({
 
   connect(async (ws) => {
     await listeners.add(readKey, ws);
-    ws.on("close", async () => {
+    ws.on("close", async (r) => {
       await listeners.remove(readKey, ws);
     });
   });
