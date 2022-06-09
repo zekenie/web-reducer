@@ -46,8 +46,8 @@ export default function makeServer(config: Config) {
   app.use("/hooks", hookController);
   app.use("/auth", authController);
   app.use("/secrets", secretController);
-  app.use("/", requestController);
-  app.use("/", stateController);
+  app.use("/write", requestController);
+  app.use("/read", stateController);
 
   app.use(
     (

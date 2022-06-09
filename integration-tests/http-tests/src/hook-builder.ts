@@ -127,7 +127,7 @@ export async function buildAuthenticatedApi(
         body: any,
         axiosConfig: AxiosRequestConfig = {}
       ) {
-        return authenticatedClient.post(`/${key}`, {
+        return authenticatedClient.post(`/write/${key}`, {
           data: JSON.stringify(body),
           ...axiosConfig,
         });
@@ -194,7 +194,7 @@ function buildApi<PostBody, State>(context: Context) {
       queryParams?: Record<string, string>
     ): Promise<string> {
       const { data } = await unauthenticatedServerClient.post<{ id: string }>(
-        `/${context.writeKey}`,
+        `/write/${context.writeKey}`,
         body,
         { params: queryParams }
       );
@@ -209,7 +209,7 @@ function buildApi<PostBody, State>(context: Context) {
     async settled(requestIdOrPostBody: string | PostBody): Promise<void> {
       if (typeof requestIdOrPostBody === "string") {
         await unauthenticatedServerClient.get(
-          `${context.writeKey}/settled/${requestIdOrPostBody}`
+          `/write/${context.writeKey}/settled/${requestIdOrPostBody}`
         );
         return;
       }
@@ -218,7 +218,7 @@ function buildApi<PostBody, State>(context: Context) {
         throw new Error("post body not recognized");
       }
       await unauthenticatedServerClient.get(
-        `${context.writeKey}/settled/${id}`
+        `/write/${context.writeKey}/settled/${id}`
       );
     },
     async setSecret(key: string, value: string): Promise<void> {
@@ -238,7 +238,7 @@ function buildApi<PostBody, State>(context: Context) {
     },
     async read(): Promise<State> {
       const { data } = await unauthenticatedServerClient.get<State>(
-        `/${context.readKey}`
+        `/read/${context.readKey}`
       );
       return data;
     },
@@ -272,48 +272,6 @@ export async function buildHook<PostBody, State>({
   code?: string;
 } = {}) {
   const authedApi = await buildAuthenticatedApi({});
-
-  // const pool = getPool();
-  // const { id: userId } = await pool.one<{ id: string }>(sql`
-  //   insert into "user" (email) values (${email})
-  //   returning id
-  // `);
-
-  // const jwt = jwtLib.sign({}, process.env.JWT_SECRET!, {
-  //   subject: userId,
-  // });
-
-  // const { id: hookId } = await pool.one<{ id: string }>(sql`
-  //   insert into hook (id) values (default)
-  //   returning id
-  // `);
-
-  // await pool.any(sql`
-  //   insert into "access"
-  //   ("hookId", "userId")
-  //   values
-  //   (${hookId}, ${userId})
-  // `);
-
-  // const [{ id: versionId }] = await pool.many<{ id: string }>(sql`
-  //   INSERT INTO "version" ("code","workflowState","createdAt","updatedAt","hookId")
-  //   VALUES
-  //   (${code}, 'published', NOW(), NOW() , ${hookId}),
-  //   (${code}, 'draft', NOW(), NOW() , ${hookId})
-  //   returning id
-  // `);
-  // const { key: writeKey } = await pool.one<{ key: string }>(sql`
-  // insert into key (type, key, "hookId")
-  //   values
-  //   ('write', ${uniqueId("rand")}, ${hookId})
-  //   returning key
-  // `);
-  // const { key: readKey } = await pool.one<{ key: string }>(sql`
-  //   insert into key (type, key, "hookId")
-  //   values
-  //   ('read', ${uniqueId("rand")}, ${hookId})
-  //   returning key
-  // `);
 
   const hook = await authedApi.hook.create();
   await authedApi.hook.update(hook.data.id, { code });

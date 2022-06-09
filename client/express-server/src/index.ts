@@ -18,6 +18,7 @@ import helmet from "helmet";
 import { WebSocketServer } from "ws";
 import type { WebSocket } from "ws";
 import { readKeyHandler } from "./read-key";
+import { writeKeyHandler } from "./write-key";
 
 declare global {
   namespace Express {
@@ -55,12 +56,16 @@ app.use(
 app.use(express.static("../public", { maxAge: "1h" }));
 app.use(
   "/object-visualizer",
-  express.static("./node_modules/object-visualizer/dist", { maxAge: "1y" })
+  express.static(
+    join(__dirname, "..", "/node_modules/object-visualizer/dist"),
+    { maxAge: "1y" }
+  )
 );
 app.get("/heartbeat", (req, res) => res.json({ ok: true }));
 app.use(morgan("tiny"));
 
 app.get("/read/:readKey", readKeyHandler);
+app.use("/write", writeKeyHandler);
 
 app.use((req, res, next) => {
   res.setCreds = (creds: Credentials) => {

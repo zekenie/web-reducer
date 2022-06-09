@@ -24,11 +24,11 @@ describe("existing hooks", () => {
     const body1 = { number: 4 };
     const body2 = { number: 3 };
     const res = await unauthenticatedServerClient.post(
-      `/${context.writeKey}`,
+      `/write/${context.writeKey}`,
       body1
     );
     const res2 = await unauthenticatedServerClient.post<{ id: string }>(
-      `/${context.writeKey}`,
+      `/write/${context.writeKey}`,
       body2
     );
 
@@ -203,7 +203,7 @@ describe("existing hooks", () => {
         `,
       });
       const { data, status } = await authenticatedClient.post(
-        `/${context.writeKey}`,
+        `/write/${context.writeKey}`,
         body1,
         { headers: { "Content-Type": "application/json" } }
       );
@@ -229,7 +229,7 @@ describe("existing hooks", () => {
         `,
       });
       const { headers } = await authenticatedClient.post(
-        `/${context.writeKey}`,
+        `/write/${context.writeKey}`,
         body1,
         { headers: { "Content-Type": "application/json" } }
       );
@@ -258,7 +258,7 @@ describe("existing hooks", () => {
         `,
       });
       const { data } = await authenticatedClient.post(
-        `/${context.writeKey}`,
+        `/write/${context.writeKey}`,
         body1,
         {
           headers: { "Content-Type": "application/json" },

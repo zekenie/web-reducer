@@ -25,7 +25,7 @@ export default function EmptyState({
       ref.current.querySelector<HTMLSelectElement>("#writeKey")!.value;
     const body = ref.current.querySelector<HTMLSpanElement>("#body")?.innerText;
 
-    await fetch(`${siteUrl}/${writeKey}`, {
+    await fetch(`${siteUrl}/write/${writeKey}`, {
       body,
       headers: { "content-type": contentType },
       method: "POST",
@@ -68,7 +68,7 @@ export default function EmptyState({
           ' \
         </div>
         <div>
-          {siteUrl}/
+          {siteUrl}/write/
           <VariableSelect
             id="writeKey"
             selected={writeKeys[0]}
