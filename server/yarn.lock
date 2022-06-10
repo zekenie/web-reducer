@@ -2576,6 +2576,11 @@ commander@^5.1.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-5.1.0.tgz#46abbd1652f8e059bddaef99bbdcb2ad9cf179ae"
   integrity sha512-P0CysNDQ7rtVw4QIQtm+MRxV66vKFSvlsQvGYXZWR3qFU0jlMKHZZZgw8e+8DSah4UDKMqnknRDQz+xuQXQ/Zg==
 
+commander@^6.1.0:
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-6.2.1.tgz#0792eb682dfbc325999bb2b84fddddba110ac73c"
+  integrity sha512-U7VdrJFnJgo4xjrHpTzu0yrHPGImdsmD95ZlgYSEajAn2JKzDhDTPG9kBTefmObL2w/ngeZnilk+OV9CG3d7UA==
+
 concat-map@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
@@ -3008,17 +3013,17 @@ electron-to-chromium@^1.4.118:
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.137.tgz#186180a45617283f1c012284458510cd99d6787f"
   integrity sha512-0Rcpald12O11BUogJagX3HsCN3FE83DSqWjgXoHo5a72KUKMSfI39XBgJpgNNxS9fuGzytaFjE06kZkiVFy2qA==
 
-email-templates@^8.0.9:
-  version "8.1.0"
-  resolved "https://registry.yarnpkg.com/email-templates/-/email-templates-8.1.0.tgz#837fc3d4e2bc1b0ca7da9d8ceac5d9407d2a04ca"
-  integrity sha512-TbUIfPrbMSqhVry6H9vt+BjjzKx2E9L0B2pSB25cZpMPP5DjP/KV3XCHN1mMnOc4iqVbhv5T7K2fcPuf5tYu8w==
+email-templates@^9.0.0:
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/email-templates/-/email-templates-9.0.0.tgz#b23f2b24eb8deb21984c845382934bf387ea1ab5"
+  integrity sha512-ap0p38jAq8FMy86Jp2b3hyCFDUA9utWfOuyKPWhrknmHrrT3n94viGcQIAsaQtUZGaJP/0dJ9w//XqvaZV/yYQ==
   dependencies:
     "@ladjs/i18n" "^7.2.6"
     consolidate "^0.16.0"
     debug "^4.3.4"
     get-paths "^0.0.7"
     html-to-text "^8.1.0"
-    juice "^7.0.0"
+    juice "^8.0.0"
     lodash "^4.17.21"
     nodemailer "^6.7.2"
     preview-email "^3.0.5"
@@ -4721,6 +4726,17 @@ juice@^7.0.0:
   dependencies:
     cheerio "^1.0.0-rc.3"
     commander "^5.1.0"
+    mensch "^0.3.4"
+    slick "^1.12.2"
+    web-resource-inliner "^5.0.0"
+
+juice@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/juice/-/juice-8.0.0.tgz#ac77d3372373409b06a875aee425b9d381f645fe"
+  integrity sha512-LRCfXBOqI1wt+zYR/5xwDnf+ZyiJiDt44DGZaBSAVwZWyWv3BliaiGTLS6KCvadv3uw6XGiPPFcTfY7CdF7Z/Q==
+  dependencies:
+    cheerio "^1.0.0-rc.3"
+    commander "^6.1.0"
     mensch "^0.3.4"
     slick "^1.12.2"
     web-resource-inliner "^5.0.0"

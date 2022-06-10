@@ -13,7 +13,6 @@ export function makeAccessMiddleware(hookIdResolver: (req: Request) => string) {
       const hookId = hookIdResolver(req);
       const { userId } = getStore();
       if (await hasAccess({ hookId, userId })) {
-        console.log(userId, "has access to ", hookId);
         return next();
       }
       throw new httpErrors.Forbidden(

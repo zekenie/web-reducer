@@ -18,9 +18,14 @@ export async function sendMailSync(config: SendMail) {
   };
   testInternalService.add("email", config);
   return new Mailer({
-    transport: {
-      jsonTransport: true,
-    },
+    transport:
+      process.env.NODE_ENV! === "production"
+        ? {
+            url: process.env.SMTP_URL!,
+          }
+        : {
+            jsonTransport: true,
+          },
   }).send(msg);
 }
 
