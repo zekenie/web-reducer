@@ -14,6 +14,9 @@ import { runCode } from "../runner/vm.remote";
 
 export async function captureRequest(params: requestDb.CaptureRequest) {
   const { requestId, hookId } = await requestDb.captureRequest(params);
+  if (params.ignore) {
+    return;
+  }
   await enqueue(
     {
       name: "run-hook",
@@ -49,12 +52,14 @@ export async function handleRequest({
       name: "request",
       input: {
         request,
+        ignore: response?.statusCode! > 399,
         contentType,
         writeKey,
       },
     },
     getRequestJobIdForRequestId(request.id)
   );
+
   return response;
 }
 

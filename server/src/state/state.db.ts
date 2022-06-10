@@ -262,6 +262,7 @@ export async function fetchState({
       on "request".id = "state"."requestId"
     where state."hookId" = ${hookId}
     and "versionId" = ${versionId}
+    and "request"."ignore" is false
     order by "request"."createdAt" desc
     limit 1
   `);

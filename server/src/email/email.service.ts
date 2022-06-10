@@ -21,7 +21,12 @@ export async function sendMailSync(config: SendMail) {
     transport:
       process.env.NODE_ENV! === "production"
         ? {
-            url: process.env.SMTP_URL!,
+            auth: {
+              user: process.env.SMTP_USER,
+              pass: process.env.SMTP_PASSWORD,
+            },
+            host: process.env.SMTP_HOST,
+            from: "auth@transactional.webreducer.dev",
           }
         : {
             jsonTransport: true,

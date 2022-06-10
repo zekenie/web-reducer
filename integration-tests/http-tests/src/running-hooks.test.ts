@@ -188,7 +188,7 @@ describe("existing hooks", () => {
       expect(state).toEqual({ number: 13 });
     });
   });
-  describe("custom responses", () => {
+  describe("responder", () => {
     it("responds with responder function", async () => {
       const body1 = { number: 4 };
       const { api, context, authenticatedClient } = await buildHook({
@@ -239,6 +239,41 @@ describe("existing hooks", () => {
           "x-powered-by": "Zeke's magic",
         })
       );
+    });
+
+    it("does not enqueue with error status code", async () => {
+      const body1 = { number: 4 };
+      const { context, authenticatedClient } = await buildHook({
+        code: `
+          function responder(request) {
+            return {
+              statusCode: 400,
+              body: { id: request.id }
+            }
+          }
+          function reducer (oldState = { number: 0 }, req) { return { number: oldState.number + req.body.number } }
+        `,
+      });
+      const { status, data } = await authenticatedClient.post(
+        `/write/${context.writeKey}`,
+        body1,
+        {
+          headers: { "Content-Type": "application/json" },
+          validateStatus: () => true,
+        }
+      );
+
+      console.log(data);
+
+      expect(status).toEqual(400);
+
+      await allQueuesDrained();
+      const stateRecord = await getPool().maybeOne(sql`
+        select * from "state"
+        where "requestId" = ${data.id}
+      `);
+
+      expect(stateRecord).toBeNull();
     });
 
     it("has access to URLSearchParams in the request query", async () => {

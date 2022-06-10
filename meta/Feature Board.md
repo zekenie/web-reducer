@@ -18,7 +18,7 @@ kanban-plugin: basic
 
 ## Todo
 
-- [ ] Real publish UI<br>- [ ] will they notice publish? should it bounce?<br>- [ ] publish on cmd + s <br>- [ ] should prettier run? Or should it run at another time<br>- [ ] Don't let publish happen if editor has severe errors
+- [ ] Real publish UI<br>- [ ] will they notice publish? should it bounce?<br>- [ ] publish on cmd + s <br>- [ ] should prettier run? Or should it run at another time ![[Pasted image 20220610084309.png]]<br>- [ ] Don't let publish happen if editor has severe errors
 - [ ] Delete / ignore requests
 - [ ] #security restrict outbound network traffic from runner
 - [ ] typescript compiling should be in a thread #security
@@ -35,23 +35,24 @@ kanban-plugin: basic
 - [ ] Request detail view/modal
 - [ ] Hooks list view
 - [ ] server crashes on runner error. [best practice for uncaught exceptions](https://www.honeybadger.io/blog/errors-nodejs/#uncaught-exceptions-and-unhandled-promise-rejections)
-- [ ] if you make requests with a write key, then delete the write key, then recompute state, those requests are not counted! #bug<br><br>Solutions:<br>- soft delete the write keys?<br>- store an association of requests to hook?<br>---<br>- Could this be a feature?
 - [ ] webhooks may be put requests right? we shouldn't assume post.
 - [ ] dismissible info panels
 - [ ] domain setup
-- [ ] need to be able to send email
 - [ ] #bug if you return req from reducer you get a 500 error
-- [ ] should > 399 res codes go into queue?
 - [ ] app should open on a hook of your own for unauthenticated users
+- [ ] get to legal from unauthenticated state
 
 
 ## In Progress
 
+- [ ] if you make requests with a write key, then delete the write key, then recompute state, those requests are not counted! #bug<br><br>Solutions:<br>- soft delete the write keys?<br>- store an association of requests to hook?<br>---<br>- Could this be a feature?
+- [ ] need to be able to send email
 
 
 ## Done
 
 **Complete**
+- [x] status code > 399 should be ignored
 - [x] error when navigating back and forth to editor pages ![[Pasted image 20220609110251.png]] #bug
 - [x] #bug race condition for bulk update updating the UI
 - [x] bulk updates need to emit new state event to public `ws`

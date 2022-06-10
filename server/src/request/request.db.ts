@@ -49,6 +49,7 @@ export async function streamRequestsForHook(
     where
       "key"."hookId" = ${hookId}
       and "key"."type" = 'write'
+      and "request"."ignore" is false
     order by request."createdAt" asc
   `,
     (stream) => {
@@ -84,6 +85,7 @@ export function getRequestToRun(id: string): Promise<RequestToRun | null> {
 export type CaptureRequest = {
   id: string;
   contentType: string;
+  ignore: boolean;
   request: {
     body: {};
     headers: IncomingHttpHeaders | Record<string, string>;
@@ -98,11 +100,11 @@ const insertRequestCargo = cargoQueue<CaptureRequest & { hookId: string }>(
       captureBatchSize.record(requestCaptures.length);
       const query = sql`
         insert into request
-        ("id", "contentType", "body", "headers", "writeKey", "hookId", "queryString")
+        ("id", "contentType", "body", "headers", "writeKey", "hookId", "queryString", "ignore")
         select * from
         ${sql.unnest(
           requestCaptures.map(
-            ({ id, contentType, request, writeKey, hookId }) => {
+            ({ id, contentType, request, writeKey, hookId, ignore }) => {
               return [
                 id,
                 contentType || null,
@@ -111,10 +113,20 @@ const insertRequestCargo = cargoQueue<CaptureRequest & { hookId: string }>(
                 writeKey,
                 hookId,
                 request.queryString,
+                ignore,
               ];
             }
           ),
-          ["uuid", "varchar", "jsonb", "jsonb", "varchar", "uuid", "text"]
+          [
+            "uuid",
+            "varchar",
+            "jsonb",
+            "jsonb",
+            "varchar",
+            "uuid",
+            "text",
+            "bool",
+          ]
         )}
       `;
       const pool = getPool();
@@ -137,6 +149,7 @@ export const captureRequest = async ({
   contentType,
   request,
   writeKey,
+  ignore,
 }: CaptureRequest) => {
   const pool = getPool();
   const key = await pool.maybeOne<{ hookId: string }>(
@@ -151,6 +164,7 @@ export const captureRequest = async ({
     hookId: key.hookId,
     contentType,
     id,
+    ignore,
     writeKey,
     request,
   });

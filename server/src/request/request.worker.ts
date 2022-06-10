@@ -15,6 +15,7 @@ declare global {
         output: void;
         input: {
           contentType: string;
+          ignore: boolean;
           request: WebhookRequest;
           writeKey: string;
         };
@@ -33,6 +34,7 @@ for (let i = 0; i < NUM_BUCKETS; i++) {
       worker: async (j) => {
         await captureRequest({
           id: j.data.request.id,
+          ignore: j.data.ignore,
           contentType: j.data.contentType,
           request: j.data.request,
           writeKey: j.data.writeKey,
