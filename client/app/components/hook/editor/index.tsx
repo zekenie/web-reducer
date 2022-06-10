@@ -2,7 +2,7 @@ import { DotsVerticalIcon } from "@heroicons/react/outline";
 import Editor, { DiffEditor } from "@monaco-editor/react";
 import { useFetcher } from "@remix-run/react";
 import { debounce } from "lodash";
-import type { ComponentProps, FC } from "react";
+import { ComponentProps, FC, useEffect } from "react";
 import { useCallback, useState } from "react";
 import { Button, Tooltip } from "flowbite-react";
 import type { HookDetail } from "~/remote/hook-client.server";
@@ -17,6 +17,18 @@ function EditorSwitch({
   onChange: ComponentProps<typeof Editor>["onChange"];
 }) {
   const [isSetup, setIsSetup] = useState(false);
+  const [monaco, setMonaco] = useState<any>();
+
+  useEffect(() => {
+    return () => {
+      if (!monaco) {
+        return;
+      }
+      monaco.editor
+        .getModels()
+        .forEach((model: { dispose: () => any }) => model.dispose());
+    };
+  }, [monaco]);
   const options = {
     fontSize: 14,
     minimap: { enabled: false },
@@ -34,6 +46,7 @@ function EditorSwitch({
             if (isSetup) {
               return;
             }
+            setMonaco(monaco);
             monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
               target: monaco.languages.typescript.ScriptTarget.ESNext,
               lib: ["es2020"],

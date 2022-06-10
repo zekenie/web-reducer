@@ -41,8 +41,8 @@ kanban-plugin: basic
 - [ ] domain setup
 - [ ] need to be able to send email
 - [ ] #bug if you return req from reducer you get a 500 error
-- [ ] error when navigating back and forth to editor pages ![[Pasted image 20220609110251.png]] #bug
 - [ ] should > 399 res codes go into queue?
+- [ ] app should open on a hook of your own for unauthenticated users
 
 
 ## In Progress
@@ -52,6 +52,7 @@ kanban-plugin: basic
 ## Done
 
 **Complete**
+- [x] error when navigating back and forth to editor pages ![[Pasted image 20220609110251.png]] #bug
 - [x] #bug race condition for bulk update updating the UI
 - [x] bulk updates need to emit new state event to public `ws`
 - [x] #bug when you make a request with no content type you get an error
