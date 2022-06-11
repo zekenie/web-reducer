@@ -13,12 +13,13 @@ kanban-plugin: basic
 - [ ] should state be cached in redis? we could do readkeys with postgres down (and faster), we could have lastState on responder.... lots to like
 - [ ] should there be a way to do self requests from the ui to test? going to curl is annoying? request modal?
 - [ ] Should we consider using [this data grid library](https://grid.glideapps.com/)
+- [ ] qr code resource?
 - [ ] have a qr endpoint for the img
 
 
 ## Todo
 
-- [ ] Real publish UI<br>- [ ] will they notice publish? should it bounce?<br>- [ ] publish on cmd + s <br>- [ ] should prettier run? Or should it run at another time ![[Pasted image 20220610084309.png]]<br>- [ ] Don't let publish happen if editor has severe errors
+- [ ] Real publish UI<br>- [ ] will they notice publish? should it bounce?<br>- [ ] publish on cmd + s <br>- [x] should prettier run? Or should it run at another time ![[Pasted image 20220610084309.png]]<br>- [ ] Don't let publish happen if editor has severe errors
 - [ ] Delete / ignore requests
 - [ ] #security restrict outbound network traffic from runner
 - [ ] typescript compiling should be in a thread #security
@@ -32,26 +33,26 @@ kanban-plugin: basic
 
 ## Must have for launch
 
-- [ ] Request detail view/modal
+- [ ] app should open on a hook of your own for unauthenticated users
+- [ ] domain setup
 - [ ] Hooks list view
+- [ ] dismissible info panels
+- [ ] #bug if you return req from reducer you get a 500 error
 - [ ] server crashes on runner error. [best practice for uncaught exceptions](https://www.honeybadger.io/blog/errors-nodejs/#uncaught-exceptions-and-unhandled-promise-rejections)
 - [ ] webhooks may be put requests right? we shouldn't assume post.
-- [ ] dismissible info panels
-- [ ] domain setup
-- [ ] #bug if you return req from reducer you get a 500 error
-- [ ] app should open on a hook of your own for unauthenticated users
+- [ ] Request detail view/modal
 - [ ] get to legal from unauthenticated state
 
 
 ## In Progress
 
-- [ ] if you make requests with a write key, then delete the write key, then recompute state, those requests are not counted! #bug<br><br>Solutions:<br>- soft delete the write keys?<br>- store an association of requests to hook?<br>---<br>- Could this be a feature?
-- [ ] need to be able to send email
 
 
 ## Done
 
 **Complete**
+- [x] need to be able to send email
+- [x] if you make requests with a write key, then delete the write key, then recompute state, those requests are not counted! #bug<br><br>Solutions:<br>- soft delete the write keys?<br>- store an association of requests to hook?<br>---<br>- Could this be a feature?
 - [x] status code > 399 should be ignored
 - [x] error when navigating back and forth to editor pages ![[Pasted image 20220609110251.png]] #bug
 - [x] #bug race condition for bulk update updating the UI

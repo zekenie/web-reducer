@@ -1,7 +1,6 @@
 import {
-  BackspaceIcon,
-  ClipboardCopyIcon,
   InformationCircleIcon,
+  LinkIcon,
   PauseIcon,
   PlayIcon,
   PlusCircleIcon,
@@ -17,7 +16,7 @@ import {
 import type { ActionFunction, LoaderFunction } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
 import { Alert, Button, Select } from "flowbite-react";
-import { Fragment, useCallback, useEffect, useMemo, useRef } from "react";
+import { Fragment, useCallback, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import { useModals } from "~/modals/lib/modal-provider";
 import type { HookDetail, KeyRecord } from "~/remote/hook-client.server";
@@ -88,7 +87,7 @@ const KeyRow = ({ keyObj, hookId }: { keyObj: KeyRecord; hookId: string }) => {
     const host = window.location.host;
     await navigator.clipboard.writeText(`${host}/${keyObj.type}/${keyObj.key}`);
     toast.success("It's on your clipboard", {
-      icon: <ClipboardCopyIcon className="w-5 h-5 text-fern-600" />,
+      icon: <LinkIcon className="w-5 h-5 text-fern-600" />,
     });
   }, [keyObj]);
 
@@ -107,7 +106,7 @@ const KeyRow = ({ keyObj, hookId }: { keyObj: KeyRecord; hookId: string }) => {
           disabled={transition.state === "submitting"}
           className="p-1 hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-400 rounded"
         >
-          <ClipboardCopyIcon className="w-5 h-5" />
+          <LinkIcon className="w-5 h-5" />
         </button>
       </td>
       <td className="">

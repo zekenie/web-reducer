@@ -1,4 +1,9 @@
-import { DotsVerticalIcon } from "@heroicons/react/outline";
+import {
+  DotsVerticalIcon,
+  LightningBoltIcon,
+  SparklesIcon,
+  StarIcon,
+} from "@heroicons/react/outline";
 import Editor, { DiffEditor } from "@monaco-editor/react";
 import { useFetcher } from "@remix-run/react";
 import { debounce } from "lodash";
@@ -10,10 +15,12 @@ import type { HookDetail } from "~/remote/hook-client.server";
 function EditorSwitch({
   hook,
   onChange,
+  onInit,
   mode,
 }: {
   mode: EditorModes;
   hook: HookDetail;
+  onInit: (editor: any) => void;
   onChange: ComponentProps<typeof Editor>["onChange"];
 }) {
   const [isSetup, setIsSetup] = useState(false);
@@ -41,6 +48,9 @@ function EditorSwitch({
           options={options}
           onChange={onChange}
           defaultLanguage="typescript"
+          onMount={(editor) => {
+            onInit(editor);
+          }}
           onValidate={console.log}
           beforeMount={(monaco) => {
             if (isSetup) {
@@ -97,7 +107,7 @@ function EditorSwitch({
 const FooterContainer: FC = ({ children }) => {
   return (
     <div className="border-t bg-canvas-50 py-0.5 px-3 flex flex-row content-between items-center text-xs">
-      <div className="flex flex-row flex-1 space-x-2 items-center">
+      <div className="flex flex-row flex-1 space-x-2 items-center py-1">
         {children}
       </div>
       {/* 
@@ -105,14 +115,6 @@ const FooterContainer: FC = ({ children }) => {
         - autopublish
         - recompute state?
       */}
-      <button
-        // onClick={() =>
-        //   pushModal({ name: "confirm", props: { text: "foo", faz: "sdf" } })
-        // }
-        className="p-3 hover:bg-canvas-50 rounded-full"
-      >
-        <DotsVerticalIcon className="w-3 h-3 self-center" />
-      </button>
     </div>
   );
 };
@@ -121,12 +123,27 @@ export default function EditorAndFooter({ hook }: { hook: HookDetail }) {
   const { updateDraft, state } = useUpdateDraft({ hookId: hook.id });
   const { publish, state: publishState } = usePublish({ hookId: hook.id });
   const { setMode, mode } = useEditorMode();
+  const [editor, setEditor] = useState<any>();
+
+  const tidy = useCallback(() => {
+    if (!editor) {
+      return;
+    }
+    console.log(editor);
+    editor.trigger("", "editor.action.formatDocument");
+    editor.focus();
+  }, [editor]);
 
   return (
     <div className="flex-grow flex flex-col">
-      <EditorSwitch onChange={updateDraft} hook={hook} mode={mode} />
+      <EditorSwitch
+        onInit={(editor) => setEditor(editor)}
+        onChange={updateDraft}
+        hook={hook}
+        mode={mode}
+      />
       <FooterContainer>
-        <div>{state}</div>
+        <div></div>
         {hook.draft !== hook.published && (
           <button
             onClick={() =>
@@ -137,6 +154,10 @@ export default function EditorAndFooter({ hook }: { hook: HookDetail }) {
           </button>
         )}
         <div className="flex-1" />
+        <Button onClick={tidy} size="xs" color="alternative">
+          <SparklesIcon className="w-4 h-4 mr-1" />
+          <span>Tidy</span>
+        </Button>
         {hook.published !== hook.draft && (
           <Tooltip
             style="dark"
@@ -148,8 +169,15 @@ export default function EditorAndFooter({ hook }: { hook: HookDetail }) {
               </p>
             }
           >
-            <Button color="green" size="xs" onClick={publish}>
-              Publish
+            <Button
+              disabled={publishState === "submitting" || state === "submitting"}
+              color="green"
+              className="flex flex-row items-center"
+              size="xs"
+              onClick={publish}
+            >
+              <LightningBoltIcon className="w-4 h-4 mr-1" />
+              <span>Publish</span>
             </Button>
           </Tooltip>
         )}
