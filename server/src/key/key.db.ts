@@ -1,5 +1,6 @@
 import { getPool } from "../db";
 import { sql } from "slonik";
+import { KeyWorkflowState } from "./key.types";
 
 export async function createKey({
   type,
@@ -13,27 +14,46 @@ export async function createKey({
   const pool = getPool();
   await pool.any(sql`
     insert into key
-    ("createdAt", "type", "key", "hookId")
+    ("createdAt", "type", "key", "hookId", "workflowState")
     values
-    (NOW(), ${type}, ${key}, ${hookId})
+    (NOW(), ${type}, ${key}, ${hookId}, 'live')
   `);
 }
 
-export async function deleteKey({
+export async function pauseKey({
   key,
   hookId,
 }: {
   key: string;
   hookId: string;
-}): Promise<{ deleted: boolean }> {
+}): Promise<{ paused: boolean }> {
   const pool = getPool();
   const record = await pool.maybeOne(sql`
-    delete from "key"
+    update "key"
+    set "workflowState" = 'paused'
     where "key" = ${key}
       and "hookId" = ${hookId}
     returning id
   `);
-  return { deleted: !!record };
+  return { paused: !!record };
+}
+
+export async function playKey({
+  key,
+  hookId,
+}: {
+  key: string;
+  hookId: string;
+}): Promise<{ played: boolean }> {
+  const pool = getPool();
+  const record = await pool.maybeOne(sql`
+    update "key"
+    set "workflowState" = 'live'
+    where "key" = ${key}
+      and "hookId" = ${hookId}
+    returning id
+  `);
+  return { played: !!record };
 }
 
 export async function isReadKeyValid(readKey: string): Promise<boolean> {
@@ -42,6 +62,7 @@ export async function isReadKeyValid(readKey: string): Promise<boolean> {
     select id from "key"
     where type = 'read'
     and "key" = ${readKey}
+    and "workflowState" = 'live'
   `);
   return !!row;
 }
@@ -50,10 +71,20 @@ export async function getKeysForHook({
   hookId,
 }: {
   hookId: string;
-}): Promise<readonly { type: "read" | "write"; key: string }[]> {
+}): Promise<
+  readonly {
+    type: "read" | "write";
+    key: string;
+    workflowState: KeyWorkflowState;
+  }[]
+> {
   const pool = getPool();
-  return pool.many<{ type: "read" | "write"; key: string }>(sql`
-    select key, type from "key"
+  return pool.many<{
+    type: "read" | "write";
+    key: string;
+    workflowState: KeyWorkflowState;
+  }>(sql`
+    select key, type, "workflowState" from "key"
     where "hookId" = ${hookId}
   `);
 }

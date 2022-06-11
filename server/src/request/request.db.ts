@@ -153,7 +153,7 @@ export const captureRequest = async ({
 }: CaptureRequest) => {
   const pool = getPool();
   const key = await pool.maybeOne<{ hookId: string }>(
-    sql`select "hookId" from "key" where type = 'write' and key = ${writeKey}`
+    sql`select "hookId" from "key" where type = 'write' and key = ${writeKey} and "workflowState" = 'live'`
   );
 
   if (!key) {

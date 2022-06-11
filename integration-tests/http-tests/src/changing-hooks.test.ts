@@ -66,6 +66,50 @@ describe("changing hooks", () => {
       const { data } = await authedApi.hook.create();
       hook = data;
     });
+
+    describe("get keys", () => {
+      it("rejects unauthenticated requests", async () => {
+        const { status } = await unauthenticatedServerClient.get(
+          `/hooks/${hook.id}/keys`,
+          {
+            validateStatus: () => true,
+          }
+        );
+        expect(status).toEqual(401);
+      });
+      it("rejects requests from users who lack access to hook", async () => {
+        const authedApi2 = await buildAuthenticatedApi();
+        const { status } = await authedApi2.authenticatedClient.get(
+          `/hooks/${hook.id}/keys`,
+          {
+            validateStatus: () => true,
+          }
+        );
+        expect(status).toEqual(403);
+      });
+      it("lists hooks, even those that are paused", async () => {
+        const beforeAdding = await authedApi.hook.getKeys({ hookId: hook.id });
+        expect(beforeAdding).toHaveLength(2);
+        await authedApi.hook.addKey({ hookId: hook.id, type: "read" });
+        await authedApi.hook.addKey({ hookId: hook.id, type: "read" });
+        const key = await authedApi.hook.addKey({
+          hookId: hook.id,
+          type: "write",
+        });
+        const firstGet = await authedApi.hook.getKeys({ hookId: hook.id });
+        expect(firstGet).toHaveLength(5);
+        await authedApi.hook.pauseKey({ hookId: hook.id, key });
+        const secondGet = await authedApi.hook.getKeys({ hookId: hook.id });
+        expect(secondGet).toHaveLength(5);
+        expect(secondGet).toContainEqual(
+          expect.objectContaining({
+            key,
+            workflowState: "paused",
+          })
+        );
+      });
+    });
+
     describe("create", () => {
       it("rejects unauthenticated requests", async () => {
         const { status } = await unauthenticatedServerClient.post(
@@ -79,7 +123,6 @@ describe("changing hooks", () => {
       });
       it("rejects requests from users who lack access to hook", async () => {
         const authedApi2 = await buildAuthenticatedApi();
-        authedApi2.authenticatedClient;
         const { status } = await authedApi2.authenticatedClient.post(
           `/hooks/${hook.id}/keys`,
           null,
@@ -110,14 +153,15 @@ describe("changing hooks", () => {
         expect(key).toEqual(expect.any(String));
       });
     });
-    describe("delete", () => {
+    describe("pause", () => {
       it("rejects unauthenticated requests", async () => {
         const key = await authedApi.hook.addKey({
           hookId: hook.id,
           type: "read",
         });
-        const { status } = await unauthenticatedServerClient.delete(
-          `/hooks/${hook.id}/keys/${key}`,
+        const { status } = await unauthenticatedServerClient.post(
+          `/hooks/${hook.id}/keys/${key}/pause`,
+          null,
           {
             validateStatus: () => true,
           }
@@ -131,8 +175,8 @@ describe("changing hooks", () => {
           type: "read",
         });
         expect(async () => {
-          await authedApi2.authenticatedClient.delete(
-            `/hooks/${hook.id}/keys/${key}`
+          await authedApi2.authenticatedClient.post(
+            `/hooks/${hook.id}/keys/${key}/pause`
           );
         }).rejects.toThrow();
       });
@@ -142,21 +186,76 @@ describe("changing hooks", () => {
           type: "read",
         });
         const { data: otherHook } = await authedApi.hook.create();
-        const { status } = await authedApi.authenticatedClient.delete(
-          `/hooks/${otherHook.id}/keys/${key}`,
+        const { status } = await authedApi.authenticatedClient.post(
+          `/hooks/${otherHook.id}/keys/${key}/pause`,
+          null,
           {
             validateStatus: () => true,
           }
         );
         expect(status).toEqual(404);
       });
-      it("deletes key", async () => {
+      it("pauses key", async () => {
         const key = await authedApi.hook.addKey({
           hookId: hook.id,
           type: "read",
         });
-        const { status } = await authedApi.authenticatedClient.delete(
-          `/hooks/${hook.id}/keys/${key}`
+        const { status } = await authedApi.authenticatedClient.post(
+          `/hooks/${hook.id}/keys/${key}/pause`
+        );
+        expect(status).toEqual(202);
+      });
+    });
+
+    describe("play", () => {
+      it("rejects unauthenticated requests", async () => {
+        const key = await authedApi.hook.addKey({
+          hookId: hook.id,
+          type: "read",
+        });
+        const { status } = await unauthenticatedServerClient.post(
+          `/hooks/${hook.id}/keys/${key}/play`,
+          null,
+          {
+            validateStatus: () => true,
+          }
+        );
+        expect(status).toEqual(401);
+      });
+      it("rejects requests from users who lack access to hook", async () => {
+        const authedApi2 = await buildAuthenticatedApi();
+        const key = await authedApi.hook.addKey({
+          hookId: hook.id,
+          type: "read",
+        });
+        expect(async () => {
+          await authedApi2.authenticatedClient.post(
+            `/hooks/${hook.id}/keys/${key}/play`
+          );
+        }).rejects.toThrow();
+      });
+      it("rejects requests for key that does not match hook", async () => {
+        const key = await authedApi.hook.addKey({
+          hookId: hook.id,
+          type: "read",
+        });
+        const { data: otherHook } = await authedApi.hook.create();
+        const { status } = await authedApi.authenticatedClient.post(
+          `/hooks/${otherHook.id}/keys/${key}/play`,
+          null,
+          {
+            validateStatus: () => true,
+          }
+        );
+        expect(status).toEqual(404);
+      });
+      it("pauses key", async () => {
+        const key = await authedApi.hook.addKey({
+          hookId: hook.id,
+          type: "read",
+        });
+        const { status } = await authedApi.authenticatedClient.post(
+          `/hooks/${hook.id}/keys/${key}/play`
         );
         expect(status).toEqual(202);
       });

@@ -5,7 +5,7 @@ import buildClientForJwt from "~/remote/index.server";
 export const action: ActionFunction = async ({ context, request, params }) => {
   const client = buildClientForJwt(context.creds.jwt);
   const body = await request.formData();
-  await client.hooks.deleteKey({
+  await client.hooks.playKey({
     id: body.get("hookId") as string,
     key: body.get("key") as string,
   });

@@ -1,6 +1,6 @@
 import { generateToken } from "../token/token.service";
 import * as db from "./key.db";
-import { KeysByType } from "./key.types";
+import { KeyRecord, KeysByType } from "./key.types";
 export async function createKey({
   type,
   hookId,
@@ -13,14 +13,24 @@ export async function createKey({
   return key;
 }
 
-export async function deleteKey({
+export async function pauseKey({
   key,
   hookId,
 }: {
   key: string;
   hookId: string;
-}): Promise<{ deleted: boolean }> {
-  return db.deleteKey({ hookId, key });
+}): Promise<{ paused: boolean }> {
+  return db.pauseKey({ hookId, key });
+}
+
+export async function playKey({
+  key,
+  hookId,
+}: {
+  key: string;
+  hookId: string;
+}): Promise<{ played: boolean }> {
+  return db.playKey({ hookId, key });
 }
 
 export async function getKeysForHook({
@@ -33,4 +43,12 @@ export async function getKeysForHook({
     readKeys: keys.filter((row) => row.type === "read").map((r) => r.key),
     writeKeys: keys.filter((row) => row.type === "write").map((r) => r.key),
   };
+}
+
+export async function getKeyRecordsForHook({
+  hookId,
+}: {
+  hookId: string;
+}): Promise<readonly KeyRecord[]> {
+  return db.getKeysForHook({ hookId });
 }

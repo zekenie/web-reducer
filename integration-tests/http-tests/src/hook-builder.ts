@@ -63,6 +63,15 @@ type PaginatedHookHistory<PostBody, State> = {
   }[];
 };
 
+export type KeyWorkflowState = "paused" | "live";
+export type KeyType = "read" | "write";
+
+export type KeyRecord = {
+  key: string;
+  workflowState: KeyWorkflowState;
+  type: KeyType;
+};
+
 export function hashToken(token: string): string {
   const hash = createHash("sha1");
   hash.update(token, "utf-8");
@@ -173,8 +182,18 @@ export async function buildAuthenticatedApi(
         );
         return data.key;
       },
-      async deleteKey({ hookId, key }: { hookId: string; key: string }) {
-        await authenticatedClient.delete(`/hooks/${hookId}/keys/${key}`);
+
+      async getKeys({ hookId }: { hookId: string }) {
+        const { data } = await authenticatedClient.get<{ keys: KeyRecord[] }>(
+          `/hooks/${hookId}/keys`
+        );
+        return data.keys;
+      },
+      async pauseKey({ hookId, key }: { hookId: string; key: string }) {
+        await authenticatedClient.post(`/hooks/${hookId}/keys/${key}/pause`);
+      },
+      async playKey({ hookId, key }: { hookId: string; key: string }) {
+        await authenticatedClient.post(`/hooks/${hookId}/keys/${key}/play`);
       },
     },
   };

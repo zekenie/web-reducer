@@ -2,22 +2,25 @@ import {
   BackspaceIcon,
   ClipboardCopyIcon,
   InformationCircleIcon,
+  PauseIcon,
+  PlayIcon,
   PlusCircleIcon,
 } from "@heroicons/react/outline";
 import {
   Form,
   useActionData,
   useFetcher,
+  useLoaderData,
   useOutletContext,
   useTransition,
 } from "@remix-run/react";
-import type { ActionFunction } from "@remix-run/server-runtime";
+import type { ActionFunction, LoaderFunction } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
 import { Alert, Button, Select } from "flowbite-react";
 import { Fragment, useCallback, useEffect, useMemo, useRef } from "react";
 import toast from "react-hot-toast";
 import { useModals } from "~/modals/lib/modal-provider";
-import type { HookDetail } from "~/remote/hook-client.server";
+import type { HookDetail, KeyRecord } from "~/remote/hook-client.server";
 import buildClientForJwt from "~/remote/index.server";
 
 export const action: ActionFunction = async ({ context, request, params }) => {
@@ -30,23 +33,23 @@ export const action: ActionFunction = async ({ context, request, params }) => {
   return json({ success: true });
 };
 
-const KeyRow = ({
-  keyObj,
-  hookId,
-}: {
-  keyObj: { type: "read" | "write"; key: string };
-  hookId: string;
-}) => {
+export const loader: LoaderFunction = async ({ context, params }) => {
+  const client = buildClientForJwt(context.creds.jwt);
+  const keys = await client.hooks.getKeys({ id: params.hookId! });
+  return { keys };
+};
+
+const KeyRow = ({ keyObj, hookId }: { keyObj: KeyRecord; hookId: string }) => {
   const transition = useTransition();
   const fetcher = useFetcher();
 
   const { pushModal } = useModals();
-  const deleteKey = useCallback(async () => {
+  const pauseKey = useCallback(async () => {
     const confirmed = await pushModal({
       name: "confirm",
       props: {
-        title: `Confirm deleting ${keyObj.type} key!`,
-        body: `Deleting this ${keyObj.type} key will mean that anyone using it will no longer be able to ${keyObj.type} this hook.`,
+        title: `Confirm pausing ${keyObj.type} key!`,
+        body: `Pausing this ${keyObj.type} key will mean that anyone using it will no longer be able to ${keyObj.type} this hook. But, previous requests will still be honored. You can re-enable this key at any time, but requests made in while it is paused will be lost.`,
       },
     });
     if (!confirmed) {
@@ -57,7 +60,27 @@ const KeyRow = ({
         key: keyObj.key,
         hookId,
       },
-      { action: `/hooks/${hookId}/keys/delete`, method: "post" }
+      { action: `/hooks/${hookId}/keys/pause`, method: "post" }
+    );
+  }, [fetcher, keyObj, hookId, pushModal]);
+
+  const playKey = useCallback(async () => {
+    const confirmed = await pushModal({
+      name: "confirm",
+      props: {
+        title: `Confirm re-enabling ${keyObj.type} key!`,
+        body: `Re-enabling this ${keyObj.type} key will mean that anyone with access to it will regain the ability to ${keyObj.type} at that URL.`,
+      },
+    });
+    if (!confirmed) {
+      return;
+    }
+    return fetcher.submit(
+      {
+        key: keyObj.key,
+        hookId,
+      },
+      { action: `/hooks/${hookId}/keys/play`, method: "post" }
     );
   }, [fetcher, keyObj, hookId, pushModal]);
 
@@ -70,7 +93,11 @@ const KeyRow = ({
   }, [keyObj]);
 
   return (
-    <tr className="odd:bg-canvas-100">
+    <tr
+      className={`odd:bg-canvas-100 ${
+        keyObj.workflowState === "paused" ? " text-gray-500 line-through" : ""
+      }`}
+    >
       <td className="py-1 px-3 w-24">{keyObj.type}</td>
       <td className="px-3 flex flex-row space-x-2 items-center">
         {keyObj.key}{" "}
@@ -84,14 +111,25 @@ const KeyRow = ({
         </button>
       </td>
       <td className="">
-        <button
-          type="button"
-          onClick={deleteKey}
-          disabled={transition.state === "submitting"}
-          className="p-1 hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-400 rounded"
-        >
-          <BackspaceIcon className="w-5 h-5" />
-        </button>
+        {keyObj.workflowState === "live" ? (
+          <button
+            type="button"
+            onClick={pauseKey}
+            disabled={transition.state === "submitting"}
+            className="p-1 hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-400 rounded"
+          >
+            <PauseIcon className="w-5 h-5" />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={playKey}
+            disabled={transition.state === "submitting"}
+            className="p-1 hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-400 rounded"
+          >
+            <PlayIcon className="w-5 h-5" />
+          </button>
+        )}
       </td>
     </tr>
   );
@@ -99,6 +137,7 @@ const KeyRow = ({
 
 export default function Keys() {
   const { hook } = useOutletContext<{ hook: HookDetail }>();
+  const { keys } = useLoaderData<{ keys: KeyRecord[] }>();
 
   const transition = useTransition();
   const actionData = useActionData();
@@ -112,14 +151,14 @@ export default function Keys() {
     }
   }, [actionData]);
 
-  const keyObjs = useMemo(() => {
-    const readKeys = hook.readKeys.map((k) => ({ type: "read", key: k }));
-    const writeKeys = hook.writeKeys.map((k) => ({ type: "write", key: k }));
-    return [...readKeys, ...writeKeys] as {
-      key: string;
-      type: "read" | "write";
-    }[];
-  }, [hook]);
+  // const keyObjs = useMemo(() => {
+  //   const readKeys = hook.readKeys.map((k) => ({ type: "read", key: k }));
+  //   const writeKeys = hook.writeKeys.map((k) => ({ type: "write", key: k }));
+  //   return [...readKeys, ...writeKeys] as {
+  //     key: string;
+  //     type: "read" | "write";
+  //   }[];
+  // }, [hook]);
   return (
     <>
       <Alert
@@ -163,7 +202,7 @@ export default function Keys() {
             </tr>
           </thead>
           <tbody>
-            {keyObjs.map((keyObj) => (
+            {keys.map((keyObj) => (
               <KeyRow hookId={hook.id} key={keyObj.key} keyObj={keyObj} />
             ))}
             <tr>

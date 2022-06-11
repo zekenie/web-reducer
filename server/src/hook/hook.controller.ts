@@ -93,13 +93,38 @@ export default Router()
       }
     }
   )
-  .delete("/:hookId/keys/:key", async function deleteKey(req, res, next) {
+  .get("/:hookId/keys", async function getKeys(req, res, next) {
     try {
-      const { deleted } = await keyService.deleteKey({
+      const keyRecords = await keyService.getKeyRecordsForHook({
+        hookId: req.params.hookId,
+      });
+      res.json({ keys: keyRecords });
+    } catch (e) {
+      next(e);
+    }
+  })
+  .post("/:hookId/keys/:key/pause", async function pauseKey(req, res, next) {
+    try {
+      const { paused } = await keyService.pauseKey({
         hookId: req.params.hookId,
         key: req.params.key,
       });
-      if (deleted) {
+      if (paused) {
+        res.status(202).json({});
+      } else {
+        throw createHttpError(404);
+      }
+    } catch (e) {
+      next(e);
+    }
+  })
+  .post("/:hookId/keys/:key/play", async function playKey(req, res, next) {
+    try {
+      const { played } = await keyService.playKey({
+        hookId: req.params.hookId,
+        key: req.params.key,
+      });
+      if (played) {
         res.status(202).json({});
       } else {
         throw createHttpError(404);

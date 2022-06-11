@@ -58,6 +58,15 @@ export type PaginatedTokenResponse<T> = {
   objects: T[];
 };
 
+export type KeyWorkflowState = "paused" | "live";
+export type KeyType = "read" | "write";
+
+export type KeyRecord = {
+  key: string;
+  workflowState: KeyWorkflowState;
+  type: KeyType;
+};
+
 const hookClientFactory = (httpClient: HttpJsonClient) => ({
   async list() {
     return httpClient.get<HookOverview[]>("/hooks");
@@ -96,8 +105,17 @@ const hookClientFactory = (httpClient: HttpJsonClient) => ({
     });
     return data.key;
   },
-  async deleteKey({ id, key }: { id: string; key: string }) {
-    await httpClient.delete(`/hooks/${id}/keys/${key}`);
+  async getKeys({ id }: { id: string }): Promise<KeyRecord[]> {
+    const { keys } = await httpClient.get<{ keys: KeyRecord[] }>(
+      `/hooks/${id}/keys`
+    );
+    return keys;
+  },
+  async pauseKey({ id, key }: { id: string; key: string }) {
+    await httpClient.post(`/hooks/${id}/keys/${key}/pause`);
+  },
+  async playKey({ id, key }: { id: string; key: string }) {
+    await httpClient.post(`/hooks/${id}/keys/${key}/play`);
   },
 });
 
