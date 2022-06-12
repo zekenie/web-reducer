@@ -14,7 +14,6 @@ kanban-plugin: basic
 - [ ] should there be a way to do self requests from the ui to test? going to curl is annoying? request modal?
 - [ ] Should we consider using [this data grid library](https://grid.glideapps.com/)
 - [ ] qr code resource?
-- [ ] have a qr endpoint for the img
 
 
 ## Todo
@@ -26,7 +25,9 @@ kanban-plugin: basic
 - [ ] onboarding info in tool tip when signup is hovered #onboarding
 - [ ] after request have editor [start typing](https://github.com/convergencelabs/monaco-collab-ext) #onboarding
 - [ ] cap number of rows in requests table
+- [ ] automatic key rotation #security
 - [ ] why do hooks have the name they do? what's the point? can i edit it? what about description
+- [ ] there should be api keys between services #security
 - [ ] can i delete a hook?
 - [ ] modal to test request
 
@@ -42,6 +43,7 @@ kanban-plugin: basic
 - [ ] webhooks may be put requests right? we shouldn't assume post.
 - [ ] Request detail view/modal
 - [ ] get to legal from unauthenticated state
+- [ ] documentation
 
 
 ## In Progress

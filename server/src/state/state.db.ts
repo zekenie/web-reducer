@@ -135,6 +135,7 @@ export async function readCurrentState(
     where
       "key"."key" = ${readKey}
       and "key"."type" = 'read'
+      and "key"."workflowState" = 'live'
       and "version"."workflowState" = 'published'
     order by "request"."createdAt" desc
     limit 1

@@ -263,8 +263,6 @@ describe("existing hooks", () => {
         }
       );
 
-      console.log(data);
-
       expect(status).toEqual(400);
 
       await allQueuesDrained();

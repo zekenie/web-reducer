@@ -129,7 +129,6 @@ export default function EditorAndFooter({ hook }: { hook: HookDetail }) {
     if (!editor) {
       return;
     }
-    console.log(editor);
     editor.trigger("", "editor.action.formatDocument");
     editor.focus();
   }, [editor]);

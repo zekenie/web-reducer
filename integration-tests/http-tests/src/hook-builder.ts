@@ -136,8 +136,13 @@ export async function buildAuthenticatedApi(
         body: any,
         axiosConfig: AxiosRequestConfig = {}
       ) {
-        return authenticatedClient.post(`/write/${key}`, {
+        return unauthenticatedServerClient.post(`/write/${key}`, {
           data: JSON.stringify(body),
+          ...axiosConfig,
+        });
+      },
+      async readKey(key: string, axiosConfig: AxiosRequestConfig = {}) {
+        return unauthenticatedServerClient.get(`/read/${key}`, {
           ...axiosConfig,
         });
       },

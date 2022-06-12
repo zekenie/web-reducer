@@ -1,6 +1,8 @@
+import { sql } from "slonik";
 import { unauthenticatedServerClient } from "./clients";
 import { getPool } from "./db";
 import { buildAuthenticatedApi, HookDetail } from "./hook-builder";
+import { allQueuesDrained } from "./server-internals";
 import { serverTestSetup } from "./setup";
 
 const pool = getPool();
@@ -205,6 +207,35 @@ describe("changing hooks", () => {
         );
         expect(status).toEqual(202);
       });
+
+      it("hides readKeys that are paused", async () => {
+        const [readKey] = hook.readKeys;
+        await authedApi.hook.readKey(readKey);
+
+        await authedApi.hook.pauseKey({ hookId: hook.id, key: readKey });
+
+        const { status } = await authedApi.hook.readKey(readKey, {
+          validateStatus: () => true,
+        });
+
+        expect(status).toEqual(404);
+      });
+
+      it("makes writeKey calls a noop", async () => {
+        const [writeKey] = hook.writeKeys;
+        await authedApi.hook.writeKey(writeKey, {});
+
+        await authedApi.hook.pauseKey({ hookId: hook.id, key: writeKey });
+
+        const { data } = await authedApi.hook.writeKey(writeKey, {});
+        await allQueuesDrained();
+        const stateRecord = await getPool().maybeOne(sql`
+          select * from "state"
+          where "requestId" = ${data.id}
+        `);
+
+        expect(stateRecord).toBeNull();
+      });
     });
 
     describe("play", () => {
@@ -249,7 +280,7 @@ describe("changing hooks", () => {
         );
         expect(status).toEqual(404);
       });
-      it("pauses key", async () => {
+      it("resumes key", async () => {
         const key = await authedApi.hook.addKey({
           hookId: hook.id,
           type: "read",
@@ -258,6 +289,33 @@ describe("changing hooks", () => {
           `/hooks/${hook.id}/keys/${key}/play`
         );
         expect(status).toEqual(202);
+      });
+
+      it("allows readKeys that were paused to work", async () => {
+        const [readKey] = hook.readKeys;
+
+        await authedApi.hook.pauseKey({ hookId: hook.id, key: readKey });
+        await authedApi.hook.playKey({ hookId: hook.id, key: readKey });
+
+        const { status } = await authedApi.hook.readKey(readKey);
+
+        expect(status).toEqual(200);
+      });
+
+      it("allow writeKeys that were paused to work", async () => {
+        const [writeKey] = hook.writeKeys;
+
+        await authedApi.hook.pauseKey({ hookId: hook.id, key: writeKey });
+        await authedApi.hook.playKey({ hookId: hook.id, key: writeKey });
+
+        const { data } = await authedApi.hook.writeKey(writeKey, {});
+        await allQueuesDrained();
+        const stateRecord = await getPool().maybeOne(sql`
+          select * from "state"
+          where "requestId" = ${data.id}
+        `);
+
+        expect(stateRecord).not.toBeNull();
       });
     });
   });
