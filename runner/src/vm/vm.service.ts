@@ -1,4 +1,4 @@
-import * as crypto from "crypto";
+import * as vmCrypto from "./vm-crypto.service";
 import vm2 from "vm2";
 import { Artifacts } from "./artifacts";
 
@@ -118,12 +118,11 @@ export function runCode({
     timeout,
     sandbox: {
       artifacts,
-      crypto,
+      ...vmCrypto,
       makeQueryParams: (queryString: string) =>
         new URLSearchParams(queryString),
       invalidIdempotencyKeys,
       console: artifacts.console,
-      secrets: JSON.parse(secretsJson),
     },
   });
   const start = new Date();

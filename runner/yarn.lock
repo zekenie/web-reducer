@@ -559,6 +559,11 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
+"@noble/hashes@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.1.1.tgz#c056d9b7166c1e7387a7453c2aff199bf7d88e5f"
+  integrity sha512-Lkp9+NijmV7eSVZqiUvt3UCuuHeJpUVmRrvh430gyJjJiuJMqkeHf6/A9lQ/smmbWV/0spDeJscscPzyB4waZg==
+
 "@sinonjs/commons@^1.7.0":
   version "1.8.3"
   resolved "https://registry.yarnpkg.com/@sinonjs/commons/-/commons-1.8.3.tgz#3802ddd21a50a949b6721ddd72da36e67e7f1b2d"

@@ -274,6 +274,34 @@ describe("existing hooks", () => {
       expect(stateRecord).toBeNull();
     });
 
+    it("can run crypto functions", async () => {
+      const body1 = { number: 4 };
+      const { api, context, authenticatedClient } = await buildHook({
+        code: `
+          function responder(request) {
+            return {
+              statusCode: 201,
+              body: { foo: toHex(sha256(request.query.get('bar'))) },
+            }
+          }
+          function reducer (oldState = { number: 0 }, req) { return { number: oldState.number + req.body.number } }
+        `,
+      });
+      const { data } = await authenticatedClient.post(
+        `/write/${context.writeKey}`,
+        body1,
+        {
+          headers: { "Content-Type": "application/json" },
+          params: { bar: "baz" },
+        }
+      );
+
+      // this is the sha256 of "baz"
+      expect(data).toEqual({
+        foo: "baa5a0964d3320fbc0c6a922140453c8513ea24ab8fd0577034804a967248096",
+      });
+    });
+
     it("has access to URLSearchParams in the request query", async () => {
       const body1 = { number: 4 };
       const { api, context, authenticatedClient } = await buildHook({
