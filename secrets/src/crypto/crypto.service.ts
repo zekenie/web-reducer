@@ -23,8 +23,8 @@ export function decrypt(encryptedWithIv: string, secret: string): string {
   return encText;
 }
 
-export function sha1(message: string) {
-  const shasum = crypto.createHash("sha1");
+export function sha256(message: string) {
+  const shasum = crypto.createHash("sha256");
   shasum.update(message);
   return shasum.digest("hex");
 }

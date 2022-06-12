@@ -5,8 +5,8 @@ import { secretsTestSetup, serverTestSetup } from "./setup";
 import crypto from "crypto";
 import { buildHook } from "./hook-builder";
 
-export function sha1(message: string) {
-  const shasum = crypto.createHash("sha1");
+export function sha256(message: string) {
+  const shasum = crypto.createHash("sha256");
   shasum.update(message);
   return shasum.digest("hex");
 }
@@ -175,7 +175,7 @@ describe("secrets", () => {
       expect(secondStatus).toEqual(201);
 
       expect(secretsReadData).toEqual({
-        secrets: { foo: sha1("bar"), foo2: sha1("baz") },
+        secrets: { foo: sha256("bar"), foo2: sha256("baz") },
       });
     });
   });
@@ -192,7 +192,7 @@ describe("secrets", () => {
       await api.setSecret("number", "3");
       const secrets = await api.getSecrets();
       expect(secrets).toEqual({
-        number: sha1("3"),
+        number: sha256("3"),
       });
     });
 

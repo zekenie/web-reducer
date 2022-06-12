@@ -1,4 +1,4 @@
-import { decrypt, encrypt, sha1 } from "../crypto/crypto.service";
+import { decrypt, encrypt, sha256 } from "../crypto/crypto.service";
 import { generateToken } from "../token/token.service";
 import * as db from "./namespace.db";
 import * as secretsDb from "../secret/secret.db";
@@ -66,6 +66,6 @@ export async function getSecretsForNamespace({
     case "private":
       return secretsObj;
     case "public":
-      return mapValues(secretsObj, sha1);
+      return mapValues(secretsObj, sha256);
   }
 }
