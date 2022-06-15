@@ -1,5 +1,4 @@
 import {
-  InformationCircleIcon,
   LinkIcon,
   PauseIcon,
   PlayIcon,
@@ -15,9 +14,10 @@ import {
 } from "@remix-run/react";
 import type { ActionFunction, LoaderFunction } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
-import { Alert, Button, Select } from "flowbite-react";
-import { Fragment, useCallback, useEffect, useRef } from "react";
+import { Button, Select } from "flowbite-react";
+import { useCallback, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
+import InfoPanel from "~/components/info-panel";
 import { useModals } from "~/modals/lib/modal-provider";
 import type { HookDetail, KeyRecord } from "~/remote/hook-client.server";
 import buildClientForJwt from "~/remote/index.server";
@@ -150,44 +150,20 @@ export default function Keys() {
     }
   }, [actionData]);
 
-  // const keyObjs = useMemo(() => {
-  //   const readKeys = hook.readKeys.map((k) => ({ type: "read", key: k }));
-  //   const writeKeys = hook.writeKeys.map((k) => ({ type: "write", key: k }));
-  //   return [...readKeys, ...writeKeys] as {
-  //     key: string;
-  //     type: "read" | "write";
-  //   }[];
-  // }, [hook]);
   return (
     <>
-      <Alert
-        rounded={false}
-        color="blue"
-        onDismiss={() => {}}
-        additionalContent={
-          <Fragment>
-            <div className="mt-2 mb-4 text-sm text-blue-700 ">
-              There is a URL for every key. If someone has access to that URL,
-              they will be able to read or write to this hook. If you delete a
-              key, that access will be revoked. Read keys can also be used by
-              our websocket endpoint to get realtime updates.
-            </div>
-            {/* <div className="flex">
-              <button
-                type="button"
-                className="rounded-lg border border-blue-700 bg-transparent px-3 py-1.5 text-center text-xs font-medium text-blue-700 hover:bg-blue-800 hover:text-white focus:ring-4 focus:ring-blue-300 "
-              >
-                Dismiss
-              </button>
-            </div> */}
-          </Fragment>
+      <InfoPanel
+        id="keys"
+        heading="Keys let you read and write data"
+        description={
+          <>
+            There is a URL for every key. If someone has access to that URL,
+            they will be able to read or write to this hook. If you pause a key,
+            that access will be revoked until you re-enable it. Read keys can
+            also be used by our websocket endpoint to get realtime updates.
+          </>
         }
-        icon={InformationCircleIcon}
-      >
-        <h3 className="text-lg font-medium text-blue-700 ">
-          Keys let you read and write data
-        </h3>
-      </Alert>
+      />
       <Form method="post" ref={ref}>
         <table
           style={{ borderCollapse: "separate", borderSpacing: "0" }}

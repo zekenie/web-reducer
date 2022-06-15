@@ -85,6 +85,10 @@ export function verifyJwt(jwt: string): boolean {
   }
 }
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export default async function credentialExchange({
   creds,
 }: {
@@ -97,6 +101,8 @@ export default async function credentialExchange({
         if (!creds.refreshToken) {
           throw new Error("refresh strategy requires refresh token");
         }
+        // adding a jitter to make sure there's one winner
+        await sleep(Math.random() * 50);
         return getNewCredsWithRefreshToken(creds);
       case "same":
         if (!creds.jwt || !creds.refreshToken) {

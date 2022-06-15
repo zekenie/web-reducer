@@ -8,12 +8,15 @@ kanban-plugin: basic
 
 - [ ] [[JS or React library]]
 - [ ] #security should typescript compile happen in thread?
-- [ ] #security is it better to expose an [HMAC function](https://gist.github.com/stigok/57d075c1cf2a609cb758898c0b202428?permalink_comment_id=4052765#gistcomment-4052765) than to give over all of crypto??
 - [ ] If we stored latest state in redis, we could have access to it in responder
 - [ ] should state be cached in redis? we could do readkeys with postgres down (and faster), we could have lastState on responder.... lots to like
 - [ ] should there be a way to do self requests from the ui to test? going to curl is annoying? request modal?
 - [ ] Should we consider using [this data grid library](https://grid.glideapps.com/)
 - [ ] qr code resource?
+- [ ] we need a way for (ideally the runner) to expose declarations as static assets that can be hit by client and cached, then passed to editor
+- [ ] what happens if you open the editor in 2 windows..... weird race condition about draft updates?
+- [ ] what if the runtime had access to a secret namespace?
+- [ ] keys table could count reqs? be able to open a modal to filter by reqs by key?
 
 
 ## Todo
@@ -34,25 +37,29 @@ kanban-plugin: basic
 
 ## Must have for launch
 
-- [ ] app should open on a hook of your own for unauthenticated users
+- [ ] app should open on a hook of your own for unauthenticated users<br><br>- [ ] guest users should have hook built by default<br>- [ ] pool of hooks?
 - [ ] domain setup
 - [ ] Hooks list view
-- [ ] dismissible info panels
 - [ ] #bug if you return req from reducer you get a 500 error
 - [ ] server crashes on runner error. [best practice for uncaught exceptions](https://www.honeybadger.io/blog/errors-nodejs/#uncaught-exceptions-and-unhandled-promise-rejections)
 - [ ] webhooks may be put requests right? we shouldn't assume post.
 - [ ] Request detail view/modal
 - [ ] get to legal from unauthenticated state
-- [ ] documentation
 
 
 ## In Progress
 
+- [ ] documentation<br><br>- [x] mdx file<br>- [x] sidebar<br>- [ ] new window<br>- [x] sections<br>  - [x] functions we call<br>  - [x] functions you can call
 
 
 ## Done
 
 **Complete**
+- [x] secrets need to be avilable to responder
+- [x] dismissible info panels
+- [x] do we need isAuthentic?
+- [x] uuid function
+- [x] #security is it better to expose an [HMAC function](https://gist.github.com/stigok/57d075c1cf2a609cb758898c0b202428?permalink_comment_id=4052765#gistcomment-4052765) than to give over all of crypto??<br><br>Yes, absolutely should not give node crypto. Maybe [this](https://github.com/paulmillr/noble-hashes) no dependency lib... maybe [subtle crypto](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto), but it's async :/<br><br>It's also possible that we need hmac verification specifically to be a feature of the platform, and just configured by hook authors. For example we could use [this express middleware](https://github.com/connorjburton/hmac-auth-express). Then HMAC validation is opt in and config. This particular lib is kinda unpopular, but it does give an interesting idea for the contract
 - [x] need to be able to send email
 - [x] if you make requests with a write key, then delete the write key, then recompute state, those requests are not counted! #bug<br><br>Solutions:<br>- soft delete the write keys?<br>- store an association of requests to hook?<br>---<br>- Could this be a feature?
 - [x] status code > 399 should be ignored

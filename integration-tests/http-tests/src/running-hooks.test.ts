@@ -193,15 +193,16 @@ describe("existing hooks", () => {
       const body1 = { number: 4 };
       const { api, context, authenticatedClient } = await buildHook({
         code: `
-          function responder(request) {
+          function responder(request, secrets) {
             return {
               statusCode: 201,
-              body: request.body,
+              body: { secret: secrets.number, body: request.body },
             }
           }
           function reducer (oldState = { number: 0 }, req) { return { number: oldState.number + req.body.number } }
         `,
       });
+      await api.setSecret("number", "3");
       const { data, status } = await authenticatedClient.post(
         `/write/${context.writeKey}`,
         body1,
@@ -209,7 +210,7 @@ describe("existing hooks", () => {
       );
 
       expect(status).toEqual(201);
-      expect(data).toEqual({ number: 4 });
+      expect(data).toEqual({ secret: "3", body: { number: 4 } });
     });
 
     it("respects custom headers in responder", async () => {
@@ -274,14 +275,14 @@ describe("existing hooks", () => {
       expect(stateRecord).toBeNull();
     });
 
-    it("can run crypto functions", async () => {
+    it("can run crypto functions including uuid", async () => {
       const body1 = { number: 4 };
       const { api, context, authenticatedClient } = await buildHook({
         code: `
           function responder(request) {
             return {
               statusCode: 201,
-              body: { foo: toHex(sha256(request.query.get('bar'))) },
+              body: { foo: toHex(sha256(request.query.get('bar'))), uuid: uuid() },
             }
           }
           function reducer (oldState = { number: 0 }, req) { return { number: oldState.number + req.body.number } }
@@ -299,6 +300,7 @@ describe("existing hooks", () => {
       // this is the sha256 of "baz"
       expect(data).toEqual({
         foo: "baa5a0964d3320fbc0c6a922140453c8513ea24ab8fd0577034804a967248096",
+        uuid: expect.any(String),
       });
     });
 

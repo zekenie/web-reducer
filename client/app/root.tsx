@@ -15,6 +15,7 @@ import { Toaster } from "react-hot-toast";
 import { AppWithNav } from "./components/header";
 import buildClientForJwt from "./remote/index.server";
 import { UserDetails } from "./remote/auth-client.server";
+import syntaxHighlighting from "highlight.js/styles/night-owl.css";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
@@ -72,5 +73,8 @@ export default function App() {
 }
 
 export function links() {
-  return [{ rel: "stylesheet", href: styles }];
+  return [
+    { rel: "stylesheet", href: styles },
+    { rel: "stylesheet", href: syntaxHighlighting },
+  ];
 }

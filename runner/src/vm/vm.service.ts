@@ -6,8 +6,7 @@ const sharedHeaderCode = `
 requests = requests.map(req => ({ ...req, query: makeQueryParams(req.queryString) }))
 artifacts.expectLength(requests.length);
 function reducer() {}
-function isAuthentic() { return true; }
-function responder(request) {
+function responder(request, secrets) {
   return {
     status: 202,
     body: { id: request.id }
@@ -18,15 +17,15 @@ function getIdempotencyKey(request) { return request.id; }
 
 const codeBread = {
   response: {
-    code: (code: string, requestsJson: string) =>
-      `(function(requests) {
+    code: (code: string, requestsJson: string, secretsJson: string) =>
+      `(function(requests, secrets) {
         ${sharedHeaderCode}
         (function() {
           ${code}
           for (const request of requests) {
             const frame = artifacts.open(request.id);
             try {
-              frame.setResponse(responder(request));
+              frame.setResponse(responder(request, secrets));
             } catch(e) {
               frame.setError(e)
               frame.setResponse({
@@ -35,7 +34,7 @@ const codeBread = {
             }
           }
         })()
-      })(${requestsJson})`,
+      })(${requestsJson}, ${secretsJson})`,
     offset: 11,
   },
   reducer: {
@@ -53,23 +52,13 @@ const codeBread = {
             const frame = artifacts.open(request.id);
             const head = acc[acc.length - 1] || { state: state };
 
-            let isAuthenticResult = null;
             let idempotencyKey = null;
 
             try {
-              try {
-                isAuthenticResult = isAuthentic(request, secrets)
-                frame.setAuthentic(isAuthenticResult);
-              } catch(e) {
-                frame.setAuthentic(false);
-                throw e;
-              }
-              
               idempotencyKey = getIdempotencyKey(request, secrets);
               frame.setIdempotencyKey(idempotencyKey);
 
-              const shouldIgnoreRequest = !isAuthenticResult
-                || invalidIdempotencyKeys.includes(idempotencyKey);
+              const shouldIgnoreRequest = invalidIdempotencyKeys.includes(idempotencyKey);
 
               if (shouldIgnoreRequest) {
                 frame.setState(head.state);
@@ -135,7 +124,7 @@ export function runCode({
       secretsJson
     );
   } else if (mode === "response") {
-    codeWithRuntime = codeBread.response.code(code, requestsJson);
+    codeWithRuntime = codeBread.response.code(code, requestsJson, secretsJson);
   } else {
     throw new Error("invalid mode");
   }

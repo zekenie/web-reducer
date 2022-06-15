@@ -102,7 +102,6 @@ class RequestArtifact {
   private response?: VMResponse;
   private state?: unknown;
   private error?: Error | unknown | null;
-  private authentic: boolean = true;
 
   constructor(private readonly id: string) {}
 
@@ -135,10 +134,6 @@ class RequestArtifact {
     this.error = err;
   }
 
-  setAuthentic(authentic: boolean) {
-    this.authentic = authentic;
-  }
-
   report({
     filename,
     codeLength,
@@ -151,7 +146,6 @@ class RequestArtifact {
     return {
       id: this.id,
       idempotencyKey: this.idempotencyKey,
-      authentic: this.authentic,
       state: this.state,
       response: this.response,
       console: this.console,

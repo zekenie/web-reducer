@@ -1,4 +1,5 @@
 import {
+  BookOpenIcon,
   DotsVerticalIcon,
   LightningBoltIcon,
   SparklesIcon,
@@ -7,10 +8,11 @@ import {
 import Editor, { DiffEditor } from "@monaco-editor/react";
 import { useFetcher } from "@remix-run/react";
 import { debounce } from "lodash";
-import { ComponentProps, FC, useEffect } from "react";
+import { ComponentProps, FC, useContext, useEffect } from "react";
 import { useCallback, useState } from "react";
 import { Button, Tooltip } from "flowbite-react";
 import type { HookDetail } from "~/remote/hook-client.server";
+import { docsContext } from "~/routes/hooks/$hookId";
 
 function EditorSwitch({
   hook,
@@ -123,6 +125,7 @@ export default function EditorAndFooter({ hook }: { hook: HookDetail }) {
   const { updateDraft, state } = useUpdateDraft({ hookId: hook.id });
   const { publish, state: publishState } = usePublish({ hookId: hook.id });
   const { setMode, mode } = useEditorMode();
+  const { openDocs } = useContext(docsContext);
   const [editor, setEditor] = useState<any>();
 
   const tidy = useCallback(() => {
@@ -134,7 +137,7 @@ export default function EditorAndFooter({ hook }: { hook: HookDetail }) {
   }, [editor]);
 
   return (
-    <div className="flex-grow flex flex-col">
+    <>
       <EditorSwitch
         onInit={(editor) => setEditor(editor)}
         onChange={updateDraft}
@@ -153,12 +156,17 @@ export default function EditorAndFooter({ hook }: { hook: HookDetail }) {
           </button>
         )}
         <div className="flex-1" />
+        <Button onClick={openDocs} size="xs" color="alternative">
+          <BookOpenIcon className="w-4 h-4 mr-1" />
+          <span>Docs</span>
+        </Button>
         <Button onClick={tidy} size="xs" color="alternative">
           <SparklesIcon className="w-4 h-4 mr-1" />
           <span>Tidy</span>
         </Button>
         {hook.published !== hook.draft && (
           <Tooltip
+            // eslint-disable-next-line react/style-prop-object
             style="dark"
             className="max-w-sm"
             content={
@@ -181,7 +189,7 @@ export default function EditorAndFooter({ hook }: { hook: HookDetail }) {
           </Tooltip>
         )}
       </FooterContainer>
-    </div>
+    </>
   );
 }
 

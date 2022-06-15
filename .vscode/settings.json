@@ -18,5 +18,12 @@
     "unsign",
     "websockets",
     "Zipkin"
-  ]
+  ],
+  "html.format.contentUnformatted": "pre,code,textarea",
+  "files.associations": {
+    "*.mdx": "mdx"
+  },
+  "[mdx]": {
+    "editor.formatOnSave": false
+  }
 }

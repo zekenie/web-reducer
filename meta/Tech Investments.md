@@ -12,6 +12,7 @@ kanban-plugin: basic
 - [ ] add eslint-consistent-type-imports project-wide
 - [ ] virtualize requests table for lots of requests
 - [ ] requests table sampling
+- [ ] keys api is mixed with hooks everywhere, prob too big
 
 
 ## gonna do

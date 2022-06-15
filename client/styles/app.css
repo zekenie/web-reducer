@@ -1,3 +1,25 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+.docs pre {
+  border-radius: 3px;
+  line-height: 1.1!important;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.docs code {
+  @apply rounded;
+}
+
+.docs .badge {
+  @apply rounded-full px-1.5 py-0.5 shadow-sm uppercase no-underline inline text-white font-bold;
+  font-size: 8px;
+  text-decoration: none !important;
+}
+
+.docs ul {
+  list-style-type: disc;
+}

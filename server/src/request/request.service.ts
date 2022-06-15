@@ -11,6 +11,8 @@ import {
 } from "../runner/runner-hash.helper";
 import { UnableToResolveSettledRequest } from "./request.errors";
 import { runCode } from "../runner/vm.remote";
+import { _dangerouslyExposeSecretsInPlaintextForNamespace } from "../secret/secret.remote";
+import { getAccessKeyForHook } from "../secret/secret.service";
 
 export async function captureRequest(params: requestDb.CaptureRequest) {
   const { requestId, hookId } = await requestDb.captureRequest(params);
@@ -39,11 +41,14 @@ export async function handleRequest({
   writeKey: string;
 }) {
   const codeToRun = await hookDb.getCodeByWriteKey(writeKey);
+  const secrets = await _dangerouslyExposeSecretsInPlaintextForNamespace({
+    accessKey: await getAccessKeyForHook({ hookId: codeToRun.hookId }),
+  });
   const { response } = await runCode({
     code: codeToRun.code,
     mode: "response",
     request,
-    secrets: {},
+    secrets,
     state: undefined,
   });
 

@@ -12,6 +12,7 @@ import {
 import { Button } from "flowbite-react";
 import { useCallback, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
+import InfoPanel from "~/components/info-panel";
 import { useModals } from "~/modals/lib/modal-provider";
 import type { HookDetail } from "~/remote/hook-client.server";
 import buildClientForJwt from "~/remote/index.server";
@@ -101,66 +102,82 @@ export default function Secrets() {
     }
   }, [actionData]);
   return (
-    <Form method="post" ref={ref}>
-      <table
-        style={{ borderCollapse: "separate", borderSpacing: "0" }}
-        className="text-sm font-mono table-fixed w-full max-w-full"
-      >
-        <thead>
-          <tr>
-            <th className="text-left py-1 px-3 w-24">Key</th>
-            <th className="text-left py-1 px-3 w-24">sha1(Value)</th>
-            <th className="w-6"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {Object.keys(secrets).map((key) => (
-            <SecretRow
-              hookId={hook.id}
-              key={key}
-              keyStr={key}
-              valueStr={secrets[key]}
-            />
-          ))}
-          <tr>
-            <td className="py-1 px-2 w-24">
-              <input
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    return;
-                  }
-                  e.currentTarget.value = (e.currentTarget.value + e.key)
-                    .toUpperCase()
-                    .split(" ")
-                    .join("_");
-                  e.preventDefault();
-                  return false;
-                }}
-                name="key"
-                className="w-full p-1"
-                placeholder="new key"
+    <>
+      <InfoPanel
+        id="secrets"
+        heading="Secrets are visible at runtime"
+        description={
+          <>
+            Don't store secrets in your code, put them here! We'll do everything
+            we can to keep them safe and only expose them to your code at
+            runtime. Once you give us a secret, we won't show it to you again,
+            so make sure to save secrets elsewhere! When you revoke a secret,
+            its gone, so be careful. Changes to secrets do not trigger
+            recomputation of state.
+          </>
+        }
+      />
+      <Form method="post" ref={ref}>
+        <table
+          style={{ borderCollapse: "separate", borderSpacing: "0" }}
+          className="text-sm font-mono table-fixed w-full max-w-full"
+        >
+          <thead>
+            <tr>
+              <th className="text-left py-1 px-3 w-24">Key</th>
+              <th className="text-left py-1 px-3 w-24">SHA256 Digest</th>
+              <th className="w-6"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.keys(secrets).map((key) => (
+              <SecretRow
+                hookId={hook.id}
+                key={key}
+                keyStr={key}
+                valueStr={secrets[key]}
               />
-            </td>
-            <td className="py-1 px-2 w-24">
-              <input
-                name="value"
-                className="w-full p-1"
-                placeholder="new value"
-              />
-            </td>
-            <td className="w-6">
-              <Button
-                type="submit"
-                icon={PlusCircleIcon}
-                size="xs"
-                color="light"
-                outline={false}
-                disabled={transition.state === "submitting"}
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </Form>
+            ))}
+            <tr>
+              <td className="py-1 px-2 w-24">
+                <input
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      return;
+                    }
+                    e.currentTarget.value = (e.currentTarget.value + e.key)
+                      .toUpperCase()
+                      .split(" ")
+                      .join("_");
+                    e.preventDefault();
+                    return false;
+                  }}
+                  name="key"
+                  className="w-full p-1"
+                  placeholder="new key"
+                />
+              </td>
+              <td className="py-1 px-2 w-24">
+                <input
+                  name="value"
+                  className="w-full p-1"
+                  placeholder="new value"
+                />
+              </td>
+              <td className="w-6">
+                <Button
+                  type="submit"
+                  icon={PlusCircleIcon}
+                  size="xs"
+                  color="light"
+                  outline={false}
+                  disabled={transition.state === "submitting"}
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </Form>
+    </>
   );
 }

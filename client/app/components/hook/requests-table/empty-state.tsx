@@ -84,11 +84,11 @@ export default function EmptyState({
         color="alternative"
       >
         {exampleReqClicked && <Spinner className="mr-2" />}
-        (Or{" "}
+        I'm lazy,{" "}
         <span className="bg-canvas-50 font-mono p-0.5 rounded  mx-1">
           $ curl
         </span>{" "}
-        it for me )
+        it for me
       </Button>
     </div>
   );

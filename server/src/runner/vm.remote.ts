@@ -23,7 +23,6 @@ type CodeResponse = {
   state: unknown;
   id: string;
   idempotencyKey?: string;
-  authentic: boolean;
   response?: {
     statusCode: number;
     body?: any;

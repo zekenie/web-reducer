@@ -1,0 +1,187 @@
+import {Badge} from "flowbite-react"
+
+## Table of contents
+
+## Concepts
+
+"Hooks"–our unit of action–interact with the outside world through `readKeys` and `writeKeys`. These keys are currently exposed through HTTP endpoints. `writeKeys` allow information to enter the system. `readKeys` allow information out of the system.
+
+```text
+    .─────────────────────────────.    
+   (     Your producer client      )   
+    `───────┬─────▲───────────────'    
+            │     │                    
+┌ ─ ─ ─ ─ ─ ┼ ─ ─ ┼ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+        ┌───▼─────┴──┐                 
+│       │ /:writeKey ├┐               │
+        └┬───────────┘├┐               
+│        └┬───────────┘│              │
+          └─┬────────▲─┘               
+│           │        │                │
+       ┌────▼────────┴────┐            
+│      │  responder(req)  │           │
+       └────┬─────────────┘            
+│           │                         │
+    ┌───────▼────────────────┐         
+│   │ getIdempotencyKey(req) │        │
+    └───────┬────────────────┘         
+│           │                         │
+      ┌─────▼────────┐                 
+│     │reducer(      │       .─────.  │
+      │  prevState,◀─┼──────(       )  
+│     │  req,        │      (`─────') │
+      │  secrets     │      (`─────')  
+│     │) -> nextState├─────▶(`─────') │
+      └──────────────┘       `──▲──'   
+│                               │     │
+         ┌────────────┐         │      
+│        │ /:readKey  ├◀────────┘     │
+         └┬───────────┘├┐              
+│         └┬───────────┘│             │
+           └──┬─────▲───┘              
+└ ─ ─ ─ ─ ─ ─ ┼ ─ ─ ┼ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+              │     │                  
+     .────────▼─────┴────────────.     
+    (    Your consumer client     )    
+     `───────────────────────────'     
+```
+
+Your reducer code determines how the information entering the system is processed into the state exposed by `readKey`s.
+
+## Functions you can write
+
+The platform will call a number of functions in your code, if you define them.
+
+### `responder`
+
+```ts
+function responder(req, secrets) {
+  return {
+    statusCode: 201,
+    body: `<?xml version="1.0" encoding="UTF-8"?>
+      <Response>
+          <Dial>${secrets.PHONE_NUMBER}</Dial>
+      </Response>`,
+  };
+}
+```
+
+Responders allow you to set custom status codes and response bodies for requests. They exist because some APIs, particularly webhook producers, sometimes expect specific responses in order to send subsequent requests.
+
+If you return a status code > 399, the request will not be queued and will be ignored in state.
+
+If you do not define a responder function, the default behavior is to respond with status `202` and a JSON string containing the request id.
+
+```json
+{ "id": "3af57774-b58c-4d74-9d12-13b2240e4cb7" }
+```
+
+### `reducer` <p className="badge bg-green-600 ml-4">replayable</p>
+
+`reducer` determines how requests influence state. Requests run through the reducer are queued, so there are no race conditions and the state is deterministic. All requests are kept forever, so changes to your reducer code recompute the state.
+
+```ts
+function reducer(previousState, request, secrets) {}
+```
+
+### `getIdempotencyKey` <p className="badge bg-green-600 ml-4">replayable</p>
+
+Sometimes clients, particularly webhook clients will resend requests that they believe have failed, but were actually processed. To prevent re-processing of the same requests, these APIs often provide you with an "idempotency key"–an identifier of the request that is identical for any subsequent requests. If you tell WebReducer how to find this key, we will ignore double requests for you.
+
+```js
+function getIdempotencyKey(request) {
+  return request.headers['x-idempotency-key-or-whatever'];
+}
+```
+
+## Functions you can call
+
+### Utility
+
+#### `uuid`
+
+Returns a UUID string.
+
+```js
+uuid()
+// -> "3af57774-b58c-4d74-9d12-13b2240e4cb7"
+```
+
+
+### Crypto
+
+The reason cryptographic functions are included is primarily to verify the authenticity of webhooks. That said, hashing functions can serve many purposes and you can use them for whatever you want.
+
+All crypto hashes come directly from [Noble Hashes](https://github.com/paulmillr/noble-hashes). The library has zero dependencies, is independently audited, and is all in javascript. Currently we don't expose the entire library, but focus instead on a few useful methods.
+
+#### [`sha256`](https://github.com/paulmillr/noble-hashes#sha2-sha256-sha384-sha512-sha512_256)
+
+```js
+toHex(sha256("foobar"));
+// -> "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2"
+```
+
+#### [`sha512`](https://github.com/paulmillr/noble-hashes#sha2-sha256-sha384-sha512-sha512_256)
+
+```js
+toHex(sha512("foobar"));
+// -> "0a50261ebd1a390fed2bf326f2673c145582a6342d523204973d0219337f81616a8069b012587cf5635f6925f1b56c360230c19b273500ee013e030601bf2425"
+```
+
+#### [`hmac`](https://github.com/paulmillr/noble-hashes#hmac)
+
+```js
+toHex(hmac(sha256, "shh, super secret", '{ "payload": "here" }'));
+// -> "4f9624a8027895e0b5150afe47248d76a8fc7e1c2d159e45edd62ddce0ad729a"
+```
+
+#### `toHex`
+
+Noble Hash uses `UInt8Array`s internally and many of their methods return them. If you want a hex string, use this function.
+
+## Examples
+
+Examples to come!
+
+## Interacting with a hook
+
+Clients interact with hook from `readKeys` and `writeKeys` in the form of HTTP requests and websocket connections
+
+### `readKeys`
+
+`readKeys` let clients see the current state. Requests made to `https://webreducer.dev/read/:readKey` will expose the current state. If you navigate your browser to that page, you'll see an HTML page containing a pretty representation of the state with live updates. If you `curl` the endpoint, you'll see JSON alone.
+
+```sh
+$ curl https://webreducer.dev/read/:readKey
+# { "your": "state" }
+```
+
+#### Websockets
+
+You can subscribe to state changes through a websocket. The socket endpoint is `https://webreducer.dev/state-events?readKey=:your-read-key` We publish two events `new-state` and `bulk-update`. `new-state` is triggered when a new request runs through the hook. `bulk-update` is triggered when a code changes causes a recomputation of the state. Both events contain a `type` and `state` field.
+
+```json
+{ "type": "new-state", "state": { "your": "state" } }
+{ "type": "bulk-update", "state": { "your": "state" } }
+```
+
+Here's an example of how to use the socket from the browser.
+
+```js
+const socket = new WebSocket("https://webreducer.dev/state-events?readKey=:your-read-key");
+
+socket.addEventListener("message", (message) => {
+  const event = JSON.parse(message.data)
+  switch(event.type) {
+    case: "bulk-update":
+      // do something with event.state
+      break;
+    case "new-state":
+      // do something with event.state
+      break;
+  }
+});
+```
+
+
+### Write keys
