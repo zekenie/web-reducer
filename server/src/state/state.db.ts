@@ -53,7 +53,9 @@ export async function getStateHistoryForRequest({
       request."body",
       error,
       console,
-      "request"."createdAt"
+      "request"."createdAt",
+      "request"."queryString",
+      "request"."headers"
     from state
     join version
       on version."hookId" = state."hookId"
@@ -87,6 +89,8 @@ export async function getStateHistoryPage(
       error,
       console,
       "request"."createdAt",
+      "request"."queryString",
+      "request"."headers",
       count(*) OVER() AS "fullCount"
     from state
     

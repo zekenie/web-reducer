@@ -6,12 +6,11 @@ import {
 import Editor, { DiffEditor } from "@monaco-editor/react";
 import { useFetcher, useNavigate } from "@remix-run/react";
 import { Button, Tooltip } from "flowbite-react";
-import { debounce, values } from "lodash";
+import { debounce } from "lodash";
 import type { ComponentProps, FC } from "react";
 import { useCallback, useContext, useEffect, useState } from "react";
 import type { HookDetail } from "~/remote/hook-client.server";
 import { docsContext } from "~/routes/hooks/$hookId";
-// import startTutorial from "./tutorial-bot";
 
 function EditorSwitch({
   hook,
@@ -221,7 +220,10 @@ function useEditorMode() {
 function useUpdateDraft({ hookId }: { hookId: string }) {
   const { submit, state } = useFetcher();
   const updateDraft = useCallback(
-    debounce((value: string) => {
+    debounce((value?: string) => {
+      if (!value) {
+        return;
+      }
       if (
         value
           .split("\n")

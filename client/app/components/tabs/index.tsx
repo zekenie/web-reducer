@@ -1,5 +1,5 @@
 import { NavLink } from "@remix-run/react";
-import type { ComponentProps, FC, ReactElement } from "react";
+import type { ComponentProps, FC, HTMLProps, ReactElement } from "react";
 
 export const Tabs = ({
   children,
@@ -19,10 +19,25 @@ export const Tabs = ({
 type TabProps = FC<{
   selected?: boolean;
   end?: ComponentProps<typeof NavLink>["end"];
-  to: string;
+  to?: string;
+  onClick?: HTMLProps<HTMLButtonElement>["onClick"];
 }>;
 
-export const Tab: TabProps = ({ children, end, to }) => {
+export const Tab: TabProps = ({ children, onClick, selected, end, to }) => {
+  if (!to) {
+    return (
+      <button
+        onClick={onClick}
+        className={`py-2 px-2 ${
+          selected
+            ? "text-canvas-600 border-b-2 font-bold border-fern-900"
+            : "text-canvas-400 hover:text-canvas-500"
+        }`}
+      >
+        {children}
+      </button>
+    );
+  }
   return (
     <NavLink
       to={to}

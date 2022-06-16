@@ -45,6 +45,8 @@ export type ConsoleMessage = {
 export type Request = {
   requestId: string;
   state: unknown;
+  headers: Record<string, string>;
+  queryString: string;
   stateHash: string;
   body: unknown;
   bodyHash: string;

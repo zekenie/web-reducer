@@ -11,6 +11,8 @@ type Request = {
   requestId: string;
   state: unknown;
   body: unknown;
+  headers: Record<string, string>;
+  queryString: string;
   bodyHash: string;
   stateHash: string;
   error: any;
