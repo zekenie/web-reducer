@@ -19,6 +19,7 @@ import {
   validateRefreshToken,
 } from "../refresh-token/refresh-token.service";
 import { generateToken } from "../token/token.service";
+import { createHook } from "../hook/hook.service";
 
 type Credentials = {
   jwt: string;
@@ -84,6 +85,7 @@ export async function validateTokenAndIssueCredentials(
 
 export async function initiateGuestUser() {
   const user = await createUser();
+  await createHook({ userId: user.id });
   return createCredentials(user.id);
 }
 

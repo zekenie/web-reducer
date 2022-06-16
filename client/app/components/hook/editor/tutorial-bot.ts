@@ -103,6 +103,7 @@ class TutorialContentManager {
       }
     }
     this.state = "idle";
+    document.querySelector(".tour-callout")?.classList.remove("tour-callout");
   }
 
   private async highlight(selector: string, moveOnAfter: number = 5000) {

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import type { UserDetails } from "../../remote/auth-client.server";
+import GithubIcon from "./github-icon";
 import UserButton from "./user-button";
 
 export const InsideHeader: FC = ({ children }) => {
@@ -42,7 +43,15 @@ export const AppWithNav: FC<{ userDetails: UserDetails }> = ({
           </Link>
         </div>
         <div id="center-nav" className="flex items-center justify-center" />
-        <div className="flex justify-end flex-row items-center">
+        <div className="flex justify-end flex-row items-center space-x-4">
+          <a
+            href="https://github.com/zekenie/web-reducer"
+            className="text-canvas-400 hover:text-canvas-500"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <GithubIcon width={26} />
+          </a>
           <UserButton userDetails={userDetails} />
         </div>
       </header>

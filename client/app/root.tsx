@@ -54,7 +54,7 @@ export default function App() {
         <ModalProvider>
           <div className="flex flex-col h-screen overflow-hidden">
             <AppWithNav userDetails={data.me}>
-              <Outlet />
+              <Outlet context={{ userDetails: data.me }} />
             </AppWithNav>
           </div>
           <Toaster position="bottom-right" />

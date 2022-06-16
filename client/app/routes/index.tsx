@@ -1,18 +1,35 @@
 import type { LoaderFunction } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
-import { useModals } from "~/modals/lib/modal-provider";
+import {
+  Link,
+  useLoaderData,
+  useNavigate,
+  useOutletContext,
+} from "@remix-run/react";
+import { useEffect } from "react";
+import type { UserDetails } from "~/remote/auth-client.server";
 import type { HookOverview } from "~/remote/hook-client.server";
 import buildClientForJwt from "~/remote/index.server";
 
 export const loader: LoaderFunction = async ({ context }) => {
   const client = buildClientForJwt(context.creds.jwt);
 
-  return client.hooks.list();
+  const list = await client.hooks.list();
+  return list;
 };
 
 export default function Index() {
   const hooks = useLoaderData<HookOverview[]>();
-  const { pushModal } = useModals();
+  const navigate = useNavigate();
+  const { userDetails } = useOutletContext<{ userDetails: UserDetails }>();
+  useEffect(() => {
+    if (userDetails.workflowState === "guest") {
+      const [hook] = hooks;
+      navigate(`/hooks/${hook.id}`);
+    }
+  }, [userDetails, hooks, navigate]);
+  if (userDetails.workflowState === "guest") {
+    return null;
+  }
   return (
     <>
       <h1>Hook ids</h1>
