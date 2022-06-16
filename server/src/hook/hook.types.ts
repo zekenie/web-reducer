@@ -21,6 +21,7 @@ export type HookDetail = HookOverview & KeysByType & HookCode;
 export type HookOverview = {
   id: string;
   name: string;
+  description?: string;
   workflowState: HookWorkflowState;
   // requestCount: number;
 };

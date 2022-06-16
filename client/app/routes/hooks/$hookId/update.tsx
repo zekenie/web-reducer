@@ -7,7 +7,11 @@ export const action: ActionFunction = async ({ context, request, params }) => {
   const body = await request.formData();
   await client.hooks.update({
     id: params.hookId!,
-    payload: { code: body.get("code") as string },
+    payload: {
+      code: body.get("code") as string | undefined,
+      name: body.get("name") as string | undefined,
+      description: body.get("description") as string | undefined,
+    },
   });
   return json({});
 };

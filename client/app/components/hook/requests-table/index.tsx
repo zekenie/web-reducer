@@ -42,7 +42,7 @@ export default function RequestsTable({ requests }: { requests: Request[] }) {
           <th className="text-left py-1 px-3 w-24">when</th>
           <th className="text-left py-1 px-3">body</th>
           <th className="text-left py-1 px-3">state</th>
-          <th className="text-left py-1 px-3 w-24">effects</th>
+          <th className="text-left py-1 px-3 w-24">artifacts</th>
         </tr>
       </thead>
       <tbody>

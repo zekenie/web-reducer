@@ -71,7 +71,25 @@ export default Router()
     validate(UpdateHookInput),
     async function updateHook(req, res, next) {
       try {
-        await service.updateDraft(req.params.hookId, req.body);
+        const promises = [];
+        const body = req.body as UpdateHookInput;
+
+        if (body.code) {
+          promises.push(
+            service.updateDraft(req.params.hookId, { code: req.body.code })
+          );
+        }
+
+        if (body.name || body.description) {
+          promises.push(
+            service.updateDetails(req.params.hookId, {
+              name: body.name || null,
+              description: body.description || null,
+            })
+          );
+        }
+
+        await Promise.all(promises);
         res.json({});
       } catch (e) {
         next(e);

@@ -56,7 +56,20 @@ export async function createHook({
   }
 }
 
-export async function updateDraft(hookId: string, input: UpdateHookInput) {
+export async function updateDetails(
+  id: string,
+  input: { name: string | null; description: string | null }
+) {
+  if (Object.keys(input).length === 0) {
+    return;
+  }
+  await db.updateDetails(id, {
+    name: input.name,
+    description: input.description,
+  });
+}
+
+export async function updateDraft(hookId: string, input: { code: string }) {
   const compiledCode =
     input.code.trim() === ""
       ? ""

@@ -31,32 +31,35 @@ kanban-plugin: basic
 - [ ] onboarding info in tool tip when signup is hovered #onboarding
 - [ ] cap number of rows in requests table
 - [ ] automatic key rotation #security
-- [ ] why do hooks have the name they do? what's the point? can i edit it? what about description
 - [ ] there should be api keys between services #security
 - [ ] can i delete a hook?
 - [ ] modal to test request
+- [ ] #bug stack tracke numbers are off when there are comments preceeding the code block
+- [ ] #security limit length of console artifacts
 
 
 ## Must have for launch
 
-- [ ] domain setup
 - [ ] Hooks list view
 - [ ] server crashes on runner error. [best practice for uncaught exceptions](https://www.honeybadger.io/blog/errors-nodejs/#uncaught-exceptions-and-unhandled-promise-rejections)
 - [ ] get to legal from unauthenticated state
 - [ ] Minimal solution for mobile clients... some web page
 - [ ] curl response is an opportunity to educate
-- [ ] should "key" be called "endpoints"
-- [ ] GH link
+- [ ] should "key" be called "endpoints" or "access"
 
 
 ## In Progress
 
-- [ ] app should open on a hook of your own for unauthenticated users<br><br>- [x] guest users should have hook built by default<br>- [ ] pool of hooks?
+- [ ] number of requests
 
 
 ## Done
 
 **Complete**
+- [x] why do hooks have the name they do? what's the point? can i edit it? what about description
+- [x] app should open on a hook of your own for unauthenticated users<br><br>- [x] guest users should have hook built by default<br>- [ ] pool of hooks?
+- [x] domain setup
+- [x] GH link
 - [x] documentation<br><br>- [x] mdx file<br>- [x] sidebar<br>- [ ] new window<br>- [x] sections<br>  - [x] functions we call<br>  - [x] functions you can call
 - [x] Request detail view/modal
 - [x] after request have editor [start typing](https://github.com/convergencelabs/monaco-collab-ext) #onboarding

@@ -36,6 +36,7 @@ export type HookDetail = HookOverview & KeysByType & HookCode;
 export type HookOverview = {
   id: string;
   name: string;
+  description: string;
   workflowState: HookWorkflowState;
   // requestCount: number;
 };
@@ -161,7 +162,7 @@ export async function buildAuthenticatedApi(
       },
       async update(
         id: string,
-        updates: Record<string, any>,
+        updates: { code?: string; name?: string; description?: string },
         axiosConfig?: AxiosRequestConfig
       ) {
         return authenticatedClient.put(`/hooks/${id}`, updates, axiosConfig);

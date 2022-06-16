@@ -65,7 +65,7 @@ export async function issueNewCredentialsForRefreshToken({
 export async function createCredentials(userId: string): Promise<Credentials> {
   const jwtStr = jwt.sign({}, process.env.JWT_SECRET!, {
     subject: userId,
-    expiresIn: "10 minutes",
+    expiresIn: "1 hour",
     keyid: await generateToken(),
   });
   const refreshToken = await issueRefreshToken({ userId });

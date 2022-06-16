@@ -7,6 +7,17 @@ export function generateHookName() {
   return `${sample(adjectives)}-${sample(nouns)}-${nanoid(4)}`;
 }
 
+export const slugify = (text: string) =>
+  text
+    .toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]+/g, "")
+    .replace(/--+/g, "-");
+
 export async function generateUnusedHookName(attempts = 0): Promise<string> {
   if (attempts > 4) {
     throw new NameCollisionError();

@@ -23,7 +23,7 @@ describe("changing hooks", () => {
     );
   });
 
-  it("can update a hook", async () => {
+  it("can update a hook's code", async () => {
     const authedApi = await buildAuthenticatedApi();
     const res = await authedApi.hook.create();
     expect(res.status).toEqual(201);
@@ -40,6 +40,28 @@ describe("changing hooks", () => {
       "function reducer() { console.log('foo'); }"
     );
     expect(readReq.data.published).toEqual("");
+  });
+
+  it("can update a hook's name and description", async () => {
+    const authedApi = await buildAuthenticatedApi();
+    const res = await authedApi.hook.create();
+    expect(res.status).toEqual(201);
+
+    const updateRes = await authedApi.hook.update(res.data.id, {
+      name: "little-hook-that-could",
+      description: "this is a hook yo",
+    });
+
+    expect(updateRes.status).toEqual(200);
+
+    const readReq = await authedApi.hook.read(res.data.id);
+
+    expect(readReq.data).toEqual(
+      expect.objectContaining({
+        name: "little-hook-that-could",
+        description: "this is a hook yo",
+      })
+    );
   });
 
   it("does not permit changing hooks without access", async () => {

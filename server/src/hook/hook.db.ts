@@ -24,7 +24,8 @@ export async function listHooks({ userId }: { userId: string }) {
     select
       hook.id as id,
       hook.name as "name",
-      hook."workflowState" as "workflowState"
+      hook."workflowState" as "workflowState",
+      hook."description"
     from "hook"
     join "access"
       on "hook"."id" = "access"."hookId"
@@ -41,7 +42,7 @@ export async function getOverviewForHook({
 }): Promise<HookOverview> {
   const pool = getPool();
   const row = await pool.one<HookOverview>(sql`
-    select id, name, "workflowState"
+    select id, name, "workflowState", "description"
     from "hook"
     where id = ${hookId}
   `);
@@ -60,7 +61,7 @@ export async function getHookNameCollisions({ names }: { names: string[] }) {
 
 export async function updateDraft(
   id: string,
-  input: UpdateHookInput & { compiledCode: string }
+  input: { code: string; compiledCode: string }
 ): Promise<void> {
   const pool = getPool();
   await pool.any(sql`
@@ -68,6 +69,19 @@ export async function updateDraft(
     set code = ${input.code}, "compiledCode" = ${input.compiledCode}
     where "workflowState" = 'draft'
       and "hookId" = ${id}
+  `);
+}
+
+export async function updateDetails(
+  id: string,
+  input: { name: string | null; description: string | null }
+) {
+  const pool = getPool();
+  await pool.any(sql`
+    update "hook"
+    set name = COALESCE(${input.name}, "name"),
+    description = COALESCE(${input.description}, "description")
+    where "id" = ${id}
   `);
 }
 

@@ -24,6 +24,7 @@ export type HookDetail = HookOverview & KeysByType & HookCode;
 export type HookOverview = {
   id: string;
   name: string;
+  description: string;
   workflowState: HookWorkflowState;
   // requestCount: number;
 };
@@ -92,7 +93,7 @@ const hookClientFactory = (httpClient: HttpJsonClient) => ({
     payload,
   }: {
     id: string;
-    payload: { code: string };
+    payload: { code?: string; name?: string; description?: string };
   }): Promise<void> {
     await httpClient.put(`/hooks/${id}`, payload);
   },

@@ -7,7 +7,9 @@ import {
 } from "@heroicons/react/outline";
 import type { HookDetail } from "~/remote/hook-client.server";
 import { Popover, Transition } from "@headlessui/react";
-import { Fragment } from "react";
+import { Fragment, useCallback, useRef } from "react";
+import { Form, useFetcher, useSubmit } from "@remix-run/react";
+import { Label, Textarea, TextInput } from "flowbite-react";
 
 function CopyableToken({ token }: { token: string }) {
   return (
@@ -21,6 +23,18 @@ function CopyableToken({ token }: { token: string }) {
 }
 
 function ResourceBar({ hook }: { hook: HookDetail }) {
+  const fetcher = useFetcher();
+
+  const updateField = useCallback(
+    (field: "name" | "description", value: string) => {
+      fetcher.submit(
+        { [field]: value },
+        { method: "post", action: `/hooks/${hook.id}/update` }
+      );
+    },
+    [hook, fetcher]
+  );
+
   return (
     <Popover className="relative">
       {({ open }) => (
@@ -62,23 +76,46 @@ function ResourceBar({ hook }: { hook: HookDetail }) {
           >
             <Popover.Panel className="absolute left-1/2 z-10 w-full max-w-md -translate-x-1/2 transform px-4 sm:px-0 lg:max-w-3xl">
               <div className="shadow-lg space-y-2 text-xs overflow-hidden rounded-b h-64 bg-slate-50 p-2 border-x border-b">
-                <section>
-                  <h2 className="font-bold">Read keys</h2>
-                  <div className="flex flex-col space-y-1">
-                    {hook.readKeys.map((key) => (
-                      <CopyableToken key={key} token={key} />
-                    ))}
+                <div>
+                  <div className="mb-2 block">
+                    <Label htmlFor="name">Name</Label>
                   </div>
-                </section>
+                  <TextInput
+                    disabled={fetcher.state === "submitting"}
+                    onBlur={(e) => updateField("name", e.currentTarget.value)}
+                    id="name"
+                    name="name"
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        updateField("name", e.currentTarget.value);
+                        return;
+                      }
+                      e.currentTarget.value = slugify(
+                        e.currentTarget.value + e.key
+                      );
 
-                <section>
-                  <h2 className="font-bold">Write keys</h2>
-                  <div className="flex flex-col space-y-1">
-                    {hook.writeKeys.map((key) => (
-                      <CopyableToken key={key} token={key} />
-                    ))}
+                      e.preventDefault();
+                      return false;
+                    }}
+                    defaultValue={hook.name}
+                  />
+                </div>
+                <div>
+                  <div className="mb-2 block">
+                    <Label htmlFor="description">Description</Label>
                   </div>
-                </section>
+                  <Textarea
+                    defaultValue={hook.description}
+                    disabled={fetcher.state === "submitting"}
+                    id="description"
+                    onBlur={(e) =>
+                      updateField("description", e.currentTarget.value)
+                    }
+                    name="description"
+                    placeholder="What is this for?"
+                    rows={4}
+                  />
+                </div>
               </div>
             </Popover.Panel>
           </Transition>
@@ -89,3 +126,13 @@ function ResourceBar({ hook }: { hook: HookDetail }) {
 }
 
 export default ResourceBar;
+
+const slugify = (text: string) =>
+  text
+    .toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]+/g, "-")
+    .replace(/--+/g, "-");

@@ -4,10 +4,8 @@ import {
   PauseIcon,
   PencilIcon,
   PlayIcon,
-  PlusCircleIcon,
 } from "@heroicons/react/outline";
 import {
-  Form,
   useActionData,
   useFetcher,
   useLoaderData,
@@ -16,8 +14,8 @@ import {
 } from "@remix-run/react";
 import type { ActionFunction, LoaderFunction } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
-import { Button, Select } from "flowbite-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Button } from "flowbite-react";
+import { useCallback, useEffect } from "react";
 import toast from "react-hot-toast";
 import InfoPanel from "~/components/info-panel";
 import { useModals } from "~/modals/lib/modal-provider";
@@ -198,25 +196,6 @@ export default function Keys() {
           {keys.map((keyObj) => (
             <KeyRow hookId={hook.id} key={keyObj.key} keyObj={keyObj} />
           ))}
-          {/* <tr>
-              <td className="py-1 px-2 w-24">
-                <Select name="type">
-                  <option value="read">Read</option>
-                  <option value="write">Write</option>
-                </Select>
-              </td>
-              <td className="py-1 px-2 w-24"></td>
-              <td className="w-6">
-                <Button
-                  type="submit"
-                  icon={PlusCircleIcon}
-                  size="xs"
-                  color="light"
-                  outline={false}
-                  disabled={transition.state === "submitting"}
-                />
-              </td>
-            </tr> */}
         </tbody>
       </table>
       <div className="absolute bottom-4 right-4">
