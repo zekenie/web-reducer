@@ -2,8 +2,7 @@ import * as vmCrypto from "./vm-crypto.service";
 import vm2 from "vm2";
 import { Artifacts } from "./artifacts";
 
-const sharedHeaderCode = `
-requests = requests.map(req => ({ ...req, query: makeQueryParams(req.queryString) }))
+const sharedHeaderCode = `requests = requests.map(req => ({ ...req, query: makeQueryParams(req.queryString) }))
 artifacts.expectLength(requests.length);
 function reducer() {}
 function responder(request, secrets) {
@@ -12,8 +11,7 @@ function responder(request, secrets) {
     body: { id: request.id }
   }
 }
-function getIdempotencyKey(request) { return request.id; }
-`;
+function getIdempotencyKey(request) { return request.id; }`;
 
 const codeBread = {
   response: {
@@ -35,7 +33,7 @@ const codeBread = {
           }
         })()
       })(${requestsJson}, ${secretsJson})`,
-    offset: 11,
+    offset: 12,
   },
   reducer: {
     code: (
@@ -76,7 +74,7 @@ const codeBread = {
           }, []);
         })()
       })(${state}, ${requestsJson}, ${secretsJson})`,
-    offset: 11,
+    offset: 12,
   },
 };
 

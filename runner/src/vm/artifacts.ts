@@ -24,7 +24,9 @@ function formatError(
         error: error,
         programFile: context.filename,
         lineNumberMap: (num) => num - offset,
-        lineNumberFilter: (line) => !line || line < context.codeLength + offset,
+        lineNumberFilter: (line) => {
+          return !line || line < context.codeLength + offset;
+        },
       }),
     };
   } else {

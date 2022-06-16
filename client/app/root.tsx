@@ -19,7 +19,7 @@ import syntaxHighlighting from "highlight.js/styles/night-owl.css";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
-  title: "New Remix App",
+  title: "WebReducer",
   viewport: "width=device-width,initial-scale=1",
 });
 
