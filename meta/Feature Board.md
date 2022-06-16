@@ -50,12 +50,12 @@ kanban-plugin: basic
 ## In Progress
 
 - [ ] documentation<br><br>- [x] mdx file<br>- [x] sidebar<br>- [ ] new window<br>- [x] sections<br>  - [x] functions we call<br>  - [x] functions you can call
-- [ ] after request have editor [start typing](https://github.com/convergencelabs/monaco-collab-ext) #onboarding
 
 
 ## Done
 
 **Complete**
+- [x] after request have editor [start typing](https://github.com/convergencelabs/monaco-collab-ext) #onboarding
 - [x] secrets need to be avilable to responder
 - [x] dismissible info panels
 - [x] do we need isAuthentic?
