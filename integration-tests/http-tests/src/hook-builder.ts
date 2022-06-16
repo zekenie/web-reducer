@@ -267,6 +267,13 @@ function buildApi<PostBody, State>(context: Context) {
       return data;
     },
 
+    async hookDetails(): Promise<HookDetail> {
+      const { data } = await authenticatedClient.get<HookDetail>(
+        `/hooks/${context.hookId}`
+      );
+      return data;
+    },
+
     async update(
       updates: Record<string, any>,
       axiosConfig?: AxiosRequestConfig

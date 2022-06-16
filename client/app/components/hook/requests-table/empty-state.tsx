@@ -1,4 +1,10 @@
-import { useCallback, useRef, useState } from "react";
+import {
+  ReactChild,
+  ReactChildren,
+  useCallback,
+  useRef,
+  useState,
+} from "react";
 import CopyableCode, {
   VariableSelect,
   VariableValue,
@@ -8,39 +14,47 @@ import { Button, Spinner } from "flowbite-react";
 export default function EmptyState({
   siteUrl,
   writeKeys,
+  onRequest,
+  spaceOut,
+  children = <></>,
 }: {
   siteUrl: string;
+  spaceOut?: boolean;
   writeKeys: string[];
+  onRequest?: () => void;
+  children?: ReactChild | ReactChildren;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [exampleReqClicked, setExampleReqClicked] = useState(false);
   const makeExampleRequest = useCallback(async () => {
-    if (!ref.current) {
-      return;
-    }
-    setExampleReqClicked(true);
-    const contentType =
-      ref.current.querySelector<HTMLSelectElement>("#contentType")!.value;
-    const writeKey =
-      ref.current.querySelector<HTMLSelectElement>("#writeKey")!.value;
-    const body = ref.current.querySelector<HTMLSpanElement>("#body")?.innerText;
+    for (let i = 0; i < 3; i++) {
+      if (!ref.current) {
+        return;
+      }
+      setExampleReqClicked(true);
+      const contentType =
+        ref.current.querySelector<HTMLSelectElement>("#contentType")!.value;
+      const writeKey =
+        ref.current.querySelector<HTMLSelectElement>("#writeKey")!.value;
+      const body =
+        ref.current.querySelector<HTMLSpanElement>("#body")?.innerText;
 
-    await fetch(`${siteUrl}/write/${writeKey}`, {
-      body,
-      headers: { "content-type": contentType },
-      method: "POST",
-    });
-  }, [ref, siteUrl]);
+      await fetch(`${siteUrl}/write/${writeKey}`, {
+        body,
+        headers: { "content-type": contentType },
+        method: "POST",
+      });
+    }
+    if (onRequest) {
+      onRequest();
+    }
+  }, [ref, onRequest, siteUrl]);
   return (
     <div
       ref={ref}
-      className=" z-0 py-32 m-2 flex items-center justify-center space-y-4 rounded-lg 0 text-canvas-500 flex-col "
+      className=" z-0 m-2 flex items-center justify-center space-y-4 rounded-lg 0 text-canvas-500 flex-col "
     >
-      <div className="text-6xl font-extrabold font-mono text-canvas-400">
-        []
-      </div>
-      <div className="text-xl font-bold text-canvas-400">No requests yet.</div>
-
+      {children}
       <CopyableCode>
         <div>
           <span className="text-fern-900 no-copy">$</span> curl -X POST \
@@ -76,9 +90,10 @@ export default function EmptyState({
           />
         </div>
       </CopyableCode>
-      <div className="h-32" />
+      {spaceOut && <div className="h-32" />}
       <Button
         onClick={makeExampleRequest}
+        data-tour-id="lazy-button"
         disabled={exampleReqClicked}
         size="sm"
         color="alternative"

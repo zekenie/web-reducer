@@ -15,9 +15,12 @@ export async function runHook(requestId: string): Promise<void> {
   if (!request) {
     throw new Error(`request ${requestId} not found`);
   }
-  const { versionId, hookId, code, workflowState } = await getCodeByWriteKey(
-    request.writeKey
-  );
+  const {
+    versionId,
+    hookId,
+    compiledCode: code,
+    workflowState,
+  } = await getCodeByWriteKey(request.writeKey);
 
   if (workflowState === HookWorkflowState.PAUSED) {
     return;

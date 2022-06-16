@@ -59,7 +59,9 @@ export default function Hook() {
                 Requests
               </Tab>
               <Tab to="./secrets">Secrets</Tab>
-              <Tab to="./keys">Keys</Tab>
+              <Tab data-tour-id="keys-link" to="./keys">
+                Keys
+              </Tab>
             </Tabs>
 
             <div className="overflow-y-scroll flex flex-col flex-1 flex-grow">

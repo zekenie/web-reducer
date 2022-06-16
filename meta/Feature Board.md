@@ -22,11 +22,12 @@ kanban-plugin: basic
 ## Todo
 
 - [ ] Real publish UI<br>- [ ] will they notice publish? should it bounce?<br>- [ ] publish on cmd + s <br>- [x] should prettier run? Or should it run at another time ![[Pasted image 20220610084309.png]]<br>- [ ] Don't let publish happen if editor has severe errors
+- [ ] webhooks may be put requests right? we shouldn't assume post.
+- [ ] #bug if you return req from reducer you get a 500 error
 - [ ] Delete / ignore requests
 - [ ] #security restrict outbound network traffic from runner
 - [ ] typescript compiling should be in a thread #security
 - [ ] onboarding info in tool tip when signup is hovered #onboarding
-- [ ] after request have editor [start typing](https://github.com/convergencelabs/monaco-collab-ext) #onboarding
 - [ ] cap number of rows in requests table
 - [ ] automatic key rotation #security
 - [ ] why do hooks have the name they do? what's the point? can i edit it? what about description
@@ -40,16 +41,16 @@ kanban-plugin: basic
 - [ ] app should open on a hook of your own for unauthenticated users<br><br>- [ ] guest users should have hook built by default<br>- [ ] pool of hooks?
 - [ ] domain setup
 - [ ] Hooks list view
-- [ ] #bug if you return req from reducer you get a 500 error
 - [ ] server crashes on runner error. [best practice for uncaught exceptions](https://www.honeybadger.io/blog/errors-nodejs/#uncaught-exceptions-and-unhandled-promise-rejections)
-- [ ] webhooks may be put requests right? we shouldn't assume post.
 - [ ] Request detail view/modal
 - [ ] get to legal from unauthenticated state
+- [ ] Minimal solution for mobile clients... some web page
 
 
 ## In Progress
 
 - [ ] documentation<br><br>- [x] mdx file<br>- [x] sidebar<br>- [ ] new window<br>- [x] sections<br>  - [x] functions we call<br>  - [x] functions you can call
+- [ ] after request have editor [start typing](https://github.com/convergencelabs/monaco-collab-ext) #onboarding
 
 
 ## Done

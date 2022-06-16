@@ -1,6 +1,8 @@
 import {
+  BookOpenIcon,
   LinkIcon,
   PauseIcon,
+  PencilIcon,
   PlayIcon,
   PlusCircleIcon,
 } from "@heroicons/react/outline";
@@ -15,7 +17,7 @@ import {
 import type { ActionFunction, LoaderFunction } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
 import { Button, Select } from "flowbite-react";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import InfoPanel from "~/components/info-panel";
 import { useModals } from "~/modals/lib/modal-provider";
@@ -101,6 +103,7 @@ const KeyRow = ({ keyObj, hookId }: { keyObj: KeyRecord; hookId: string }) => {
       <td className="px-3 flex flex-row space-x-2 items-center">
         {keyObj.key}{" "}
         <button
+          data-tour-id={`${keyObj.type}-key-copy-link`}
           type="button"
           onClick={copy}
           disabled={transition.state === "submitting"}
@@ -137,21 +140,37 @@ const KeyRow = ({ keyObj, hookId }: { keyObj: KeyRecord; hookId: string }) => {
 export default function Keys() {
   const { hook } = useOutletContext<{ hook: HookDetail }>();
   const { keys } = useLoaderData<{ keys: KeyRecord[] }>();
+  const fetcher = useFetcher();
 
   const transition = useTransition();
   const actionData = useActionData();
 
-  const ref = useRef<HTMLFormElement>(null);
+  const createReadKey = useCallback(async () => {
+    return fetcher.submit(
+      {
+        type: "read",
+      },
+      { action: `/hooks/${hook.id}/keys`, method: "post" }
+    );
+  }, [fetcher, hook]);
+
+  const createWriteKey = useCallback(async () => {
+    return fetcher.submit(
+      {
+        type: "write",
+      },
+      { action: `/hooks/${hook.id}/keys`, method: "post" }
+    );
+  }, [fetcher, hook]);
 
   useEffect(() => {
     if (actionData?.success) {
       toast("Key created");
-      ref.current && ref.current.reset();
     }
   }, [actionData]);
 
   return (
-    <>
+    <div className="relative flex-1">
       <InfoPanel
         id="keys"
         heading="Keys let you read and write data"
@@ -164,23 +183,22 @@ export default function Keys() {
           </>
         }
       />
-      <Form method="post" ref={ref}>
-        <table
-          style={{ borderCollapse: "separate", borderSpacing: "0" }}
-          className="text-sm font-mono table-fixed w-full max-w-full"
-        >
-          <thead>
-            <tr>
-              <th className="text-left py-1 px-3 w-24">Type</th>
-              <th className="text-left py-1 px-3 w-24">Key</th>
-              <th className="w-6"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {keys.map((keyObj) => (
-              <KeyRow hookId={hook.id} key={keyObj.key} keyObj={keyObj} />
-            ))}
-            <tr>
+      <table
+        style={{ borderCollapse: "separate", borderSpacing: "0" }}
+        className="text-sm font-mono table-fixed w-full max-w-full"
+      >
+        <thead>
+          <tr>
+            <th className="text-left py-1 px-3 w-24">Type</th>
+            <th className="text-left py-1 px-3 w-24">Key</th>
+            <th className="w-6"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {keys.map((keyObj) => (
+            <KeyRow hookId={hook.id} key={keyObj.key} keyObj={keyObj} />
+          ))}
+          {/* <tr>
               <td className="py-1 px-2 w-24">
                 <Select name="type">
                   <option value="read">Read</option>
@@ -198,10 +216,31 @@ export default function Keys() {
                   disabled={transition.state === "submitting"}
                 />
               </td>
-            </tr>
-          </tbody>
-        </table>
-      </Form>
-    </>
+            </tr> */}
+        </tbody>
+      </table>
+      <div className="absolute bottom-4 right-4">
+        <Button.Group outline>
+          <Button
+            disabled={transition.state === "submitting"}
+            onClick={createReadKey}
+            size="sm"
+            color="alternative"
+          >
+            <BookOpenIcon className="w-4 h-4 mr-1" />
+            <span>New read key</span>
+          </Button>
+          <Button
+            disabled={transition.state === "submitting"}
+            size="sm"
+            onClick={createWriteKey}
+            color="alternative"
+          >
+            <PencilIcon className="w-4 h-4 mr-1" />
+            <span>New write key</span>
+          </Button>
+        </Button.Group>
+      </div>
+    </div>
   );
 }

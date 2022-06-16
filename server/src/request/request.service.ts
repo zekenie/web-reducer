@@ -45,7 +45,7 @@ export async function handleRequest({
     accessKey: await getAccessKeyForHook({ hookId: codeToRun.hookId }),
   });
   const { response } = await runCode({
-    code: codeToRun.code,
+    code: codeToRun.compiledCode,
     mode: "response",
     request,
     secrets,

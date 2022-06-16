@@ -1,18 +1,17 @@
 import {
   BookOpenIcon,
-  DotsVerticalIcon,
   LightningBoltIcon,
   SparklesIcon,
-  StarIcon,
 } from "@heroicons/react/outline";
 import Editor, { DiffEditor } from "@monaco-editor/react";
-import { useFetcher } from "@remix-run/react";
-import { debounce } from "lodash";
-import { ComponentProps, FC, useContext, useEffect } from "react";
-import { useCallback, useState } from "react";
+import { useFetcher, useNavigate } from "@remix-run/react";
 import { Button, Tooltip } from "flowbite-react";
+import { debounce, values } from "lodash";
+import type { ComponentProps, FC } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import type { HookDetail } from "~/remote/hook-client.server";
 import { docsContext } from "~/routes/hooks/$hookId";
+// import startTutorial from "./tutorial-bot";
 
 function EditorSwitch({
   hook,
@@ -28,6 +27,7 @@ function EditorSwitch({
   const [isSetup, setIsSetup] = useState(false);
   const [monaco, setMonaco] = useState<any>();
 
+  const navigate = useNavigate();
   useEffect(() => {
     return () => {
       if (!monaco) {
@@ -50,8 +50,17 @@ function EditorSwitch({
           options={options}
           onChange={onChange}
           defaultLanguage="typescript"
-          onMount={(editor) => {
+          onMount={async (editor) => {
             onInit(editor);
+            if (hook.draft.length > 0) {
+              return;
+            }
+            const startTutorial = (await import("./tutorial-bot")).default;
+            const model = editor.getModel();
+            console.log("here", model);
+            if (model) {
+              startTutorial({ editor, model, navigate });
+            }
           }}
           onValidate={console.log}
           beforeMount={(monaco) => {
@@ -156,7 +165,12 @@ export default function EditorAndFooter({ hook }: { hook: HookDetail }) {
           </button>
         )}
         <div className="flex-1" />
-        <Button onClick={openDocs} size="xs" color="alternative">
+        <Button
+          data-tour-id="docs"
+          onClick={openDocs}
+          size="xs"
+          color="alternative"
+        >
           <BookOpenIcon className="w-4 h-4 mr-1" />
           <span>Docs</span>
         </Button>
@@ -179,6 +193,7 @@ export default function EditorAndFooter({ hook }: { hook: HookDetail }) {
             <Button
               disabled={publishState === "submitting" || state === "submitting"}
               color="green"
+              data-tour-id="publish-button"
               className="flex flex-row items-center"
               size="xs"
               onClick={publish}
@@ -206,7 +221,14 @@ function useEditorMode() {
 function useUpdateDraft({ hookId }: { hookId: string }) {
   const { submit, state } = useFetcher();
   const updateDraft = useCallback(
-    debounce((value) => {
+    debounce((value: string) => {
+      if (
+        value
+          .split("\n")
+          .every((line) => line.startsWith("//") || line.trim() === "")
+      ) {
+        return;
+      }
       return submit(
         { code: value },
         { method: "post", action: `/hooks/${hookId}/update` }

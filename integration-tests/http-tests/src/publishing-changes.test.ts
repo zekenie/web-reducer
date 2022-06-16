@@ -68,6 +68,26 @@ describe("/publish", () => {
       expect(stateAfterPublish).toEqual({ number: 2 });
     });
 
+    it("sets the new draft to equal the latest published draft", async () => {
+      const { api, context } = await buildHook({});
+
+      const code = `function reducer(oldState = { number: 0 }, req) {
+        console.log(oldState);
+        console.log(req);
+        return { number: oldState.number + 1 };
+      }`;
+
+      await api.update({
+        code,
+      });
+
+      await api.publish();
+      await allQueuesDrained();
+      const hook = await api.hookDetails();
+
+      expect(hook.draft).toEqual(code);
+    });
+
     it("bulk processes existing requests with a code change throwing an error", async () => {
       const bodies = [{ number: 4 }, { number: 4 }];
       const { api, context } = await buildHook({

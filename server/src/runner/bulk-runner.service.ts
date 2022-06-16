@@ -59,7 +59,7 @@ export async function runBulk(
         ): Promise<void> {
           const runResults = await runCodeBulk({
             secrets,
-            code: code.code,
+            code: code.compiledCode,
             requests: requests,
             idempotencyKeysToIgnore: invalidIdempotencyKeys,
             state: currentState,

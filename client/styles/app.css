@@ -23,3 +23,35 @@
 .docs ul {
   list-style-type: disc;
 }
+
+
+
+/* editor */
+
+.tutorial-cursor {
+  @apply absolute border-gold-500 border-l-2 border-t-2 border-b-2 border-r-0 h-full;
+  /* box-sizing: border-box; */
+}
+
+.tutorial-cursor::after {
+  @apply absolute border-gold-500 rounded;
+  content: ' ';
+  border-width: 3px;
+  border-radius: 4px;
+  left: -4px;
+  top: -5px;
+}
+
+.tour-callout {
+  @apply shadow-2xl rounded border-4 border-gold-400 outline-2 outline-gold-700 animate-bounce;
+  z-index: 999999;
+  position:relative
+}
+.tour-callout::before {
+  content: "📢";
+  font-size: 1.2rem;
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+
+}

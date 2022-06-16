@@ -117,12 +117,20 @@ export default function RequestsTable({ requests }: { requests: Request[] }) {
                 <td className="py-1 px-3">
                   <JsonPreview>{r.createdAtFormattedTime}</JsonPreview>
                 </td>
-                <td className="max-w-full py-1 px-3 flex space-x-2 flex-row items-center">
-                  <VisualHash input={r.bodyHash} size={35} />
-                  <JsonPreview>{JSON.stringify(r.body)}</JsonPreview>
+                <td className="max-w-full py-1 px-3 ">
+                  <div className="flex space-x-2 flex-row items-center">
+                    <VisualHash input={r.bodyHash} size={35} />
+                    <JsonPreview>{JSON.stringify(r.body)}</JsonPreview>
+                  </div>
                 </td>
                 <td className="py-1 px-3">
-                  <JsonPreview>{JSON.stringify(r.state)}</JsonPreview>
+                  <div
+                    data-tour-id="state-cell"
+                    className="flex space-x-2 flex-row items-center"
+                  >
+                    <VisualHash input={r.stateHash} size={35} />
+                    <JsonPreview>{JSON.stringify(r.state)}</JsonPreview>
+                  </div>
                 </td>
                 <td className="py-1 px-3">
                   <div className="flex flex-row justify-center space-x-1">

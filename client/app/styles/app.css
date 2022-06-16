@@ -1595,6 +1595,14 @@ input:checked + .toggle-bg {
   left: 50%;
 }
 
+.bottom-4 {
+  bottom: 1rem;
+}
+
+.right-4 {
+  right: 1rem;
+}
+
 .-top-1 {
   top: -0.25rem;
 }
@@ -3104,11 +3112,6 @@ input:checked + .toggle-bg {
   padding-bottom: 0.25rem;
 }
 
-.py-32 {
-  padding-top: 8rem;
-  padding-bottom: 8rem;
-}
-
 .px-1 {
   padding-left: 0.25rem;
   padding-right: 0.25rem;
@@ -3192,6 +3195,10 @@ input:checked + .toggle-bg {
 
 .pr-1 {
   padding-right: 0.25rem;
+}
+
+.pt-32 {
+  padding-top: 8rem;
 }
 
 .pl-3 {
@@ -3685,6 +3692,84 @@ input:checked + .toggle-bg {
 
 .docs ul {
   list-style-type: disc;
+}
+
+/* editor */
+
+.tutorial-cursor {
+  position: absolute;
+  height: 100%;
+  border-left-width: 2px;
+  border-top-width: 2px;
+  border-bottom-width: 2px;
+  border-right-width: 0px;
+  --tw-border-opacity: 1;
+  border-color: rgb(219 157 65 / var(--tw-border-opacity));
+  /* box-sizing: border-box; */
+}
+
+.tutorial-cursor::after {
+  position: absolute;
+  border-radius: 0.25rem;
+  --tw-border-opacity: 1;
+  border-color: rgb(219 157 65 / var(--tw-border-opacity));
+  content: ' ';
+  border-width: 3px;
+  border-radius: 4px;
+  left: -4px;
+  top: -5px;
+}
+
+@-webkit-keyframes bounce {
+  0%, 100% {
+    transform: translateY(-25%);
+    -webkit-animation-timing-function: cubic-bezier(0.8,0,1,1);
+            animation-timing-function: cubic-bezier(0.8,0,1,1);
+  }
+
+  50% {
+    transform: none;
+    -webkit-animation-timing-function: cubic-bezier(0,0,0.2,1);
+            animation-timing-function: cubic-bezier(0,0,0.2,1);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(-25%);
+    -webkit-animation-timing-function: cubic-bezier(0.8,0,1,1);
+            animation-timing-function: cubic-bezier(0.8,0,1,1);
+  }
+
+  50% {
+    transform: none;
+    -webkit-animation-timing-function: cubic-bezier(0,0,0.2,1);
+            animation-timing-function: cubic-bezier(0,0,0.2,1);
+  }
+}
+
+.tour-callout {
+  -webkit-animation: bounce 1s infinite;
+          animation: bounce 1s infinite;
+  border-radius: 0.25rem;
+  border-width: 4px;
+  --tw-border-opacity: 1;
+  border-color: rgb(230 186 122 / var(--tw-border-opacity));
+  --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+  outline-width: 2px;
+  outline-color: #a47631;
+  z-index: 999999;
+  position:relative;
+}
+
+.tour-callout::before {
+  content: "📢";
+  font-size: 1.2rem;
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
 }
 
 .after\:translate-x-full::after {

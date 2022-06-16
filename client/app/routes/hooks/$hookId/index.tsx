@@ -1,13 +1,16 @@
+import { PlusIcon } from "@heroicons/react/outline";
 import {
   useFetcher,
   useLoaderData,
   useOutletContext,
   useParams,
 } from "@remix-run/react";
+import { Button } from "flowbite-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import RequestsTable from "~/components/hook/requests-table";
 import EmptyState from "~/components/hook/requests-table/empty-state";
 import useIntersection from "~/hooks/useIntersection";
+import { useModals } from "~/modals/lib/modal-provider";
 import setupWebsocket from "~/remote/authenticated-websocket.client";
 import type {
   HookDetail,
@@ -82,6 +85,7 @@ export default function Requests() {
     },
     [fetcher, hook.id]
   );
+  const { pushModal } = useModals();
 
   useEffect(() => {
     const { close } = setupWebsocket<SocketMessage>({
@@ -92,11 +96,39 @@ export default function Requests() {
   }, [handleSocketMessage, hookId]);
 
   if (loadedRecords.length === 0) {
-    return <EmptyState writeKeys={hook.writeKeys} siteUrl={siteUrl} />;
+    return (
+      <EmptyState spaceOut writeKeys={hook.writeKeys} siteUrl={siteUrl}>
+        <>
+          <div className="pt-32 text-6xl font-extrabold font-mono text-canvas-400">
+            []
+          </div>
+          <div className="text-xl font-bold text-canvas-400">
+            No requests yet.
+          </div>
+        </>
+      </EmptyState>
+    );
   }
   return (
     <>
-      <RequestsTable requests={loadedRecords} />
+      <div className="relative flex-1">
+        <RequestsTable requests={loadedRecords} />
+        <Button
+          icon={PlusIcon}
+          pill
+          className="absolute bottom-4 right-4"
+          color="alternative"
+          onClick={() =>
+            pushModal({
+              name: "new-request",
+              props: {
+                siteUrl,
+                writeKeys: hook.writeKeys,
+              },
+            })
+          }
+        />
+      </div>
       {nextToken && <LoadMoreFooter onEnterViewport={loadNextPage} />}
     </>
   );

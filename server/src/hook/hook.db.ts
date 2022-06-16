@@ -13,6 +13,7 @@ import { CodeNotFoundForWriteKeyError } from "./hook.errors";
 type CodeToRun = {
   workflowState: HookWorkflowState;
   versionId: string;
+  compiledCode: string;
   code: string;
   hookId: string;
 };
@@ -126,7 +127,8 @@ export async function getDraftAndPublishedCode(
         version."hookId" as "hookId",
         version."workflowState" as "versionWorkflowState",
         hook."workflowState",
-        version.code
+        version.code,
+        version."compiledCode"
       from version
       join "hook"
         on "hook".id = "version"."hookId"
@@ -152,7 +154,8 @@ export async function getPublishedCodeByHook(
         version.id as "versionId",
         version."hookId" as "hookId",
         hook."workflowState",
-        code
+        code,
+        version."compiledCode"
       from version
       join hook
         on hook.id = version."hookId"
@@ -172,7 +175,8 @@ export async function getCodeByWriteKey(writeKey: string): Promise<CodeToRun> {
         version.id as "versionId",
         hook."workflowState",
         version."hookId" as "hookId",
-        "compiledCode" as code
+        code,
+        "compiledCode"
       from version
       join "key"
         on "key"."hookId" = version."hookId"
@@ -248,9 +252,11 @@ export async function createDraft({ hookId }: { hookId: string }) {
   const publishedVersion = await getPublishedCodeByHook(hookId);
   await getPool().one<{ id: string }>(sql`
     insert into "version"
-    ("hookId", "code", "workflowState", "createdAt", "updatedAt")
+    ("hookId", "code", "compiledCode", "workflowState", "createdAt", "updatedAt")
     values
-    (${hookId}, ${publishedVersion.code}, ${VersionWorkflowState.DRAFT}, NOW(), NOW())
+    (${hookId}, ${publishedVersion.code || ""}, ${
+    publishedVersion.compiledCode || ""
+  }, ${VersionWorkflowState.DRAFT}, NOW(), NOW())
     returning id
   `);
 }

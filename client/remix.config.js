@@ -8,6 +8,7 @@ module.exports = {
   // serverBuildPath: "build/index.js",
   // publicPath: "/build/",
   devServerPort: 8002,
+  // serverDependenciesToBundle: ["monaco-editor"],
   mdx: async (filename) => {
     const [rehypeHighlight, remarkToc, rehypeSlug] = await Promise.all([
       import("rehype-highlight").then((mod) => mod.default),
