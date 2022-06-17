@@ -1,28 +1,43 @@
+import { Popover, Transition } from "@headlessui/react";
 import {
   ChevronDownIcon,
   ChevronRightIcon,
-  ClipboardCopyIcon,
   InboxInIcon,
   KeyIcon,
 } from "@heroicons/react/outline";
-import type { HookDetail } from "~/remote/hook-client.server";
-import { Popover, Transition } from "@headlessui/react";
-import { Fragment, useCallback, useRef } from "react";
-import { Form, useFetcher, useSubmit } from "@remix-run/react";
+import { useFetcher } from "@remix-run/react";
 import { Label, Textarea, TextInput } from "flowbite-react";
+import { Fragment, useCallback } from "react";
+import type { HookDetail } from "~/remote/hook-client.server";
 
-function CopyableToken({ token }: { token: string }) {
-  return (
-    <button className="flex items-center overflow-hidden flex-row rounded-sm w-fit font-mono">
-      <div className="pl-0.5 pr-1.5 py-0.5  bg-gold-200 bg-">{token}</div>
-      <div className="px-0.5 py-0.5  self-stretch bg-gold-300 ">
-        <ClipboardCopyIcon className="w-4 h-4" />
-      </div>
-    </button>
-  );
+function formatNumber(num: number): string {
+  if (num < 1000) {
+    return num.toString();
+  }
+  if (num < 100_000) {
+    return (num / 1000).toPrecision(4) + "K";
+  }
+  if (num < 1_000_000) {
+    return (num / 1000).toPrecision(3) + "K";
+  }
+
+  if (num < 1_000_000_00) {
+    return (num / 1_000_000).toPrecision(2) + "M";
+  }
+
+  if (num < 1_000_000_000) {
+    return (num / 1_000_000).toPrecision(3) + "M";
+  }
+  return "literally so much";
 }
 
-function ResourceBar({ hook }: { hook: HookDetail }) {
+function ResourceBar({
+  hook,
+  requestCount,
+}: {
+  hook: HookDetail;
+  requestCount: number;
+}) {
   const fetcher = useFetcher();
 
   const updateField = useCallback(
@@ -55,7 +70,7 @@ function ResourceBar({ hook }: { hook: HookDetail }) {
             <div className="bg-fern-500 h-2 w-2 rounded-full self-center"></div>
             <div className="flex border items-center space-x-1 flex-row text-canvas-400 px-2 p-1 rounded text-xs font-bold">
               <InboxInIcon className="w-4 h-4 self-center" />
-              <div className="self-center">1.2k</div>
+              <div className="self-center">{formatNumber(requestCount)}</div>
             </div>
             <div className="flex border items-center space-x-1 flex-row text-canvas-400 px-2 p-1 rounded text-xs font-bold">
               <KeyIcon className="w-4 h-4 self-center" />

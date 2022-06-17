@@ -24,6 +24,7 @@ type NewRequestMessage = {
   type: "new-request";
   request: Request;
   readKeys: string[];
+  requestCount: number;
   hookId: string;
 };
 

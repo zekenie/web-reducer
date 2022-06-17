@@ -6,6 +6,7 @@ import {
   useParams,
 } from "@remix-run/react";
 import { Button } from "flowbite-react";
+import type { Dispatch, SetStateAction } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import RequestsTable from "~/components/hook/requests-table";
 import EmptyState from "~/components/hook/requests-table/empty-state";
@@ -25,6 +26,7 @@ type SocketMessage =
   | {
       type: "new-request";
       request: Request;
+      requestCount: number;
       readKeys: string[];
       hookId: string;
     }
@@ -34,7 +36,10 @@ type SocketMessage =
     };
 
 export default function Requests() {
-  const { hook } = useOutletContext<{ hook: HookDetail }>();
+  const { hook, setRequestCount } = useOutletContext<{
+    hook: HookDetail;
+    setRequestCount: Dispatch<SetStateAction<number>>;
+  }>();
   const { hookId } = useParams();
   const fetcher = useFetcher();
   const { siteUrl, history: paginatedHistory } = useLoaderData<{
@@ -77,13 +82,14 @@ export default function Requests() {
             message.request,
             ...loadedRecords,
           ]);
+          setRequestCount(message.requestCount);
           break;
         case "bulk-update":
           fetcher.load(`/hooks/${hook.id}/history`);
           break;
       }
     },
-    [fetcher, hook.id]
+    [fetcher, hook.id, setRequestCount]
   );
   const { pushModal } = useModals();
 
@@ -116,7 +122,7 @@ export default function Requests() {
         <Button
           icon={PlusIcon}
           pill
-          className="absolute bottom-4 right-4"
+          className="fixed shadow bottom-4 right-4"
           color="alternative"
           onClick={() =>
             pushModal({

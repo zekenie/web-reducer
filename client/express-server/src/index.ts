@@ -10,10 +10,13 @@ import type { Credentials } from "./auth";
 import { cookieParserMiddleware } from "./auth";
 import credentialExchange from "./auth";
 import {
-  redisConnection,
+  redisConnection as authenticatedSocketRedis,
   attach as attachAuthenticatedSocket,
 } from "./authenticated-sockets";
-import { attach as attachUnauthenticatedSocket } from "./unauthenticated-sockets";
+import {
+  redisConnection as unauthenticatedSocketRedis,
+  attach as attachUnauthenticatedSocket,
+} from "./unauthenticated-sockets";
 import helmet from "helmet";
 import { WebSocketServer } from "ws";
 import type { WebSocket } from "ws";
@@ -185,7 +188,8 @@ function closeGracefully(signal: string) {
 
     server.close(async () => {
       try {
-        await redisConnection.quit();
+        await authenticatedSocketRedis.quit();
+        await unauthenticatedSocketRedis.quit();
       } catch (e) {
         return process.exit(1);
       }

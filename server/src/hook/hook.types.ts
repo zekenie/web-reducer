@@ -23,5 +23,5 @@ export type HookOverview = {
   name: string;
   description?: string;
   workflowState: HookWorkflowState;
-  // requestCount: number;
+  requestCount: number;
 };

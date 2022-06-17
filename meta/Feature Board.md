@@ -33,7 +33,6 @@ kanban-plugin: basic
 - [ ] automatic key rotation #security
 - [ ] there should be api keys between services #security
 - [ ] can i delete a hook?
-- [ ] modal to test request
 - [ ] #bug stack tracke numbers are off when there are comments preceeding the code block
 - [ ] #security limit length of console artifacts
 
@@ -56,6 +55,7 @@ kanban-plugin: basic
 ## Done
 
 **Complete**
+- [x] modal to test request
 - [x] why do hooks have the name they do? what's the point? can i edit it? what about description
 - [x] app should open on a hook of your own for unauthenticated users<br><br>- [x] guest users should have hook built by default<br>- [ ] pool of hooks?
 - [x] domain setup

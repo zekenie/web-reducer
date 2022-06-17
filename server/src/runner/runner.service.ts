@@ -1,4 +1,4 @@
-import { getCodeByWriteKey } from "../hook/hook.db";
+import { getCodeByWriteKey, getRequestCount } from "../hook/hook.db";
 import { HookWorkflowState } from "../hook/hook.types";
 import { getKeysForHook } from "../key/key.service";
 import { getRequestToRun } from "../request/request.db";
@@ -9,6 +9,8 @@ import { readStateHistory } from "../state/state.service";
 import { StateHistory } from "../state/state.types";
 import { publishState } from "./runner.publisher";
 import { runCode } from "./vm.remote";
+
+const realConsole = console;
 
 export async function runHook(requestId: string): Promise<void> {
   const request = await getRequestToRun(requestId);
@@ -91,6 +93,7 @@ export async function runHook(requestId: string): Promise<void> {
       state: stateHistory,
     });
   } catch (e) {
+    realConsole.warn("error publishing on socket", e);
     // don't fail the job just because we couldn't notify about the state
   }
 }
@@ -102,7 +105,15 @@ async function getReadKeysAndPublishState({
   hookId: string;
   state: StateHistory;
 }) {
-  const keys = await getKeysForHook({ hookId });
+  const [keys, requestCount] = await Promise.all([
+    getKeysForHook({ hookId }),
+    getRequestCount({ hookId }),
+  ]);
 
-  await publishState({ hookId, readKeys: keys.readKeys, request: state });
+  await publishState({
+    hookId,
+    requestCount,
+    readKeys: keys.readKeys,
+    request: state,
+  });
 }

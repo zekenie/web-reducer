@@ -10,16 +10,19 @@ export const connection = new IORedis(process.env.REDIS_URL, {
 export async function publishState({
   request,
   readKeys,
+  requestCount,
   hookId,
 }: {
   request: StateHistory;
   readKeys: string[];
   hookId: string;
+  requestCount: number;
 }) {
   const message = {
     type: "new-request",
     request,
     hookId,
+    requestCount,
     readKeys,
   };
   const pipeline = connection

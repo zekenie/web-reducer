@@ -1,14 +1,13 @@
 import { keyBy, mapValues } from "lodash";
 import { sql } from "slonik";
 import { getPool } from "../db";
-import UpdateHookInput from "./inputs/update-hook.input";
+import { CodeNotFoundForWriteKeyError } from "./hook.errors";
 import {
   HookCode,
   HookOverview,
   HookWorkflowState,
   VersionWorkflowState,
 } from "./hook.types";
-import { CodeNotFoundForWriteKeyError } from "./hook.errors";
 
 type CodeToRun = {
   workflowState: HookWorkflowState;
@@ -18,6 +17,23 @@ type CodeToRun = {
   hookId: string;
 };
 
+export async function incrementRequestCount({ hookId }: { hookId: string }) {
+  const pool = getPool();
+  await pool.any(sql`
+    update "hook"
+    set "requestCount" = "requestCount" + 1
+  `);
+}
+
+export async function getRequestCount({ hookId }: { hookId: string }) {
+  const pool = getPool();
+  const { requestCount } = await pool.one<{ requestCount: number }>(sql`
+    select "requestCount" from "hook"
+    where id = ${hookId}
+  `);
+  return requestCount;
+}
+
 export async function listHooks({ userId }: { userId: string }) {
   const pool = getPool();
   const res = await pool.query<HookOverview>(sql`
@@ -25,7 +41,8 @@ export async function listHooks({ userId }: { userId: string }) {
       hook.id as id,
       hook.name as "name",
       hook."workflowState" as "workflowState",
-      hook."description"
+      hook."description",
+      hook."requestCount"
     from "hook"
     join "access"
       on "hook"."id" = "access"."hookId"
@@ -42,7 +59,7 @@ export async function getOverviewForHook({
 }): Promise<HookOverview> {
   const pool = getPool();
   const row = await pool.one<HookOverview>(sql`
-    select id, name, "workflowState", "description"
+    select id, name, "workflowState", "description", "requestCount"
     from "hook"
     where id = ${hookId}
   `);

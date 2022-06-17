@@ -13,9 +13,14 @@ import { UnableToResolveSettledRequest } from "./request.errors";
 import { runCode } from "../runner/vm.remote";
 import { _dangerouslyExposeSecretsInPlaintextForNamespace } from "../secret/secret.remote";
 import { getAccessKeyForHook } from "../secret/secret.service";
+import { transaction } from "../db";
 
 export async function captureRequest(params: requestDb.CaptureRequest) {
-  const { requestId, hookId } = await requestDb.captureRequest(params);
+  const { requestId, hookId } = await transaction(async () => {
+    const { requestId, hookId } = await requestDb.captureRequest(params);
+    await hookDb.incrementRequestCount({ hookId });
+    return { requestId, hookId };
+  });
   if (params.ignore) {
     return;
   }

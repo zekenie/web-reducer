@@ -27,6 +27,8 @@ export const docsContext = createContext<{
 export default function Hook() {
   const hook = useLoaderData<HookDetail>();
 
+  const [requestCount, setRequestCount] = useState(hook.requestCount);
+
   const [areDocsOpen, setDocsOpen] = useState(false);
   const openDocs = useCallback(() => {
     setDocsOpen(true);
@@ -43,7 +45,7 @@ export default function Hook() {
   return (
     <>
       <InsideHeader>
-        <ResourceBar hook={hook} />
+        <ResourceBar requestCount={requestCount} hook={hook} />
       </InsideHeader>
       <docsContext.Provider value={{ openDocs, closeDocs }}>
         <section className="flex-grow grid grid-cols-10 overflow-hidden ">
@@ -65,7 +67,7 @@ export default function Hook() {
             </Tabs>
 
             <div className="overflow-y-scroll flex flex-col flex-1 flex-grow">
-              <Outlet context={{ hook }} />
+              <Outlet context={{ hook, setRequestCount }} />
             </div>
           </div>
           {areDocsOpen && (
