@@ -21,7 +21,49 @@ server.on("request", async (req, res) => {
 });
 ```
 
-In reality, it's a lot more complex than this. But this can give you an adequate mental model of the system
+In reality, it's a lot more complex than this. But this can give you an adequate mental model of the system.
+
+Here's a diagram.
+
+```
+    .─────────────────────────────.
+   (     Your producer client      )
+    `───────┬─────▲───────────────'
+            │     │
+┌ ─ ─ ─ ─ ─ ┼ ─ ─ ┼ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+        ┌───▼─────┴──┐
+│       │ /:writeKey ├┐               │
+        └┬───────────┘├┐
+│        └┬───────────┘│              │
+          └─┬────────▲─┘
+│           │        │                │
+       ┌────▼────────┴────┐
+│      │  responder(req)  │           │
+       └────┬─────────────┘
+│           │                         │
+    ┌───────▼────────────────┐
+│   │ getIdempotencyKey(req) │        │
+    └───────┬────────────────┘
+│           │                         │
+      ┌─────▼────────┐
+│     │reducer(      │       .─────.  │
+      │  prevState,◀─┼──────(       )
+│     │  req,        │      (`─────') │
+      │  secrets     │      (`─────')
+│     │) -> nextState├─────▶(`─────') │
+      └──────────────┘       `──▲──'
+│                               │     │
+         ┌────────────┐         │
+│        │ /:readKey  ├◀────────┘     │
+         └┬───────────┘├┐
+│         └┬───────────┘│             │
+           └──┬─────▲───┘
+└ ─ ─ ─ ─ ─ ─ ┼ ─ ─ ┼ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+              │     │
+     .────────▼─────┴────────────.
+    (    Your consumer client     )
+     `───────────────────────────'
+```
 
 ## Service Level Diagram
 
