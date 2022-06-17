@@ -22,13 +22,13 @@ export default function UserButton({
           color="light"
           label={userDetails.email}
         >
-          <Dropdown.Item>Settings</Dropdown.Item>
-          <Dropdown.Item>Learn</Dropdown.Item>
-          <Dropdown.Item>Feedback</Dropdown.Item>
+          {/* <Dropdown.Item>Settings</Dropdown.Item> */}
+          {/* <Dropdown.Item>Learn</Dropdown.Item> */}
+          {/* <Dropdown.Item>Feedback</Dropdown.Item> */}
           <Dropdown.Item onClick={() => navigate("/legal")}>
             Legal
           </Dropdown.Item>
-          <Dropdown.Divider />
+          {/* <Dropdown.Divider /> */}
           <Dropdown.Item onClick={() => navigate("/auth/logout")}>
             Sign out
           </Dropdown.Item>

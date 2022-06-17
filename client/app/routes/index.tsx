@@ -1,3 +1,4 @@
+import { InboxInIcon, KeyIcon, PlusIcon } from "@heroicons/react/outline";
 import type { LoaderFunction } from "@remix-run/node";
 import {
   Link,
@@ -5,7 +6,9 @@ import {
   useNavigate,
   useOutletContext,
 } from "@remix-run/react";
+import { Button } from "flowbite-react";
 import { useEffect } from "react";
+import { formatNumber } from "~/components/hook/resource-bar";
 import type { UserDetails } from "~/remote/auth-client.server";
 import type { HookOverview } from "~/remote/hook-client.server";
 import buildClientForJwt from "~/remote/index.server";
@@ -31,23 +34,43 @@ export default function Index() {
     return null;
   }
   return (
-    <>
-      <h1>Hook ids</h1>
-      {/* <button
-        onClick={() => pushModal({ name: "test", props: { text: "foo" } })}
-      >
-        open modal
-      </button> */}
-      <ul>
+    <div className="mx-auto max-w-xl w-full mt-12 space-y-6">
+      <div className="border rounded divide-y">
         {hooks.map((hook) => (
-          <li key={hook.id}>
-            <Link to={`/hooks/${hook.id}`}>{hook.name}</Link>
-          </li>
+          <Link
+            className="hover:bg-canvas-50 p-2 flex flex-row items-center"
+            key={hook.id}
+            to={`/hooks/${hook.id}`}
+          >
+            <div>
+              <h2>{hook.name}</h2>
+              <p className="text-canvas-700 text-sm">{hook.description}</p>
+            </div>
+            <div className="flex-1" />
+            <div>
+              <div className="flex border items-center space-x-1 flex-row text-canvas-400 px-2 p-1 rounded text-xs font-bold">
+                <InboxInIcon className="w-4 h-4 self-center" />
+                <div className="self-center">
+                  {formatNumber(hook.requestCount)}
+                </div>
+              </div>
+              {/* <div className="flex border items-center space-x-1 flex-row text-canvas-400 px-2 p-1 rounded text-xs font-bold">
+                <KeyIcon className="w-4 h-4 self-center" />
+                <div className="self-center">
+                  {hook.readKeys.length + hook.writeKeys.length}
+                </div>
+              </div> */}
+            </div>
+          </Link>
         ))}
-      </ul>
-      <form method="post" action="/hooks/create">
-        <button type="submit">Create hook</button>
+      </div>
+      <form
+        method="post"
+        className="flex flex-row justify-center"
+        action="/hooks/create"
+      >
+        <Button color="green" size="lg" type="submit" pill icon={PlusIcon} />
       </form>
-    </>
+    </div>
   );
 }

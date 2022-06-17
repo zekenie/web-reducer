@@ -10,7 +10,7 @@ import { Label, Textarea, TextInput } from "flowbite-react";
 import { Fragment, useCallback } from "react";
 import type { HookDetail } from "~/remote/hook-client.server";
 
-function formatNumber(num: number): string {
+export function formatNumber(num: number): string {
   if (num < 1000) {
     return num.toString();
   }

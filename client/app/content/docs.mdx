@@ -4,7 +4,7 @@ import {Badge} from "flowbite-react"
 
 ## Concepts
 
-"Hooks"–our unit of action–interact with the outside world through `readKeys` and `writeKeys`. These keys are currently exposed through HTTP endpoints. `writeKeys` allow information to enter the system. `readKeys` allow information out of the system.
+"Hooks"–our unit of action–interact with the outside world through `readKey` and `writeKey` endpoints. `writeKeys` allow information to enter the system. `readKeys` allow information out of the system.
 
 ```text
     .─────────────────────────────.    
@@ -147,7 +147,7 @@ Examples to come!
 
 Clients interact with hook from `readKeys` and `writeKeys` in the form of HTTP requests and websocket connections
 
-### `readKeys`
+### `readKey` endpoints
 
 `readKeys` let clients see the current state. Requests made to `https://webreducer.dev/read/:readKey` will expose the current state. If you navigate your browser to that page, you'll see an HTML page containing a pretty representation of the state with live updates. If you `curl` the endpoint, you'll see JSON alone.
 

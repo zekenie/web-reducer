@@ -1,6 +1,6 @@
 import { XIcon } from "@heroicons/react/outline";
 import type { LoaderFunction } from "@remix-run/node";
-import { Outlet, useLoaderData } from "@remix-run/react";
+import { Outlet, useLoaderData, useOutletContext } from "@remix-run/react";
 import { createContext, useCallback, useMemo, useState } from "react";
 import { InsideHeader } from "~/components/header";
 import EditorAndFooter from "~/components/hook/editor";
@@ -42,6 +42,8 @@ export default function Hook() {
     [areDocsOpen]
   );
 
+  const existingContext = useOutletContext<{}>();
+
   return (
     <>
       <InsideHeader>
@@ -61,13 +63,13 @@ export default function Hook() {
                 Requests
               </Tab>
               <Tab to="./secrets">Secrets</Tab>
-              <Tab data-tour-id="keys-link" to="./keys">
-                Keys
+              <Tab data-tour-id="keys-link" to="./endpoints">
+                Endpoints
               </Tab>
             </Tabs>
 
             <div className="overflow-y-scroll flex flex-col flex-1 flex-grow">
-              <Outlet context={{ hook, setRequestCount }} />
+              <Outlet context={{ hook, setRequestCount, ...existingContext }} />
             </div>
           </div>
           {areDocsOpen && (

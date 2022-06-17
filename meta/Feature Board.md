@@ -21,6 +21,7 @@ kanban-plugin: basic
 
 ## Todo
 
+- [ ] server crashes on runner error. [best practice for uncaught exceptions](https://www.honeybadger.io/blog/errors-nodejs/#uncaught-exceptions-and-unhandled-promise-rejections)
 - [ ] Real publish UI<br>- [x] will they notice publish? should it bounce?<br>- [ ] publish on cmd + s <br>- [x] should prettier run? Or should it run at another time ![[Pasted image 20220610084309.png]]<br>- [ ] Don't let publish happen if editor has severe errors
 - [ ] webhooks may be put requests right? we shouldn't assume post.
 - [ ] #bug if you return req from reducer you get a 500 error
@@ -35,26 +36,26 @@ kanban-plugin: basic
 - [ ] can i delete a hook?
 - [ ] #bug stack tracke numbers are off when there are comments preceeding the code block
 - [ ] #security limit length of console artifacts
+- [ ] request time availible in req obj
 
 
 ## Must have for launch
 
 - [ ] Hooks list view
-- [ ] server crashes on runner error. [best practice for uncaught exceptions](https://www.honeybadger.io/blog/errors-nodejs/#uncaught-exceptions-and-unhandled-promise-rejections)
 - [ ] get to legal from unauthenticated state
 - [ ] Minimal solution for mobile clients... some web page
 - [ ] curl response is an opportunity to educate
-- [ ] should "key" be called "endpoints" or "access"
 
 
 ## In Progress
 
-- [ ] number of requests
 
 
 ## Done
 
 **Complete**
+- [x] should "key" be called "endpoints" or "access"
+- [x] number of requests
 - [x] modal to test request
 - [x] why do hooks have the name they do? what's the point? can i edit it? what about description
 - [x] app should open on a hook of your own for unauthenticated users<br><br>- [x] guest users should have hook built by default<br>- [ ] pool of hooks?

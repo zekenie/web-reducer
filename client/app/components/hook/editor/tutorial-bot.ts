@@ -335,7 +335,7 @@ export default function startTutorial({
 
   manager.enqueueContent({
     type: "navigate",
-    path: "./keys",
+    path: "./endpoints",
   });
   manager.enqueueContent({ type: "pause", ms: 500 });
 
@@ -355,7 +355,7 @@ export default function startTutorial({
 
   manager.enqueueContent({
     type: "line",
-    text: "// Copy the read key to your clipboard paste it into your browser...",
+    text: "// Copy the read endpoint to your clipboard paste it into your browser...",
     mode: "type",
   });
 

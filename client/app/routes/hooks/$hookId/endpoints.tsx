@@ -38,7 +38,15 @@ export const loader: LoaderFunction = async ({ context, params }) => {
   return { keys };
 };
 
-const KeyRow = ({ keyObj, hookId }: { keyObj: KeyRecord; hookId: string }) => {
+const KeyRow = ({
+  keyObj,
+  hookId,
+  siteUrl,
+}: {
+  keyObj: KeyRecord;
+  hookId: string;
+  siteUrl: string;
+}) => {
   const transition = useTransition();
   const fetcher = useFetcher();
 
@@ -59,7 +67,7 @@ const KeyRow = ({ keyObj, hookId }: { keyObj: KeyRecord; hookId: string }) => {
         key: keyObj.key,
         hookId,
       },
-      { action: `/hooks/${hookId}/keys/pause`, method: "post" }
+      { action: `/hooks/${hookId}/endpoints/pause`, method: "post" }
     );
   }, [fetcher, keyObj, hookId, pushModal]);
 
@@ -79,7 +87,7 @@ const KeyRow = ({ keyObj, hookId }: { keyObj: KeyRecord; hookId: string }) => {
         key: keyObj.key,
         hookId,
       },
-      { action: `/hooks/${hookId}/keys/play`, method: "post" }
+      { action: `/hooks/${hookId}/endpoints/play`, method: "post" }
     );
   }, [fetcher, keyObj, hookId, pushModal]);
 
@@ -97,9 +105,13 @@ const KeyRow = ({ keyObj, hookId }: { keyObj: KeyRecord; hookId: string }) => {
         keyObj.workflowState === "paused" ? " text-gray-500 line-through" : ""
       }`}
     >
-      <td className="py-1 px-3 w-24">{keyObj.type}</td>
-      <td className="px-3 flex flex-row space-x-2 items-center">
-        {keyObj.key}{" "}
+      <td className="py-1 px-3 flex flex-row space-x-2 items-center">
+        <span>
+          {siteUrl}/<span className="italic font-semibold">{keyObj.type}</span>/
+          {keyObj.key}
+        </span>
+      </td>
+      <td className="space-x-2">
         <button
           data-tour-id={`${keyObj.type}-key-copy-link`}
           type="button"
@@ -109,8 +121,6 @@ const KeyRow = ({ keyObj, hookId }: { keyObj: KeyRecord; hookId: string }) => {
         >
           <LinkIcon className="w-5 h-5" />
         </button>
-      </td>
-      <td className="">
         {keyObj.workflowState === "live" ? (
           <button
             type="button"
@@ -135,8 +145,12 @@ const KeyRow = ({ keyObj, hookId }: { keyObj: KeyRecord; hookId: string }) => {
   );
 };
 
-export default function Keys() {
-  const { hook } = useOutletContext<{ hook: HookDetail }>();
+export default function Endpoints() {
+  const { hook, siteUrl } = useOutletContext<{
+    hook: HookDetail;
+    siteUrl: string;
+  }>();
+
   const { keys } = useLoaderData<{ keys: KeyRecord[] }>();
   const fetcher = useFetcher();
 
@@ -148,7 +162,7 @@ export default function Keys() {
       {
         type: "read",
       },
-      { action: `/hooks/${hook.id}/keys`, method: "post" }
+      { action: `/hooks/${hook.id}/endpoints`, method: "post" }
     );
   }, [fetcher, hook]);
 
@@ -157,7 +171,7 @@ export default function Keys() {
       {
         type: "write",
       },
-      { action: `/hooks/${hook.id}/keys`, method: "post" }
+      { action: `/hooks/${hook.id}/endpoints`, method: "post" }
     );
   }, [fetcher, hook]);
 
@@ -170,14 +184,15 @@ export default function Keys() {
   return (
     <div className="relative flex-1">
       <InfoPanel
-        id="keys"
-        heading="Keys let you read and write data"
+        id="Endpoints"
+        heading="Endpoints let you read and write data"
         description={
           <>
-            There is a URL for every key. If someone has access to that URL,
-            they will be able to read or write to this hook. If you pause a key,
-            that access will be revoked until you re-enable it. Read keys can
-            also be used by our websocket endpoint to get realtime updates.
+            If someone has access to an endpoint, they will be able to read or
+            write to this hook, depending on the type of endpoint. If you pause
+            an endpoint, that access will be revoked until you re-enable it.
+            Read endpoints can also be used by our websocket endpoint to get
+            realtime updates.
           </>
         }
       />
@@ -187,14 +202,18 @@ export default function Keys() {
       >
         <thead>
           <tr>
-            <th className="text-left py-1 px-3 w-24">Type</th>
-            <th className="text-left py-1 px-3 w-24">Key</th>
+            <th className="text-left w-64 py-1 px-3">Endpoint</th>
             <th className="w-6"></th>
           </tr>
         </thead>
         <tbody>
           {keys.map((keyObj) => (
-            <KeyRow hookId={hook.id} key={keyObj.key} keyObj={keyObj} />
+            <KeyRow
+              siteUrl={siteUrl}
+              hookId={hook.id}
+              key={keyObj.key}
+              keyObj={keyObj}
+            />
           ))}
         </tbody>
       </table>
@@ -207,7 +226,7 @@ export default function Keys() {
             color="alternative"
           >
             <BookOpenIcon className="w-4 h-4 mr-1" />
-            <span>New read key</span>
+            <span>New read endpoint</span>
           </Button>
           <Button
             disabled={transition.state === "submitting"}
@@ -216,7 +235,7 @@ export default function Keys() {
             color="alternative"
           >
             <PencilIcon className="w-4 h-4 mr-1" />
-            <span>New write key</span>
+            <span>New write endpoint</span>
           </Button>
         </Button.Group>
       </div>
