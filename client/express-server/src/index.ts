@@ -22,6 +22,7 @@ import { WebSocketServer } from "ws";
 import type { WebSocket } from "ws";
 import { readKeyHandler } from "./read-key";
 import { writeKeyHandler } from "./write-key";
+import cors from "cors";
 
 declare global {
   namespace Express {
@@ -67,7 +68,7 @@ app.use(
 app.get("/heartbeat", (req, res) => res.json({ ok: true }));
 app.use(morgan("tiny"));
 
-app.get("/read/:readKey", readKeyHandler);
+app.get("/read/:readKey", cors(), readKeyHandler);
 app.use("/write", writeKeyHandler);
 
 app.use((req, res, next) => {
