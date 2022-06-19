@@ -64,7 +64,7 @@ export default function Hook() {
               </Tab>
               <Tab to="./secrets">Secrets</Tab>
               <Tab data-tour-id="keys-link" to="./endpoints">
-                Endpoints
+                Endpoint keys
               </Tab>
             </Tabs>
 

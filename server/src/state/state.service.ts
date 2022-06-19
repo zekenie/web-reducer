@@ -7,13 +7,37 @@ import { StateHistory, StateHistoryContract } from "./state.types";
 // @ts-ignore
 import { Nilsimsa } from "nilsimsa";
 import { isReadKeyValid } from "../key/key.db";
+import { runCode } from "../runner/vm.remote";
+import * as hookDb from "../hook/hook.db";
+import { _dangerouslyExposeSecretsInPlaintextForNamespace } from "../secret/secret.remote";
+import { getAccessKeyForHook } from "../secret/secret.service";
 
-export async function readState(readKey: string) {
+export async function readState(readKey: string, queryString?: string) {
   const [keyValid, stateRecord] = await Promise.all([
     isReadKeyValid(readKey),
     stateDb.readCurrentState(readKey),
   ]);
-  return { keyValid, state: stateRecord?.state };
+
+  const codeToRun = await hookDb.getCodeByReadKey(readKey);
+  const secrets = await _dangerouslyExposeSecretsInPlaintextForNamespace({
+    accessKey: await getAccessKeyForHook({ hookId: codeToRun.hookId }),
+  });
+
+  const { response } = await runCode({
+    code: codeToRun.compiledCode,
+    mode: "query",
+    request: {
+      id: "",
+      body: {},
+      createdAt: new Date().toString(),
+      queryString: queryString || "",
+      headers: {},
+    },
+    secrets,
+    state: stateRecord?.state,
+  });
+
+  return { keyValid, state: response?.body };
 }
 
 export async function readStateHistoryPage(

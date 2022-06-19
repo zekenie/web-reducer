@@ -83,6 +83,21 @@ function EditorSwitch({
               interface ResponderFunction<ReqBody = any, ResBody = any> {
                 (req: WrRequest<ReqBody>): WrResponse<ResBody> 
               }
+              interface QueryFunction<State> {
+                (state: State, queryParams: URLSearchParams, secrets: Record<string, string>): WrResponse<ResBody> 
+              }
+              declare global {
+                function uuid(): string
+                function toHex(uInt8: Uint8Array): string
+                function sha256(input: string): Uint8Array
+                function sha512(input: string): Uint8Array
+                function hmac(hash: sha256 | sha512; key: string message: string): Uint8Array
+              }
+              function uuid(): string { return "" }
+              function toHex(uInt8: Uint8Array): string { return "" }
+              function sha256(input: string): Uint8Array { return new Uint8Array() }
+              function sha512(input: string): Uint8Array { return new Uint8Array() }
+              function hmac(hash: sha256 | sha512; key: string message: string): Uint8Array { return new Uint8Array() }
             `;
 
             monaco.languages.typescript.typescriptDefaults.addExtraLib(

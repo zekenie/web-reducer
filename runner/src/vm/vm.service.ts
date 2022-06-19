@@ -5,6 +5,12 @@ import { Artifacts } from "./artifacts";
 const sharedHeaderCode = `requests = requests.map(req => ({ ...req, query: makeQueryParams(req.queryString) }))
 artifacts.expectLength(requests.length);
 function reducer() {}
+function query(state, queryString, secrets) {
+  return {
+    statusCode: 200,
+    body: state
+  };
+}
 function responder(request, secrets) {
   return {
     status: 202,
@@ -33,7 +39,33 @@ const codeBread = {
           }
         })()
       })(${requestsJson}, ${secretsJson})`,
-    offset: 12,
+    offset: 18,
+  },
+  query: {
+    code: (
+      code: string,
+      requestsJson: string,
+      secretsJson: string,
+      state: string | undefined
+    ) =>
+      `(function(requests, secrets, state) {
+        ${sharedHeaderCode}
+        (function() {
+          ${code}
+          for (const request of requests) {
+            const frame = artifacts.open(request.id);
+            try {
+              frame.setResponse(query(state, makeQueryParams(request.queryString), secrets));
+            } catch(e) {
+              frame.setError(e)
+              frame.setResponse({
+                statusCode: 500
+              })
+            }
+          }
+        })()
+      })(${requestsJson}, ${secretsJson}, ${state})`,
+    offset: 18,
   },
   reducer: {
     code: (
@@ -74,7 +106,7 @@ const codeBread = {
           }, []);
         })()
       })(${state}, ${requestsJson}, ${secretsJson})`,
-    offset: 12,
+    offset: 18,
   },
 };
 
@@ -94,7 +126,7 @@ export function runCode({
   state?: string;
   invalidIdempotencyKeys: string[];
   timeout?: number;
-  mode: "reducer" | "response"; // or side-effects?
+  mode: "reducer" | "response" | "query"; // or side-effects?
   filename?: string;
 }>) {
   const codeLength = code.split("\n").length;
@@ -123,6 +155,13 @@ export function runCode({
     );
   } else if (mode === "response") {
     codeWithRuntime = codeBread.response.code(code, requestsJson, secretsJson);
+  } else if (mode === "query") {
+    codeWithRuntime = codeBread.query.code(
+      code,
+      requestsJson,
+      secretsJson,
+      state
+    );
   } else {
     throw new Error("invalid mode");
   }

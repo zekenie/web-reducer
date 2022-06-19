@@ -7,9 +7,10 @@
         "id": "bd97e0216e7da7e7",
         "type": "leaf",
         "state": {
-          "type": "kanban",
+          "type": "markdown",
           "state": {
-            "file": "Feature Board.md"
+            "file": "examples/Card games.md",
+            "mode": "source"
           }
         }
       }
@@ -67,7 +68,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Feature Board.md",
+                "file": "examples/Card games.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -87,6 +88,8 @@
   },
   "active": "bd97e0216e7da7e7",
   "lastOpenFiles": [
+    "examples/Card games.md",
+    "examples/help tickets.md",
     "Feature Board.md",
     "Tech Investments.md",
     "ideas/jq expressions in request table.md",
@@ -94,8 +97,6 @@
     "examples/Simple form submit.md",
     "ideas/Other data stores.md",
     "examples/econ experiment.md",
-    "ideas/Cron requests.md",
-    "examples/product surveys.md",
-    "examples/form builder.md"
+    "ideas/Cron requests.md"
   ]
 }

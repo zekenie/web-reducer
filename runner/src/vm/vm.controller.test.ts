@@ -4,6 +4,33 @@ import makeServer from "../server/index";
 const server = makeServer({});
 
 describe("single", () => {
+  describe("query mode", () => {
+    it("accepts inputs that are the right size", async () => {
+      const { body } = await supertest(server)
+        .post("/")
+        .send({
+          secretsJson: "{}",
+          mode: "query",
+          code: `function query(state) { return { statusCode: 200, body: { foo: state.foo } } }`,
+          requestJson: JSON.stringify({
+            id: "1",
+            body: {},
+            headers: {},
+          }),
+          state: JSON.stringify({ foo: 4 }),
+        })
+        .expect(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          response: expect.objectContaining({
+            statusCode: 200,
+            body: { foo: 4 },
+          }),
+        })
+      );
+    });
+  });
+
   describe("response mode", () => {
     it("accepts inputs that are the right size", async () => {
       const { body } = await supertest(server)

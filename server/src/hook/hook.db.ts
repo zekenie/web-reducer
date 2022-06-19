@@ -1,7 +1,10 @@
 import { keyBy, mapValues } from "lodash";
 import { sql } from "slonik";
 import { getPool } from "../db";
-import { CodeNotFoundForWriteKeyError } from "./hook.errors";
+import {
+  CodeNotFoundForReadKeyError,
+  CodeNotFoundForWriteKeyError,
+} from "./hook.errors";
 import {
   HookCode,
   HookOverview,
@@ -222,6 +225,34 @@ export async function getCodeByWriteKey(writeKey: string): Promise<CodeToRun> {
 
   if (!code) {
     throw new CodeNotFoundForWriteKeyError();
+  }
+  return code;
+}
+
+export async function getCodeByReadKey(writeKey: string): Promise<CodeToRun> {
+  const pool = getPool();
+  const code = await pool.maybeOne<CodeToRun>(
+    sql`
+      select
+        version.id as "versionId",
+        hook."workflowState",
+        version."hookId" as "hookId",
+        code,
+        "compiledCode"
+      from version
+      join "key"
+        on "key"."hookId" = version."hookId"
+      join "hook"
+        on "version"."hookId" = "hook"."id"
+      where "key"."type" = 'read'
+        and "key"."key" = ${writeKey}
+        and version."workflowState" = ${VersionWorkflowState.PUBLISHED}
+      limit 1
+    `
+  );
+
+  if (!code) {
+    throw new CodeNotFoundForReadKeyError();
   }
   return code;
 }

@@ -188,6 +188,44 @@ describe("existing hooks", () => {
       expect(state).toEqual({ number: 13 });
     });
   });
+
+  describe("query", () => {
+    it("responds with query function return val when readKey used", async () => {
+      const { api, context, authenticatedClient } = await buildHook({
+        code: `function query() { return { body: { foo: "bar" } } }`,
+      });
+      const { data, status } = await authenticatedClient.get(
+        `/read/${context.readKey}`,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      expect(status).toEqual(200);
+    });
+
+    it("has access to state and secrets", async () => {
+      const body1 = { number: 4 };
+      const body2 = { number: 3 };
+      const { api } = await buildHook({
+        code: `
+        function reducer(oldState = { number: 0 }, req) {
+          return { number: oldState.number + req.body.number };
+        }
+        function query(state, queryString, secrets) {
+          return { body: { number: Number(secrets.number) + state.number } }
+        }`,
+      });
+      await api.setSecret("number", "3");
+      await api.write(body1);
+      await api.write(body2);
+      await api.settled(body2);
+
+      await allQueuesDrained();
+
+      const state = await api.read();
+
+      expect(state).toEqual({ number: 10 });
+    });
+  });
+
   describe("responder", () => {
     it("responds with responder function", async () => {
       const body1 = { number: 4 };

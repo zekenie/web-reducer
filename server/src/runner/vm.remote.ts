@@ -42,7 +42,7 @@ export async function runCode({
   request: WebhookRequest;
   state: unknown;
   secrets: Record<string, string>;
-  mode: "reducer" | "response";
+  mode: "reducer" | "response" | "query";
 }): Promise<CodeResponse> {
   const res = await client.post<CodeResponse>("/", {
     code: code || "",

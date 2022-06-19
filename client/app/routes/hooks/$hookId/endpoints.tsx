@@ -202,7 +202,7 @@ export default function Endpoints() {
       >
         <thead>
           <tr>
-            <th className="text-left w-64 py-1 px-3">Endpoint</th>
+            <th className="text-left w-56 py-1 px-3">Endpoint</th>
             <th className="w-6"></th>
           </tr>
         </thead>

@@ -32,18 +32,22 @@ import {Badge} from "flowbite-react"
 │     │  req,        │      (`─────') │
       │  secrets     │      (`─────')  
 │     │) -> nextState├─────▶(`─────') │
-      └──────────────┘       `──▲──'   
+      └──────────────┘       `──┬──'   
 │                               │     │
-         ┌────────────┐         │      
-│        │ /:readKey  ├◀────────┘     │
+    ┌─────────────────────────┐ │      
+│   │query(state, queryString)│◀┘     │
+    └────────────┬────────────┘        
+│                │                    │
+         ┌───────▼────┐                
+│        │ /:readKey  ├┐              │
          └┬───────────┘├┐              
 │         └┬───────────┘│             │
            └──┬─────▲───┘              
 └ ─ ─ ─ ─ ─ ─ ┼ ─ ─ ┼ ─ ─ ─ ─ ─ ─ ─ ─ ┘
               │     │                  
-     .────────▼─────┴────────────.     
-    (    Your consumer client     )    
-     `───────────────────────────'     
+    .─────────▼─────┴───────────.      
+   (    Your consumer client     )     
+    `───────────────────────────'        
 ```
 
 Your reducer code determines how the information entering the system is processed into the state exposed by `readKey`s.
@@ -91,6 +95,32 @@ Sometimes clients, particularly webhook clients will resend requests that they b
 ```js
 function getIdempotencyKey(request) {
   return request.headers['x-idempotency-key-or-whatever'];
+}
+```
+
+### `query`
+Query specifies the behavior of a `readKey` endpoint. By default, a client requesting a `readKey` will see the entire state object. However, in some cases, you may way clients to recieve some function of the state based on a query param. For example, if you had a state object containing a hash of user IDs to points, and wanted clients to only access the points for their user.
+
+```json
+{
+  "3777b082-c424-4d19-b4b0-ef6ae30b83e4": 32,
+  "cd635cd4-7b8d-41b0-8ac1-e7dfa32e2f1f": 12,
+  // ...
+}
+```
+
+You could write a `query` method to only respond with the points for a particular user.
+
+```ts
+function query(state, queryParams) {
+  const idToLookup = queryParams.get("userId");
+  if (!idToLookup) {
+    return {
+      statusCode: 400,
+      body: { error: 'missing `userId` query param.'}
+    }
+  }
+  return { points: state[idToLookup] }
 }
 ```
 

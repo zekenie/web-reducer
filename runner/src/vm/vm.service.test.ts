@@ -1,6 +1,140 @@
 import { formatRequest, formatRequests } from "./test-helpers";
 import { runCode } from "./vm.service";
 
+describe("query", () => {
+  it("runs hello world", () => {
+    const helloWorld = `
+      function query() {
+        return {
+          statusCode: 200,
+          body: { hello: 'world' }
+        }
+      }
+    `;
+
+    expect(
+      runCode({
+        secretsJson: "{}",
+        mode: "query",
+        code: helloWorld,
+        requestsJson: formatRequest(),
+        invalidIdempotencyKeys: [],
+        state: "{}",
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          ms: expect.any(Number),
+          error: null,
+          response: {
+            statusCode: 200,
+            body: { hello: "world" },
+          },
+        }),
+      ])
+    );
+  });
+
+  it("has access to secrets", () => {
+    const code = `
+      function query(state, queryString, secrets) {
+        return {
+          statusCode: 200,
+          body: { FOO: secrets.FOO }
+        }
+      }
+    `;
+
+    expect(
+      runCode({
+        secretsJson: `{ "FOO": "bar" }`,
+        mode: "query",
+        code: code,
+        requestsJson: formatRequest(),
+        invalidIdempotencyKeys: [],
+        state: "{}",
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          ms: expect.any(Number),
+          error: null,
+          response: {
+            statusCode: 200,
+            body: { FOO: "bar" },
+          },
+        }),
+      ])
+    );
+  });
+
+  it("has access to queryString", () => {
+    const code = `
+      function query(state, queryString) {
+        return {
+          statusCode: 200,
+          body: { FOO: queryString.get('foo') }
+        }
+      }
+    `;
+
+    expect(
+      runCode({
+        secretsJson: `{}`,
+        mode: "query",
+        code: code,
+        requestsJson: formatRequest({ queryString: "?foo=bar" }),
+        invalidIdempotencyKeys: [],
+        state: "{}",
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          ms: expect.any(Number),
+          error: null,
+          response: {
+            statusCode: 200,
+            body: { FOO: "bar" },
+          },
+        }),
+      ])
+    );
+  });
+
+  it("has access to state", () => {
+    const code = `
+      function query(state) {
+        return {
+          statusCode: 200,
+          body: { FOO: state.foo }
+        }
+      }
+    `;
+
+    expect(
+      runCode({
+        secretsJson: `{}`,
+        mode: "query",
+        code: code,
+        requestsJson: formatRequest(),
+        invalidIdempotencyKeys: [],
+        state: `{ "foo": "bar" }`,
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          ms: expect.any(Number),
+          error: null,
+          response: {
+            statusCode: 200,
+            body: { FOO: "bar" },
+          },
+        }),
+      ])
+    );
+  });
+});
+
 describe("responder", () => {
   it("runs hello world", () => {
     const helloWorld = `
