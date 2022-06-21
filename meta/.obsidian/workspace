@@ -9,7 +9,7 @@
         "state": {
           "type": "markdown",
           "state": {
-            "file": "examples/Card games.md",
+            "file": "examples/life timeline?.md",
             "mode": "source"
           }
         }
@@ -68,7 +68,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "examples/Card games.md",
+                "file": "examples/life timeline?.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -88,6 +88,7 @@
   },
   "active": "bd97e0216e7da7e7",
   "lastOpenFiles": [
+    "examples/life timeline?.md",
     "examples/Card games.md",
     "examples/help tickets.md",
     "Feature Board.md",
@@ -96,7 +97,6 @@
     "examples/Something with qr codes.md",
     "examples/Simple form submit.md",
     "ideas/Other data stores.md",
-    "examples/econ experiment.md",
-    "ideas/Cron requests.md"
+    "examples/econ experiment.md"
   ]
 }

@@ -62,4 +62,36 @@ describe("unauthenticated websocket", () => {
     );
     ws.close();
   });
+
+  it("works with a queryString", async () => {
+    const hook = (await api.hook.create()).data;
+
+    await api.hook.update(hook.id, {
+      code: `
+        function reducer() { return { number: 1 } }
+        function query(state, queryParams) { return { statusCode: 200, body: { foo: queryParams.get('foo') } }; }
+      `,
+    });
+    await api.hook.publish(hook.id);
+    await allQueuesDrained();
+
+    const conStr = `${process.env
+      .WEB_URL!.split("http")
+      .join("ws")}/state-events?readKey=${hook.readKeys[0]}&foo=bar`;
+    const ws = new WebSocket(conStr);
+    await convertEventToPromise("upgrade", ws);
+    await api.hook.writeKey(hook.writeKeys[0], {});
+
+    const asJson = await convertMessageEventToPromise(ws, (msg) => {
+      console.log(msg);
+      return msg.type === "new-state" && msg?.state?.foo === "bar";
+    });
+    expect(asJson).toEqual(
+      expect.objectContaining({
+        type: "new-state",
+        state: { foo: "bar" },
+      })
+    );
+    ws.close();
+  });
 });

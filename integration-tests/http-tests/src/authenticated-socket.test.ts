@@ -37,6 +37,7 @@ export function convertMessageEventToPromise<T = any>(
   return new Promise<T>((resolve) => {
     ws.on("message", (messageBuffer) => {
       const message = JSON.parse(messageBuffer.toString()) as T;
+      console.log(message);
       if (matcher(message)) {
         resolve(message);
       }

@@ -67,8 +67,7 @@ app.use(
 );
 app.get("/heartbeat", (req, res) => res.json({ ok: true }));
 app.use(morgan("tiny"));
-
-app.get("/read/:readKey", cors(), readKeyHandler);
+app.use("/read/:readKey", cors({ origin: "*" }), readKeyHandler);
 app.use("/write", writeKeyHandler);
 
 app.use((req, res, next) => {

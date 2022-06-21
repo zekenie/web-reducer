@@ -15,21 +15,27 @@ const getReadKeyTemplate =
     ? rawReadTemplate
     : memoize(rawReadTemplate);
 
-async function fetchState(readKey: string) {
-  const res = await fetch(`${process.env.BACKEND_URL}/read/${readKey}`, {
-    method: "GET",
-    headers: {
-      Accepts: "application/json",
-      "Content-Type": "application/json",
-    },
-  });
+async function fetchState(readKey: string, queryString: string = "") {
+  const res = await fetch(
+    `${process.env.BACKEND_URL}/read/${readKey}${queryString}`,
+    {
+      method: "GET",
+      headers: {
+        Accepts: "application/json",
+        "Content-Type": "application/json",
+      },
+    }
+  );
 
   return res.json();
 }
 
 export const readKeyHandler: RequestHandler = async (req, res, next) => {
   try {
-    const state = await fetchState(req.params.readKey);
+    const originalUrl = `${req.protocol}://${req.hostname}${req.originalUrl}`;
+    const urlObj = new URL(originalUrl);
+
+    const state = await fetchState(req.params.readKey, urlObj.search);
 
     res.format({
       json: () => res.send(state),
