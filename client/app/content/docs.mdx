@@ -198,12 +198,12 @@ You can subscribe to state changes through a websocket. The socket endpoint is `
 Here's an example of how to use the socket from the browser.
 
 ```js
-const socket = new WebSocket("https://webreducer.dev/state-events?readKey=:your-read-key");
+const socket = new WebSocket("wss://webreducer.dev/state-events?readKey=:your-read-key");
 
 socket.addEventListener("message", (message) => {
   const event = JSON.parse(message.data)
   switch(event.type) {
-    case: "bulk-update":
+    case "bulk-update":
       // do something with event.state
       break;
     case "new-state":
