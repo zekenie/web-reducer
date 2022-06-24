@@ -93,7 +93,10 @@ const KeyRow = ({
 
   const copy = useCallback(async () => {
     const host = window.location.host;
-    await navigator.clipboard.writeText(`${host}/${keyObj.type}/${keyObj.key}`);
+    const protocol = window.location.protocol;
+    await navigator.clipboard.writeText(
+      `${protocol}//${host}/${keyObj.type}/${keyObj.key}`
+    );
     toast.success("It's on your clipboard", {
       icon: <LinkIcon className="w-5 h-5 text-fern-600" />,
     });
