@@ -84,7 +84,7 @@ describe("unauthenticated websocket", () => {
 
     const asJson = await convertMessageEventToPromise(ws, (msg) => {
       console.log(msg);
-      return msg.type === "new-state" && msg?.state?.foo === "bar";
+      return msg.type === "new-state";
     });
     expect(asJson).toEqual(
       expect.objectContaining({

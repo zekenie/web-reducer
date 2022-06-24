@@ -37,11 +37,11 @@ kanban-plugin: basic
 - [ ] #bug stack tracke numbers are off when there are comments preceeding the code block
 - [ ] #security limit length of console artifacts
 - [ ] request time availible in req obj
+- [ ] artifacts should be availible at request time, not just reducer time
 
 
 ## Must have for launch
 
-- [ ] Hooks list view
 - [ ] get to legal from unauthenticated state
 - [ ] Minimal solution for mobile clients... some web page
 - [ ] curl response is an opportunity to educate
@@ -49,11 +49,13 @@ kanban-plugin: basic
 
 ## In Progress
 
+- [ ] request templates
 
 
 ## Done
 
 **Complete**
+- [x] Hooks list view
 - [x] should "key" be called "endpoints" or "access"
 - [x] number of requests
 - [x] modal to test request

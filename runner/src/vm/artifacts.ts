@@ -34,8 +34,24 @@ function formatError(
   }
 }
 
+type JSON = {
+  [key: string]:
+    | JSON
+    | string
+    | number
+    | boolean
+    | null
+    | JSON[]
+    | string[]
+    | number[]
+    | boolean[]
+    | null[];
+};
+type Template = JSON;
+
 export class Artifacts {
   public console: VMConsole = new VMConsole(this);
+  public readonly templates: { [key: string]: Template } = {};
   private requestArtifacts: { [id: string]: RequestArtifact } = {};
   // for order
   private ids: string[] = [];
@@ -54,6 +70,10 @@ export class Artifacts {
     return Object.values(this.requestArtifacts).every(
       (artifact) => !artifact.isOpen
     );
+  }
+
+  addTemplate(name: string, template: Template) {
+    this.templates[name] = template;
   }
 
   report({

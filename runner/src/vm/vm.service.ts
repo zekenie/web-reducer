@@ -2,7 +2,27 @@ import * as vmCrypto from "./vm-crypto.service";
 import vm2 from "vm2";
 import { Artifacts } from "./artifacts";
 
+const templateFns = `
+function template(name, cb) {
+  artifacts.addTemplate(name, cb(state))
+}
+function input(name) {
+  return {
+    __wr_type: "input",
+    name
+  }
+}
+function select(name, options) {
+  return {
+    __wr_type: "select",
+    name,
+    options
+  }
+}
+`;
+
 const sharedHeaderCode = `requests = requests.map(req => ({ ...req, query: makeQueryParams(req.queryString) }))
+${templateFns}
 artifacts.expectLength(requests.length);
 function reducer() {}
 function query(state, queryString, secrets) {
@@ -20,6 +40,14 @@ function responder(request, secrets) {
 function getIdempotencyKey(request) { return request.id; }`;
 
 const codeBread = {
+  config: {
+    code: (code: string, state: string | undefined) => `(function(state) {
+      const requests = [];
+      ${templateFns}
+      ${code}
+    })(${state})`,
+    offset: 2 + 18,
+  },
   response: {
     code: (code: string, requestsJson: string, secretsJson: string) =>
       `(function(requests, secrets) {
@@ -39,7 +67,7 @@ const codeBread = {
           }
         })()
       })(${requestsJson}, ${secretsJson})`,
-    offset: 18,
+    offset: 18 + 18,
   },
   query: {
     code: (
@@ -65,7 +93,7 @@ const codeBread = {
           }
         })()
       })(${requestsJson}, ${secretsJson}, ${state})`,
-    offset: 18,
+    offset: 18 + 18,
   },
   reducer: {
     code: (
@@ -106,7 +134,7 @@ const codeBread = {
           }, []);
         })()
       })(${state}, ${requestsJson}, ${secretsJson})`,
-    offset: 18,
+    offset: 18 + 18,
   },
 };
 
@@ -126,7 +154,7 @@ export function runCode({
   state?: string;
   invalidIdempotencyKeys: string[];
   timeout?: number;
-  mode: "reducer" | "response" | "query"; // or side-effects?
+  mode: "reducer" | "response" | "query" | "config"; // or side-effects?
   filename?: string;
 }>) {
   const codeLength = code.split("\n").length;
@@ -162,6 +190,8 @@ export function runCode({
       secretsJson,
       state
     );
+  } else if (mode === "config") {
+    codeWithRuntime = codeBread.config.code(code, state);
   } else {
     throw new Error("invalid mode");
   }
