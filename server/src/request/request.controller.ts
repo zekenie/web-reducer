@@ -17,6 +17,7 @@ const limiter = rateLimit({
 });
 
 export default Router()
+  .use(cors({ origin: "*", credentials: true }))
   .get("/:writeKey/settled/:requestId", async (req, res, next) => {
     try {
       await service.resolveWhenJobSettled(
@@ -28,7 +29,6 @@ export default Router()
       next(e);
     }
   })
-  .use(cors({ origin: "*", credentials: true }))
   .post("/:writeKey", limiter, async function handleRequest(req, res, next) {
     try {
       writeKeyCounter.add(1);
