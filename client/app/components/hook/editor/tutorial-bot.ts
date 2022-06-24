@@ -289,10 +289,10 @@ export default function startTutorial({
 
   manager.enqueueContent({
     type: "line",
-    text: `const reducer: ReducerFunction = (prevState = { number: 0, prevRequests: [] }, req) => {
+    text: `const reducer = (prevState = { count: 0 }, req) => {
+  // simple auto-incrementor runs on every request
   return {
-    number: prevState.number + 1,
-    prevRequests: [...prevState.prevRequests, req.body]
+    number: prevState.count + 1
   }
 }`,
     mode: "paste",
