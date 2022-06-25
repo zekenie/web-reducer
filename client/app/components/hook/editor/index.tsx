@@ -83,7 +83,7 @@ function EditorSwitch({
               interface ResponderFunction<ReqBody = any, ResBody = any> {
                 (req: WrRequest<ReqBody>): WrResponse<ResBody> 
               }
-              interface QueryFunction<State> {
+              interface QueryFunction<State = any> {
                 (state: State, queryParams: URLSearchParams, secrets: Record<string, string>): WrResponse<ResBody> 
               }
               declare global {
