@@ -66,6 +66,16 @@ export default Router()
       next(e);
     }
   })
+  .post("/:hookId/reset-requests", async (req, res, next) => {
+    try {
+      await service.__dangerouslyDeleteAllRequestsForHook({
+        hookId: req.params.hookId,
+      });
+      res.status(201).json({});
+    } catch (e) {
+      next();
+    }
+  })
   .put(
     "/:hookId",
     validate(UpdateHookInput),

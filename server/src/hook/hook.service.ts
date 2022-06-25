@@ -6,7 +6,6 @@ import { enqueue } from "../worker/queue.service";
 import { generateUnusedHookName } from "./hook-name.service";
 import * as db from "./hook.db";
 import { HookDetail } from "./hook.types";
-import UpdateHookInput from "./inputs/update-hook.input";
 import * as ts from "typescript";
 import * as keyService from "../key/key.service";
 import { createKey } from "../key/key.service";
@@ -54,6 +53,21 @@ export async function createHook({
     });
     throw e;
   }
+}
+
+export async function __dangerouslyDeleteAllRequestsForHook({
+  hookId,
+}: {
+  hookId: string;
+}) {
+  await db.__dangerouslyDeleteAllRequestsForHook({ hookId });
+  await db.pauseHook({ hookId });
+  await enqueue({
+    name: "bulk-run-hook",
+    input: {
+      hookId,
+    },
+  });
 }
 
 export async function updateDetails(

@@ -173,6 +173,13 @@ export async function buildAuthenticatedApi(
       async read(id: string, axiosConfig?: AxiosRequestConfig) {
         return authenticatedClient.get(`/hooks/${id}`, axiosConfig);
       },
+      async resetRequests(id: string, axiosConfig?: AxiosRequestConfig) {
+        return authenticatedClient.post(
+          `/hooks/${id}/reset-requests`,
+          undefined,
+          axiosConfig
+        );
+      },
       async publish(id: string, axiosConfig?: AxiosRequestConfig) {
         return authenticatedClient.post(
           `/hooks/${id}/publish`,

@@ -82,6 +82,50 @@ describe("changing hooks", () => {
     expect(updateRes.status).toEqual(403);
   });
 
+  describe("resetting requests", () => {
+    it("deletes all requests of hook", async () => {
+      const authedApi = await buildAuthenticatedApi();
+      const { data: hook } = await authedApi.hook.create();
+      await authedApi.hook.writeKey(hook.writeKeys[0]!, {});
+      await authedApi.hook.writeKey(hook.writeKeys[0]!, {});
+      await allQueuesDrained();
+      expect((await authedApi.hook.history(hook.id)).data.objects).toHaveLength(
+        2
+      );
+      await authedApi.hook.resetRequests(hook.id);
+      await allQueuesDrained();
+      expect((await authedApi.hook.history(hook.id)).data.objects).toHaveLength(
+        0
+      );
+    });
+    it("does not delete requests of other hooks", async () => {
+      const authedApi = await buildAuthenticatedApi();
+      const authedApi2 = await buildAuthenticatedApi();
+      const { data: hook } = await authedApi.hook.create();
+      await authedApi.hook.writeKey(hook.writeKeys[0]!, {});
+      await authedApi.hook.writeKey(hook.writeKeys[0]!, {});
+
+      const { data: hook2 } = await authedApi2.hook.create();
+      await authedApi2.hook.writeKey(hook2.writeKeys[0]!, {});
+      await authedApi2.hook.writeKey(hook2.writeKeys[0]!, {});
+      await allQueuesDrained();
+      expect(
+        (await authedApi2.hook.history(hook2.id)).data.objects
+      ).toHaveLength(2);
+      expect((await authedApi.hook.history(hook.id)).data.objects).toHaveLength(
+        2
+      );
+      await authedApi.hook.resetRequests(hook.id);
+      await allQueuesDrained();
+      expect((await authedApi.hook.history(hook.id)).data.objects).toHaveLength(
+        0
+      );
+      expect(
+        (await authedApi2.hook.history(hook2.id)).data.objects
+      ).toHaveLength(2);
+    });
+  });
+
   describe("changing keys", () => {
     let hook: HookDetail;
     let authedApi: Awaited<ReturnType<typeof buildAuthenticatedApi>>;

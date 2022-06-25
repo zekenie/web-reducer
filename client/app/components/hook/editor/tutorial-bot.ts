@@ -292,7 +292,7 @@ export default function startTutorial({
     text: `const reducer = (prevState = { count: 0 }, req) => {
   // simple auto-incrementor runs on every request
   return {
-    number: prevState.count + 1
+    count: prevState.count + 1
   }
 }`,
     mode: "paste",

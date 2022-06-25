@@ -102,6 +102,10 @@ const hookClientFactory = (httpClient: HttpJsonClient) => ({
     await httpClient.post(`/hooks/${id}/publish`);
   },
 
+  async resetRequests({ id }: { id: string }): Promise<void> {
+    await httpClient.post(`/hooks/${id}/reset-requests`);
+  },
+
   async addKey({ id, type }: { id: string; type: string }) {
     const data = await httpClient.post<{ key: string }>(`/hooks/${id}/keys`, {
       type,

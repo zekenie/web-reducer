@@ -25,6 +25,16 @@ export async function incrementRequestCount({ hookId }: { hookId: string }) {
   await pool.any(sql`
     update "hook"
     set "requestCount" = "requestCount" + 1
+    where "id" = ${hookId}
+  `);
+}
+
+export async function resetRequestCount({ hookId }: { hookId: string }) {
+  const pool = getPool();
+  await pool.any(sql`
+    update "hook"
+    set "requestCount" = 0
+    where "id" = ${hookId}
   `);
 }
 
@@ -35,6 +45,24 @@ export async function getRequestCount({ hookId }: { hookId: string }) {
     where id = ${hookId}
   `);
   return requestCount;
+}
+
+export async function __dangerouslyDeleteAllRequestsForHook({
+  hookId,
+}: {
+  hookId: string;
+}) {
+  const pool = getPool();
+  await pool.query(sql`
+    update "request"
+    set "ignore" = true
+    where "writeKey" in (
+      select "key"
+      from "key"
+      where "hookId" = ${hookId}
+      and "type" = 'write'
+    )
+  `);
 }
 
 export async function listHooks({ userId }: { userId: string }) {

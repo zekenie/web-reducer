@@ -22,6 +22,7 @@ kanban-plugin: basic
 ## Todo
 
 - [ ] server crashes on runner error. [best practice for uncaught exceptions](https://www.honeybadger.io/blog/errors-nodejs/#uncaught-exceptions-and-unhandled-promise-rejections)
+- [ ] curl response is an opportunity to educate
 - [ ] Real publish UI<br>- [x] will they notice publish? should it bounce?<br>- [ ] publish on cmd + s <br>- [x] should prettier run? Or should it run at another time ![[Pasted image 20220610084309.png]]<br>- [ ] Don't let publish happen if editor has severe errors
 - [ ] webhooks may be put requests right? we shouldn't assume post.
 - [ ] #bug if you return req from reducer you get a 500 error
@@ -41,10 +42,9 @@ kanban-plugin: basic
 
 ## Must have for launch
 
-- [ ] Hooks list view
-- [ ] get to legal from unauthenticated state
 - [ ] Minimal solution for mobile clients... some web page
-- [ ] curl response is an opportunity to educate
+- [ ] writeKey section on docs
+- [ ] add test for options requests for write endpoint
 
 
 ## In Progress
@@ -54,6 +54,9 @@ kanban-plugin: basic
 ## Done
 
 **Complete**
+- [x] reset state, clear requests
+- [x] get to legal from unauthenticated state
+- [x] Hooks list view
 - [x] should "key" be called "endpoints" or "access"
 - [x] number of requests
 - [x] modal to test request
