@@ -104,11 +104,10 @@ function EditorSwitch({
               libSource,
               libUri
             );
-            monaco.editor.createModel(
-              libSource,
-              "typescript",
-              monaco.Uri.parse(libUri)
-            );
+            monaco.editor
+              .createModel(libSource, "typescript", monaco.Uri.parse(libUri))
+              .updateOptions({ tabSize: 2 });
+
             setIsSetup(true);
           }}
           defaultValue={hook.draft}
