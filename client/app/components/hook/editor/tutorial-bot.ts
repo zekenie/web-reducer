@@ -71,7 +71,6 @@ class TutorialContentManager {
   }
 
   public async start() {
-    console.log("start called");
     if (this.state === "running") {
       return;
     }

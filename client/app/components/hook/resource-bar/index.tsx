@@ -7,8 +7,10 @@ import {
 } from "@heroicons/react/outline";
 import { useFetcher } from "@remix-run/react";
 import { Label, Textarea, TextInput } from "flowbite-react";
-import { Fragment, useCallback } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import type { HookDetail } from "~/remote/hook-client.server";
+import { useSocket } from "~/routes/hooks/$hookId";
+import type { SocketMessage } from "~/socket-messages.types";
 
 export function formatNumber(num: number): string {
   if (num < 1000) {
@@ -31,14 +33,20 @@ export function formatNumber(num: number): string {
   return "literally so much";
 }
 
-function ResourceBar({
-  hook,
-  requestCount,
-}: {
-  hook: HookDetail;
-  requestCount: number;
-}) {
+function ResourceBar({ hook }: { hook: HookDetail }) {
   const fetcher = useFetcher();
+
+  const [requestCount, setRequestCount] = useState(hook.requestCount);
+
+  const { latestEvent } = useSocket<SocketMessage>();
+
+  useEffect(() => {
+    if (latestEvent) {
+      if (latestEvent.type === "new-request") {
+        setRequestCount(latestEvent.requestCount);
+      }
+    }
+  }, [latestEvent]);
 
   const updateField = useCallback(
     (field: "name" | "description", value: string) => {
@@ -59,9 +67,6 @@ function ResourceBar({
               open ? "rounded-t" : "rounded"
             } bg-canvas-50 hover:bg-canvas-100 text-canvas-500 cursor-pointer border p-2 cursor-no flex space-x-2`}
           >
-            {/* <div className="bg-sky-500 text-white p-1 rounded flex items-center justify-center text-xs font-bold">
-              your-hooks
-            </div> */}
             <ChevronRightIcon className="w-4 h-4 self-center" />
 
             <div className="font-mono">{hook.name}</div>

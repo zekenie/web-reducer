@@ -1,11 +1,11 @@
+import { WebSocket } from "ws";
 import {
   convertEventToPromise,
   convertMessageEventToPromise,
 } from "./authenticated-socket.test";
-import { buildAuthenticatedApi, HookDetail } from "./hook-builder";
-import { serverTestSetup } from "./setup";
-import { WebSocket } from "ws";
+import { buildAuthenticatedApi } from "./hook-builder";
 import { allQueuesDrained } from "./server-internals";
+import { serverTestSetup } from "./setup";
 
 describe("unauthenticated websocket", () => {
   serverTestSetup();

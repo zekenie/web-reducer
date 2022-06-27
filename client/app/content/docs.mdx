@@ -197,10 +197,18 @@ You can subscribe to state changes through a websocket. The socket endpoint is `
 
 Here's an example of how to use the socket from the browser.
 
+(**In order to use the websocket we make availible** you must listen for and reply to `ping` messages. This allows us to clean up dead connections.)
+
 ```js
 const socket = new WebSocket("wss://webreducer.dev/state-events?readKey=:your-read-key");
 
 socket.addEventListener("message", (message) => {
+  if (message.data === 'ping') {
+    // this is required and allows us to close dead sockets
+    // if you don't reply with pong, your socket will be 
+    // closed after 15s.
+    socket.send('pong')
+  }
   const event = JSON.parse(message.data)
   switch(event.type) {
     case "bulk-update":
@@ -212,6 +220,5 @@ socket.addEventListener("message", (message) => {
   }
 });
 ```
-
 
 ### Write keys

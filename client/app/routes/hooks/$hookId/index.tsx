@@ -13,28 +13,17 @@ import RequestsTable from "~/components/hook/requests-table";
 import EmptyState from "~/components/hook/requests-table/empty-state";
 import useIntersection from "~/hooks/useIntersection";
 import { useModals } from "~/modals/lib/modal-provider";
-import setupWebsocket from "~/remote/authenticated-websocket.client";
+// import setupWebsocket from "~/remote/authenticated-websocket.client";
 import type {
   HookDetail,
   PaginatedTokenResponse,
   Request,
 } from "~/remote/hook-client.server";
+import type { SocketMessage } from "~/socket-messages.types";
+import { useSocket } from "../$hookId";
 import { loader } from "./history";
 
 export { loader };
-
-type SocketMessage =
-  | {
-      type: "new-request";
-      request: Request;
-      requestCount: number;
-      readKeys: string[];
-      hookId: string;
-    }
-  | {
-      type: "bulk-update";
-      hookId: string;
-    };
 
 function useRequestRecords({
   hookId,
@@ -43,9 +32,6 @@ function useRequestRecords({
   hookId: string;
   paginatedHistory: PaginatedTokenResponse<Request>;
 }) {
-  const { setRequestCount } = useOutletContext<{
-    setRequestCount: Dispatch<SetStateAction<number>>;
-  }>();
   const [nextToken, setNextToken] = useState(paginatedHistory.nextToken);
   const [loadedRecords, setLoadedRecords] = useState<Request[]>(
     paginatedHistory.objects
@@ -72,31 +58,34 @@ function useRequestRecords({
       setLoadedRecords(fetcher.data.history.objects);
     }
   }, [fetcher]);
-  const handleSocketMessage = useCallback(
-    (message: SocketMessage) => {
-      switch (message.type) {
-        case "new-request":
-          setLoadedRecords((loadedRecords) => [
-            message.request,
-            ...loadedRecords,
-          ]);
-          setRequestCount(message.requestCount);
-          break;
-        case "bulk-update":
-          fetcher.load(`/hooks/${hookId}/history`);
-          break;
-      }
-    },
-    [fetcher, hookId, setRequestCount]
-  );
+  const [latestEventDedupped, setLatestEventDedupped] =
+    useState<SocketMessage | null>(null);
+  useEffect(() => {
+    if (!latestEventDedupped) {
+      return;
+    }
+    switch (latestEventDedupped.type) {
+      case "new-request":
+        setLoadedRecords((loadedRecords) => [
+          latestEventDedupped.request,
+          ...loadedRecords,
+        ]);
+        break;
+      case "bulk-update":
+        fetcher.load(`/hooks/${hookId}/history`);
+        break;
+    }
+    setLatestEventDedupped(null);
+  }, [fetcher, hookId, latestEventDedupped]);
+
+  const { latestEvent } = useSocket<SocketMessage>();
 
   useEffect(() => {
-    const { close } = setupWebsocket<SocketMessage>({
-      hookId: hookId!,
-      onMessage: (sm) => handleSocketMessage(sm),
-    });
-    return close;
-  }, [handleSocketMessage, hookId]);
+    if (!latestEvent) {
+      return;
+    }
+    setLatestEventDedupped(latestEvent);
+  }, [latestEvent]);
 
   return { loadedRecords, nextToken, loadNextPage };
 }

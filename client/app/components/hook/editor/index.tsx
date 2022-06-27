@@ -56,7 +56,6 @@ function EditorSwitch({
             }
             const startTutorial = (await import("./tutorial-bot")).default;
             const model = editor.getModel();
-            console.log("here", model);
             if (model) {
               startTutorial({ editor, model, navigate });
             }

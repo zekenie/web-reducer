@@ -45,6 +45,7 @@ kanban-plugin: basic
 - [ ] Minimal solution for mobile clients... some web page
 - [ ] writeKey section on docs
 - [ ] add test for options requests for write endpoint
+- [ ] more robust console feature
 
 
 ## In Progress
@@ -54,6 +55,7 @@ kanban-plugin: basic
 ## Done
 
 **Complete**
+- [x] [make sockets more durable](https://medium.com/voodoo-engineering/websockets-on-production-with-node-js-bdc82d07bb9f)
 - [x] reset state, clear requests
 - [x] get to legal from unauthenticated state
 - [x] Hooks list view
