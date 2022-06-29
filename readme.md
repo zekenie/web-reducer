@@ -3,6 +3,8 @@
 > **Warning**
 > This project is very much an unstable work in progress. Follow along on [my blog](https://offbyone.us/tags/micro-business/) to see my process.
 
+![Screenshot](./screenshot.png)
+
 ## What is WebReducer
 
 WebReducer is the simplest way to get a stateful endpoint online. You define a few functions that configure the behavior of your endpoint and we handle the rest. You can think of it like an HTTP endpoint + Redux reducer, if that makes any sense to you.

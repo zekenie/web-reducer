@@ -54,3 +54,9 @@ yarn migrate create --name request-table.js
 ```bash
 yarn migrate up # or down
 ```
+
+## Hygen templates
+
+```
+$ hygen new worker
+```

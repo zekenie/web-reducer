@@ -22,6 +22,16 @@ function cookieForCreds(creds: Credentials) {
   );
 }
 
+export function promisePing(ws: WebSocket) {
+  return new Promise<void>((resolve) => {
+    ws.on("message", (messageBuffer) => {
+      if (messageBuffer.toString() === "ping") {
+        resolve();
+      }
+    });
+  });
+}
+
 export function convertEventToPromise<T>(event: string, ws: WebSocket) {
   return new Promise<T[]>((resolve) => {
     ws.on(event, (...args) => {
@@ -36,8 +46,11 @@ export function convertMessageEventToPromise<T = any>(
 ): Promise<T> {
   return new Promise<T>((resolve) => {
     ws.on("message", (messageBuffer) => {
-      const message = JSON.parse(messageBuffer.toString()) as T;
-      console.log(message);
+      const str = messageBuffer.toString();
+      if (str === "ping") {
+        return;
+      }
+      const message = JSON.parse(str) as T;
       if (matcher(message)) {
         resolve(message);
       }
@@ -96,6 +109,23 @@ describe("authenticated socket", () => {
       );
       const [err] = await convertEventToPromise("error", ws);
       expect((err as Error).message).toMatch("403");
+    });
+
+    it("pings", async () => {
+      const ws = new WebSocket(
+        `${process.env.WEB_URL!.split("http").join("ws")}/hook-events?hookId=${
+          hook.id
+        }`,
+        {
+          perMessageDeflate: false,
+          headers: {
+            cookie: cookieForCreds(api.creds),
+          },
+        }
+      );
+      await convertEventToPromise("upgrade", ws);
+      await promisePing(ws);
+      ws.close();
     });
 
     it("receives a new-request message when new request is processed", async () => {

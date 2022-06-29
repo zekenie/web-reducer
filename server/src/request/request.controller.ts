@@ -53,6 +53,7 @@ export default Router()
       res.status(responseFromRunner?.statusCode || 202);
       res.json(responseFromRunner?.body || {});
     } catch (e) {
+      console.error(e);
       next(e);
     }
   });

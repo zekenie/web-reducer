@@ -7,10 +7,9 @@
         "id": "990832f70d0c11ad",
         "type": "leaf",
         "state": {
-          "type": "markdown",
+          "type": "kanban",
           "state": {
-            "file": "ideas/template requests.md",
-            "mode": "source"
+            "file": "Feature Board.md"
           }
         }
       }
@@ -68,7 +67,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "ideas/template requests.md",
+                "file": "Feature Board.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -88,10 +87,10 @@
   },
   "active": "990832f70d0c11ad",
   "lastOpenFiles": [
+    "Feature Board.md",
     "ideas/template requests.md",
     "remnote.md",
     "ideas/scheduled-requests.md",
-    "Feature Board.md",
     "examples/life timeline?.md",
     "examples/Card games.md",
     "examples/help tickets.md",

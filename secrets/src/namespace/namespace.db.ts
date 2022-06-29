@@ -1,7 +1,7 @@
 import { sql } from "slonik";
 import { getPool } from "../db";
 
-export async function createNamespace({
+export async function insertNamespace({
   encryptedSecret,
   accessKey,
 }: {
@@ -9,8 +9,6 @@ export async function createNamespace({
   accessKey: string;
 }): Promise<string> {
   const pool = getPool();
-  // const accessKey = await generateToken();
-  // const encryptionKey = await generateToken();
   const { id } = await pool.one<{ id: string }>(sql`
     insert into "namespace"
     ("accessKeyHash", "encryptionKey")
@@ -19,6 +17,23 @@ export async function createNamespace({
     returning id
   `);
   return id;
+}
+
+export async function bulkInsertNamespace(
+  arr: {
+    encryptedSecret: string;
+    accessKey: string;
+  }[]
+): Promise<void> {
+  const pool = getPool();
+  await pool.query<{ id: string }>(sql`
+    insert into "namespace"
+    ("accessKeyHash", "encryptionKey")
+    select * from ${sql.unnest(
+      arr.map((item) => [item.accessKey, item.encryptedSecret]),
+      ["varchar", "varchar"]
+    )}
+  `);
 }
 
 export async function deleteNamespace({ accessKey }: { accessKey: string }) {

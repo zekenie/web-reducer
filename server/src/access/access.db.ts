@@ -47,3 +47,20 @@ export async function provisionAccess({
     (${hookId}, ${userId})
   `);
 }
+
+export async function bulkProvisionAccess(
+  arr: {
+    userId: string;
+    hookId: string;
+  }[]
+) {
+  const pool = getPool();
+  await pool.query(sql`
+    insert into "access"
+    ("hookId", "userId")
+    select * from ${sql.unnest(
+      arr.map((item) => [item.hookId, item.userId]),
+      ["uuid", "uuid"]
+    )}
+  `);
+}

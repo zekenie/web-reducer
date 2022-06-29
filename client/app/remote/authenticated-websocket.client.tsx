@@ -1,3 +1,5 @@
+import { createContext, useContext, useEffect, useState } from "react";
+
 declare global {
   interface Window {
     ENV: {
@@ -6,25 +8,34 @@ declare global {
   }
 }
 
-function establishConnection<T>({
-  hookId,
-  onMessage,
-}: {
-  hookId: string;
-  onMessage: (payload: T) => void;
-}) {
+function establishConnection<T>({ url }: { url: string }) {
+  let lastAlive: number;
   const socket = new WebSocket(
-    `${window.ENV.AUTHENTICATED_SOCKET_URL!}?hookId=${hookId}`
+    // `${window.ENV.AUTHENTICATED_SOCKET_URL!}?hookId=${hookId}`
+    url
   );
 
-  socket.addEventListener("error", (err) => {
-    socket.close();
+  socket.addEventListener("open", () => (lastAlive = Date.now()));
+
+  const heartbeat = (delay: number) => {
+    lastAlive = Date.now();
+
+    setTimeout(() => {
+      if (Date.now() - lastAlive > 35_000) {
+        socket.close();
+      }
+    }, delay);
+  };
+
+  socket.addEventListener("message", (message) => {
+    heartbeat(30_000);
+    if (message.data === "ping") {
+      socket.send("pong");
+    }
   });
 
-  socket.addEventListener("message", (stateHistory) => {
-    const payload = JSON.parse(stateHistory.data) as T;
-
-    onMessage(payload);
+  socket.addEventListener("error", (err) => {
+    console.error("socket error", err);
   });
 
   return socket;
@@ -34,29 +45,55 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export default function setupWebsocket<T>({
-  hookId,
+export function setupWebsocket<T>({
+  url,
   onMessage,
 }: {
-  hookId: string;
+  url: string;
   onMessage: (payload: T) => void;
 }) {
-  let socket = establishConnection<T>({ hookId, onMessage });
+  const wrappedOnMessage = (messageEvent: MessageEvent) => {
+    if (messageEvent.data === "ping") {
+      return;
+    }
+    const payload = JSON.parse(messageEvent.data) as T;
+
+    onMessage(payload);
+  };
+
+  let socket = establishConnection<T>({ url });
 
   let backoff = 200;
 
-  async function reattachOnClose() {
+  socket.addEventListener("message", wrappedOnMessage);
+
+  async function reattachOnClose(closeEvent: CloseEvent) {
+    socket.removeEventListener("message", wrappedOnMessage);
+    console.log("websocket closed", closeEvent.code, closeEvent.reason);
     await sleep(backoff);
     backoff *= 2;
-    socket = establishConnection<T>({ hookId, onMessage });
+    socket = establishConnection<T>({ url });
+    socket.addEventListener("message", wrappedOnMessage);
   }
 
   socket.addEventListener("close", reattachOnClose);
 
   return {
     close() {
+      console.log("close api called by react app");
       socket.removeEventListener("close", reattachOnClose);
-      socket.close();
+      if (
+        socket.readyState === socket.OPEN
+        // socket.readyState === socket.CONNECTING
+      ) {
+        socket.removeEventListener("message", wrappedOnMessage);
+        socket.close(1000, "close called by react app");
+      } else {
+        console.log(
+          "did not close when close was called because socket was in readystate",
+          socket.readyState
+        );
+      }
     },
   };
 }

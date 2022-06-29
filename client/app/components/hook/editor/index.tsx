@@ -56,7 +56,6 @@ function EditorSwitch({
             }
             const startTutorial = (await import("./tutorial-bot")).default;
             const model = editor.getModel();
-            console.log("here", model);
             if (model) {
               startTutorial({ editor, model, navigate });
             }
@@ -83,7 +82,7 @@ function EditorSwitch({
               interface ResponderFunction<ReqBody = any, ResBody = any> {
                 (req: WrRequest<ReqBody>): WrResponse<ResBody> 
               }
-              interface QueryFunction<State> {
+              interface QueryFunction<State = any, ResBody = any> {
                 (state: State, queryParams: URLSearchParams, secrets: Record<string, string>): WrResponse<ResBody> 
               }
               declare global {
@@ -104,11 +103,10 @@ function EditorSwitch({
               libSource,
               libUri
             );
-            monaco.editor.createModel(
-              libSource,
-              "typescript",
-              monaco.Uri.parse(libUri)
-            );
+            monaco.editor
+              .createModel(libSource, "typescript", monaco.Uri.parse(libUri))
+              .updateOptions({ tabSize: 2 });
+
             setIsSetup(true);
           }}
           defaultValue={hook.draft}

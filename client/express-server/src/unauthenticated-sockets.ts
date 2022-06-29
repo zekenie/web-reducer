@@ -1,7 +1,6 @@
 import Bluebird from "bluebird";
 import IORedis from "ioredis";
-import type { DebouncedFunc } from "lodash";
-import { debounce, keyBy, last, uniqBy } from "lodash";
+import { keyBy, last, uniqBy } from "lodash";
 import type { WebSocket } from "ws";
 
 type UnauthenticatedSocketMessage =
@@ -42,10 +41,17 @@ class ClientQuery {
 }
 
 class ClientSubscription {
+  private _alive: boolean = true;
   constructor(
     public readonly ws: WebSocket,
     public readonly query: ClientQuery
-  ) {}
+  ) {
+    ws.on("message", (message) => {
+      if (message.toString() === "pong") {
+        this._alive = true;
+      }
+    });
+  }
 
   public emit(type: UnauthenticatedSocketMessage["type"], state: unknown) {
     this.ws.send(
@@ -54,6 +60,14 @@ class ClientSubscription {
         state: state,
       } as UnauthenticatedSocketMessage)
     );
+  }
+
+  public markDead() {
+    this._alive = false;
+  }
+
+  get alive() {
+    return this._alive;
   }
 
   get readKey() {
@@ -109,6 +123,11 @@ async function isReadKeyValid({
 }
 
 const listeners = {
+  get allSubscriptions() {
+    return Object.values(this.subsForReadKeys).reduce((arr, set) => {
+      return [...arr, ...Array.from(set)];
+    }, [] as ClientSubscription[]);
+  },
   lastEmits: {} as { [readKey: string]: number },
 
   subsForReadKeys: {} as { [readKey: string]: Set<ClientSubscription> },
@@ -173,7 +192,6 @@ const listeners = {
     );
 
     const queriesBySlug = keyBy(queries, "slug");
-    console.log("after fetches", queriesBySlug);
 
     for (const sub of subscriptions) {
       if (sub.ws.readyState !== sub.ws.OPEN) {
@@ -226,9 +244,39 @@ export async function attach({
       ws,
       queryString: serializedSearchParamsWithoutReadKey,
     });
+    ws.send("ping");
     await listeners.add(readKey, sub);
     ws.on("close", async (r) => {
       await listeners.remove(readKey, sub);
     });
   });
 }
+
+setInterval(() => {
+  for (const subscription of listeners.allSubscriptions) {
+    if (!subscription.alive) {
+      subscription.ws.terminate();
+      listeners.remove(subscription.readKey, subscription);
+    }
+    subscription.markDead();
+  }
+}, 30_000);
+
+setInterval(() => {
+  for (const subscription of listeners.allSubscriptions) {
+    subscription.ws.send("ping");
+  }
+}, 5000);
+
+function closeGracefully(signal: string) {
+  try {
+    for (const connection of listeners.allSubscriptions) {
+      connection.ws.close();
+    }
+  } catch (e) {
+    console.error("error responding to ", signal);
+    process.exit(1);
+  }
+}
+process.on("SIGINT", closeGracefully);
+process.on("SIGTERM", closeGracefully);

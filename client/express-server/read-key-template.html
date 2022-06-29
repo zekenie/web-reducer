@@ -53,15 +53,33 @@
 
       const sockets = (() => {
         function establishConnection(url, onMessage) {
+          let pingTimeout;
           const socket = new WebSocket(
             url
           );
+
+          const heartbeat = (delay) => {
+            if (pingTimeout) {
+              clearTimeout(pingTimeout);
+            }
+
+            pingTimeout = setTimeout(() => {
+              socket.close();
+            }, delay);
+          };
+
+          heartbeat(30000);
 
           socket.addEventListener("error", (err) => {
             socket.close();
           });
 
           socket.addEventListener("message", (message) => {
+            if (message.data === 'ping') {
+              socket.send('pong');
+              heartbeat(30000);
+              return;
+            }
             onMessage(JSON.parse(message.data))
           });
 

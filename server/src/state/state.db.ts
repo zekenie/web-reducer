@@ -74,8 +74,6 @@ export async function getStateHistoryPage(
 ): Promise<PaginatedTokenResponse<StateHistory>> {
   const pool = getPool();
 
-  // how does this work with page 1???
-
   const res = await pool.query<StateHistory & { fullCount: number }>(sql`
     with "publishedVersion" as (
       select * from "version"
@@ -99,6 +97,7 @@ export async function getStateHistoryPage(
     join "publishedVersion"
       on "state"."versionId" = "publishedVersion"."id"
     where "state"."hookId" = ${hookId}
+    and "request"."ignore" = false
     ${generateSqlFilterExpressionForToken(paginationArgs.token)}
     order by "request"."createdAt" desc
     limit ${paginationArgs.pageSize}

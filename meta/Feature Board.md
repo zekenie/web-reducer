@@ -1,7 +1,5 @@
 ---
-
 kanban-plugin: basic
-
 ---
 
 ## Considering
@@ -18,10 +16,10 @@ kanban-plugin: basic
 - [ ] what if the runtime had access to a secret namespace?
 - [ ] keys table could count reqs? be able to open a modal to filter by reqs by key?
 
-
 ## Todo
 
 - [ ] server crashes on runner error. [best practice for uncaught exceptions](https://www.honeybadger.io/blog/errors-nodejs/#uncaught-exceptions-and-unhandled-promise-rejections)
+- [ ] curl response is an opportunity to educate
 - [ ] Real publish UI<br>- [x] will they notice publish? should it bounce?<br>- [ ] publish on cmd + s <br>- [x] should prettier run? Or should it run at another time ![[Pasted image 20220610084309.png]]<br>- [ ] Don't let publish happen if editor has severe errors
 - [ ] webhooks may be put requests right? we shouldn't assume post.
 - [ ] #bug if you return req from reducer you get a 500 error
@@ -39,22 +37,25 @@ kanban-plugin: basic
 - [ ] request time availible in req obj
 - [ ] artifacts should be availible at request time, not just reducer time
 
-
 ## Must have for launch
 
-- [ ] get to legal from unauthenticated state
 - [ ] Minimal solution for mobile clients... some web page
-- [ ] curl response is an opportunity to educate
-
+- [ ] writeKey section on docs
+- [ ] add test for options requests for write endpoint
+- [ ] more robust console feature
+- [ ] consider tasteful indexes
 
 ## In Progress
 
-- [ ] request templates
-
+- [ ] pool of guest accounts
 
 ## Done
 
 **Complete**
+
+- [x] [make sockets more durable](https://medium.com/voodoo-engineering/websockets-on-production-with-node-js-bdc82d07bb9f)
+- [x] reset state, clear requests
+- [x] get to legal from unauthenticated state
 - [x] Hooks list view
 - [x] should "key" be called "endpoints" or "access"
 - [x] number of requests
@@ -63,7 +64,7 @@ kanban-plugin: basic
 - [x] app should open on a hook of your own for unauthenticated users<br><br>- [x] guest users should have hook built by default<br>- [ ] pool of hooks?
 - [x] domain setup
 - [x] GH link
-- [x] documentation<br><br>- [x] mdx file<br>- [x] sidebar<br>- [ ] new window<br>- [x] sections<br>  - [x] functions we call<br>  - [x] functions you can call
+- [x] documentation<br><br>- [x] mdx file<br>- [x] sidebar<br>- [ ] new window<br>- [x] sections<br> - [x] functions we call<br> - [x] functions you can call
 - [x] Request detail view/modal
 - [x] after request have editor [start typing](https://github.com/convergencelabs/monaco-collab-ext) #onboarding
 - [x] secrets need to be avilable to responder
@@ -98,11 +99,10 @@ kanban-plugin: basic
 - [ ] [[Custom Responses]]<br><br>- [x] runner has `responder` method<br>- [x] server uses `responder` method on runner<br>- [x] write test of custom response in integration test
 - [ ] Import crypto into runtime
 
-
-
-
 %% kanban:settings
+
 ```
 {"kanban-plugin":"basic"}
 ```
+
 %%

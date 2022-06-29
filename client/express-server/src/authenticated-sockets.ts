@@ -6,6 +6,7 @@ import type { WebSocket } from "ws";
 import type { Credentials } from "./auth";
 import { getNewCredsWithRefreshToken, verifyJwt } from "./auth";
 import { unsign } from "cookie-signature";
+import { countBy, mapValues } from "lodash";
 
 type Request = {
   requestId: string;
@@ -84,23 +85,36 @@ export async function doesUserHaveHookAccess({
   return true;
 }
 
+type Connection = {
+  ws: WebSocket;
+  alive: boolean;
+  hookId: string;
+};
+
 const listeners = {
-  websocketsForHookIds: {} as { [hookId: string]: Set<WebSocket> },
-  add(hookId: string, ws: WebSocket) {
+  get allConnections() {
+    return Object.values(this.websocketsForHookIds).reduce((arr, set) => {
+      return [...arr, ...Array.from(set)];
+    }, [] as Connection[]);
+  },
+  websocketsForHookIds: {} as { [hookId: string]: Set<Connection> },
+  add(hookId: string, connection: Connection) {
+    console.log("add", hookId);
     this.websocketsForHookIds[hookId] =
       this.websocketsForHookIds[hookId] || new Set();
-    this.websocketsForHookIds[hookId].add(ws);
+    this.websocketsForHookIds[hookId].add(connection);
     if (this.websocketsForHookIds[hookId].size === 1) {
       // setup redis listener
       redisConnection.subscribe(`state.${hookId}`);
       redisConnection.subscribe(`bulk-update.${hookId}`);
     }
   },
-  remove(hookId: string, ws: WebSocket) {
+  remove(hookId: string, connection: Connection) {
+    console.log("remove", hookId);
     if (!this.websocketsForHookIds[hookId]) {
       return;
     }
-    this.websocketsForHookIds[hookId].delete(ws);
+    this.websocketsForHookIds[hookId].delete(connection);
     if (this.websocketsForHookIds[hookId].size === 0) {
       delete this.websocketsForHookIds[hookId];
       // remove redis listener
@@ -110,12 +124,16 @@ const listeners = {
   },
 
   emit(hookId: string, message: SocketMessage) {
+    console.log("emit", hookId);
     if (!this.websocketsForHookIds[hookId]) {
       return;
     }
-    for (const ws of this.websocketsForHookIds[hookId]) {
-      if (ws.readyState === ws.OPEN) {
-        ws.send(message);
+    for (const con of this.websocketsForHookIds[hookId]) {
+      if (con.ws.readyState === con.ws.OPEN) {
+        con.ws.send(message);
+      } else {
+        console.log("ready state not open");
+        this.remove(hookId, con);
       }
     }
   },
@@ -123,6 +141,7 @@ const listeners = {
 
 redisConnection.on("message", (channel: string, message: SocketMessage) => {
   const [type, hookId] = channel.split(".");
+  console.log("from redis", type, hookId);
   listeners.emit(hookId, message);
 });
 
@@ -164,9 +183,62 @@ export async function attach({
     return rejectConnection(403);
   }
   connect((ws) => {
-    listeners.add(hookId, ws);
-    ws.on("close", () => {
-      listeners.remove(hookId, ws);
+    const connection = { ws, alive: true, hookId };
+    listeners.add(hookId, connection);
+    ws.on("message", (message) => {
+      if (message.toString() === "pong") {
+        connection.alive = true;
+      }
+    });
+
+    ws.send("ping");
+
+    ws.on("close", (code, reason) => {
+      console.log("closing authenticated socket", code, reason.toString());
+      listeners.remove(hookId, connection);
     });
   });
 }
+
+setInterval(() => {
+  console.log(
+    "current state of listeners",
+    mapValues(listeners.websocketsForHookIds, (l) => {
+      const arr = Array.from(l);
+      return {
+        size: l.size,
+        byReadyState: countBy(arr, (item) => item.ws.readyState),
+        byAlive: countBy(arr, (item) => item.alive),
+      };
+    })
+  );
+}, 5000);
+
+setInterval(() => {
+  for (const connection of listeners.allConnections) {
+    if (!connection.alive) {
+      connection.ws.close(1000, "no ping message");
+      listeners.remove(connection.hookId, connection);
+    }
+    connection.alive = false;
+  }
+}, 30_000);
+
+setInterval(() => {
+  for (const connection of listeners.allConnections) {
+    connection.ws.send("ping");
+  }
+}, 5_000);
+
+function closeGracefully(signal: string) {
+  try {
+    for (const connection of listeners.allConnections) {
+      connection.ws.close();
+    }
+  } catch (e) {
+    console.error("error responding to ", signal);
+    process.exit(1);
+  }
+}
+process.on("SIGINT", closeGracefully);
+process.on("SIGTERM", closeGracefully);
