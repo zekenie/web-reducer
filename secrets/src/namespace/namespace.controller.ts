@@ -7,6 +7,8 @@ import {
   InvalidKeyParamError,
   MissingKeyParamError,
 } from "../secret/secret.errors";
+import { isNumber } from "lodash";
+import { InvalidBulkNamespaceBody } from "./namespace.errors";
 
 function requireStringQueryParams(...requiredStrings: string[]) {
   const middleware: RequestHandler = (req, res, next) => {
@@ -33,6 +35,18 @@ export default Router()
     try {
       const { accessKey } = await service.createNamespace();
       res.status(201).json({ accessKey });
+    } catch (e) {
+      next(e);
+    }
+  })
+  .post("/bulk", async (req, res, next) => {
+    try {
+      if (!req.body.n || !isNumber(req.body.n)) {
+        throw new InvalidBulkNamespaceBody();
+      }
+      res.json({
+        accessKeys: await service.bulkCreateNamespace(req.body.n),
+      });
     } catch (e) {
       next(e);
     }

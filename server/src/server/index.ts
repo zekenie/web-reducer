@@ -56,6 +56,7 @@ export default function makeServer(config: Config) {
       res: Response,
       next: NextFunction
     ) => {
+      console.error(err);
       res.status(err.status || 500);
       res.json({ message: err.message, name: err.name });
     }

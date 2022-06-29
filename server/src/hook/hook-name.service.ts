@@ -1,10 +1,19 @@
-import { difference, sample } from "lodash";
+import { difference, sample, uniq } from "lodash";
 import { nanoid } from "nanoid";
 import { getHookNameCollisions } from "./hook.db";
 import { NameCollisionError } from "./hook.errors";
 
 export function generateHookName() {
   return `${sample(adjectives)}-${sample(nouns)}-${nanoid(4)}`;
+}
+
+export function bulkGenerateHookNames({ n }: { n: number }): string[] {
+  const names = uniq(Array.from({ length: n }, generateHookName));
+  if (names.length === n) {
+    return names;
+  }
+
+  return [...names, ...bulkGenerateHookNames({ n: n - names.length })];
 }
 
 export const slugify = (text: string) =>

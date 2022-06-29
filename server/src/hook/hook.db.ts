@@ -149,7 +149,7 @@ export async function getEncryptedSecretAccessKey({
   return secretAccessKey;
 }
 
-export async function createHook({
+export async function insertHook({
   name,
   encryptedSecretAccessKey,
 }: {
@@ -174,6 +174,47 @@ export async function createHook({
   `);
 
   return id;
+}
+
+export async function bulkInsertHook(
+  arr: {
+    name: string;
+    encryptedSecretAccessKey: string;
+  }[]
+): Promise<string[]> {
+  const pool = getPool();
+  const result = await pool.query<{ id: string }>(sql`
+    insert into "hook"
+    ("name", "secretAccessKey")
+    select * from ${sql.unnest(
+      arr.map((item) => {
+        return [item.name, item.encryptedSecretAccessKey];
+      }),
+      ["varchar", "varchar"]
+    )}
+    
+    returning id
+  `);
+
+  const versionsToInsert = result.rows.reduce((versionsSoFar, row) => {
+    return [
+      ...versionsSoFar,
+      { id: row.id, workflowState: VersionWorkflowState.DRAFT },
+      { id: row.id, workflowState: VersionWorkflowState.PUBLISHED },
+    ];
+  }, [] as { id: string; workflowState: VersionWorkflowState }[]);
+
+  await pool.query<{ id: string }>(sql`
+    insert into "version"
+    ("hookId", "code", "workflowState")
+    select * from ${sql.unnest(
+      versionsToInsert.map((item) => {
+        return [item.id, "", item.workflowState];
+      }),
+      ["uuid", "varchar", "varchar"]
+    )}
+  `);
+  return result.rows.map((r) => r.id);
 }
 
 export async function getDraftAndPublishedCode(

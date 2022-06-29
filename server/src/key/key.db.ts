@@ -2,7 +2,7 @@ import { getPool } from "../db";
 import { sql } from "slonik";
 import { KeyWorkflowState } from "./key.types";
 
-export async function createKey({
+export async function insertKey({
   type,
   hookId,
   key,
@@ -17,6 +17,24 @@ export async function createKey({
     ("createdAt", "type", "key", "hookId", "workflowState")
     values
     (NOW(), ${type}, ${key}, ${hookId}, 'live')
+  `);
+}
+
+export async function bulkInsertKeys(
+  arr: {
+    type: "read" | "write";
+    hookId: string;
+    key: string;
+  }[]
+): Promise<void> {
+  const pool = getPool();
+  await pool.any(sql`
+    insert into key
+    ("type", "key", "hookId", "workflowState")
+    select * from ${sql.unnest(
+      arr.map((item) => [item.type, item.key, item.hookId, "live"]),
+      ["varchar", "varchar", "uuid", "varchar"]
+    )}
   `);
 }
 
@@ -67,11 +85,7 @@ export async function isReadKeyValid(readKey: string): Promise<boolean> {
   return !!row;
 }
 
-export async function getKeysForHook({
-  hookId,
-}: {
-  hookId: string;
-}): Promise<
+export async function getKeysForHook({ hookId }: { hookId: string }): Promise<
   readonly {
     type: "read" | "write";
     key: string;

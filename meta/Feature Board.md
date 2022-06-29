@@ -46,10 +46,12 @@ kanban-plugin: basic
 - [ ] writeKey section on docs
 - [ ] add test for options requests for write endpoint
 - [ ] more robust console feature
+- [ ] consider tasteful indexes
 
 
 ## In Progress
 
+- [ ] pool of guest accounts
 
 
 ## Done

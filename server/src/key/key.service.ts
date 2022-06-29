@@ -1,16 +1,29 @@
-import { generateToken } from "../token/token.service";
+import { bulkGenerateTokens, generateToken } from "../token/token.service";
 import * as db from "./key.db";
-import { KeyRecord, KeysByType } from "./key.types";
+import { KeyRecord, KeysByType, KeyType } from "./key.types";
 export async function createKey({
   type,
   hookId,
 }: {
-  type: "read" | "write";
+  type: KeyType;
   hookId: string;
 }): Promise<string> {
   const key = await generateToken();
-  await db.createKey({ hookId, type, key });
+  await db.insertKey({ hookId, type, key });
   return key;
+}
+
+export async function bulkCreateKeys(
+  arr: {
+    type: KeyType;
+    hookId: string;
+  }[]
+): Promise<{ key: string; type: KeyType }[]> {
+  const keys = await bulkGenerateTokens(arr.length);
+  // await db.createKey({ hookId, type, key });
+  // return key;
+  await db.bulkInsertKeys(arr.map((item, i) => ({ ...item, key: keys[i] })));
+  return arr.map((item, i) => ({ type: item.type, key: keys[i] }));
 }
 
 export async function pauseKey({

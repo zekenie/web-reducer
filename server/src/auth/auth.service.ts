@@ -1,6 +1,14 @@
 import jwt from "jsonwebtoken";
 import { isUUID } from "class-validator";
-import { createUser, getUserByEmail, getUserById } from "../user/user.db";
+import {
+  bulkCreateGuestUsers,
+  bulkInsertGuestUserPool,
+  countGuestUserPool,
+  createUser,
+  getUserByEmail,
+  getUserById,
+  pullFromGuestPool,
+} from "../user/user.db";
 import { sendMail } from "../email/email.service";
 import { mergeAccess } from "../access/access.service";
 import { transaction } from "../db";
@@ -19,7 +27,9 @@ import {
   validateRefreshToken,
 } from "../refresh-token/refresh-token.service";
 import { generateToken } from "../token/token.service";
-import { createHook } from "../hook/hook.service";
+import { bulkCreateHook, createHook } from "../hook/hook.service";
+import { bulkCreateNamespaces } from "../secret/secret.remote";
+import { enqueue } from "../worker/queue.service";
 
 type Credentials = {
   jwt: string;
@@ -83,10 +93,45 @@ export async function validateTokenAndIssueCredentials(
   });
 }
 
-export async function initiateGuestUser() {
+export async function initiateGuestUserFallback() {
   const user = await createUser();
   await createHook({ userId: user.id });
   return createCredentials(user.id);
+}
+
+export async function initiateGuestUser() {
+  process.nextTick(async () => {
+    const count = await countGuestUserPool();
+    if (count < 2000) {
+      await enqueue({
+        name: "bulk-create-guest-users",
+        input: {},
+      });
+    }
+  });
+  const userId = await pullFromGuestPool();
+  console.log("userid from pool", userId);
+  if (!userId) {
+    return initiateGuestUserFallback();
+  }
+  return createCredentials(userId);
+}
+
+export async function bulkInitiateGuestUsers({ n }: { n: number }) {
+  transaction(async () => {
+    const [userIds, namespaceAccessKeys] = await Promise.all([
+      bulkCreateGuestUsers({ n }),
+      bulkCreateNamespaces({ n }),
+    ]);
+
+    await Promise.all([
+      bulkCreateHook({
+        userIds,
+        secretNamespaceAccessKeys: namespaceAccessKeys,
+      }),
+      bulkInsertGuestUserPool({ userIds }),
+    ]);
+  });
 }
 
 export async function initiateSignin({

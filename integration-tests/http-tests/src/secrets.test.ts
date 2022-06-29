@@ -42,6 +42,32 @@ describe("secrets", () => {
       expect(status).toEqual(201);
     });
 
+    it("creates secrets in bulk", async () => {
+      const { data } = await secretsClient.post("/bulk", { n: 40 });
+
+      const [accessKey] = data.accessKeys;
+
+      const { status } = await secretsClient.post(
+        `/secrets`,
+        {
+          key: "foo",
+          value: "bar",
+        },
+        { params: { accessKey } }
+      );
+
+      const { count } = await getPool(
+        "default",
+        process.env.SECRETS_DATABASE_URL!
+      ).one<{ count: number }>(sql`
+        select count(*) from "namespace"
+      `);
+
+      expect(count).toEqual(40);
+
+      expect(status).toEqual(201);
+    });
+
     it("allows overwriting of a secret", async () => {
       const { data } = await secretsClient.post("/");
 

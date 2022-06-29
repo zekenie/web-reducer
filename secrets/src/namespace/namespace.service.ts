@@ -1,5 +1,5 @@
 import { decrypt, encrypt, sha256 } from "../crypto/crypto.service";
-import { generateToken } from "../token/token.service";
+import { bulkGenerateTokens, generateToken } from "../token/token.service";
 import * as db from "./namespace.db";
 import * as secretsDb from "../secret/secret.db";
 import { NamespaceNotFoundError } from "./namespace.errors";
@@ -12,8 +12,35 @@ export async function createNamespace(): Promise<NamespaceCreatedContract> {
     encryptionSecret,
     process.env.ENCRYPTION_SECRET!
   );
-  const namespaceId = await db.createNamespace({ encryptedSecret, accessKey });
+  const namespaceId = await db.insertNamespace({ encryptedSecret, accessKey });
   return { id: namespaceId, accessKey };
+}
+
+export async function bulkCreateNamespace(n: number): Promise<string[]> {
+  if (n > 500) {
+    throw new RangeError("cannot bulk create more than 500 namespaces");
+  }
+  const tokensNeeded = await bulkGenerateTokens(n * 2);
+
+  const encryptedSecrets = tokensNeeded
+    .slice(0, n)
+    .map((s) => encrypt(s, process.env.ENCRYPTION_SECRET!));
+  const accessKeys = tokensNeeded.slice(n);
+
+  const hashedAccessKeys = accessKeys.map(sha256);
+
+  const toInsert = Array.from({ length: n })
+    .fill(null)
+    .map((n, i) => {
+      return {
+        encryptedSecret: encryptedSecrets[i],
+        accessKey: hashedAccessKeys[i],
+      };
+    });
+
+  await db.bulkInsertNamespace(toInsert);
+
+  return accessKeys;
 }
 
 export async function deleteNamespace({

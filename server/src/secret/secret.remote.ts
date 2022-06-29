@@ -24,6 +24,15 @@ export async function createNamespace(): Promise<NamespaceIdentifier> {
   return data;
 }
 
+export async function bulkCreateNamespaces({
+  n,
+}: {
+  n: number;
+}): Promise<string[]> {
+  const { data } = await client.post<{ accessKeys: string[] }>("/bulk", { n });
+  return data.accessKeys;
+}
+
 export async function getSecretsForNamespace({
   accessKey,
 }: NamespaceIdentifier): Promise<Record<string, string>> {
