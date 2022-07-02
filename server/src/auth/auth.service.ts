@@ -102,7 +102,7 @@ export async function initiateGuestUserFallback() {
 export async function initiateGuestUser() {
   process.nextTick(async () => {
     const count = await countGuestUserPool();
-    if (count < 2000) {
+    if (count < Number(process.env.TARGET_GUEST_POOL_SIZE!)) {
       await enqueue({
         name: "bulk-create-guest-users",
         input: {},
@@ -110,7 +110,6 @@ export async function initiateGuestUser() {
     }
   });
   const userId = await pullFromGuestPool();
-  console.log("userid from pool", userId);
   if (!userId) {
     return initiateGuestUserFallback();
   }

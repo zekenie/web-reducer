@@ -99,6 +99,7 @@ services:
       REDIS_URL: redis://redis:6379/0
       ROARR_LOG: "false"
       PORT: 3001
+      TARGET_GUEST_POOL_SIZE: 0
       RUNNER_URL: http://code_runner:3002
       JWT_SECRET: asdf
       SECRET_ACCESS_KEY_KEY: aaaa
