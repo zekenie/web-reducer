@@ -4,6 +4,38 @@ import makeServer from "../server/index";
 const server = makeServer({});
 
 describe("single", () => {
+  describe("templates mode", () => {
+    it("accepts inputs that are the right size", async () => {
+      const { body } = await supertest(server)
+        .post("/templates")
+        .send({
+          code: `
+          template('foobar', () => {
+            return {
+              foo: input('bar')
+            }
+          })`,
+          state: JSON.stringify({ foo: 4 }),
+        })
+        .expect(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          templates: [
+            {
+              name: "foobar",
+              template: {
+                foo: {
+                  __wr_type: "input",
+                  name: "bar",
+                },
+              },
+            },
+          ],
+        })
+      );
+    });
+  });
+
   describe("query mode", () => {
     it("accepts inputs that are the right size", async () => {
       const { body } = await supertest(server)

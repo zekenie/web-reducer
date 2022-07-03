@@ -40,6 +40,12 @@ export async function readState(readKey: string, queryString?: string) {
   return { keyValid, state: response?.body };
 }
 
+export async function readStateForHookId(hookId: string) {
+  const stateRecord = await stateDb.readCurrentStateForHookId(hookId);
+
+  return stateRecord?.state;
+}
+
 export async function readStateHistoryPage(
   hookId: string,
   paginationArgs: PaginationQueryArgs

@@ -145,6 +145,25 @@ export async function readCurrentState(
   `);
 }
 
+export async function readCurrentStateForHookId(
+  hookId: string
+): Promise<{ state: unknown } | null> {
+  const pool = getPool();
+  return pool.maybeOne<{ state: unknown }>(sql`
+    select state.state
+    from state
+    join "request"
+      on "request"."id" = "state"."requestId"
+    join "version"
+      on "state"."versionId" = "version"."id"
+    where
+      "state"."hookId" = ${hookId}
+      and "version"."workflowState" = 'published'
+    order by "request"."createdAt" desc
+    limit 1
+  `);
+}
+
 export async function isIdempotencyKeyOk(
   idempotencyKey: string,
   { hookId, versionId }: { hookId: string; versionId: string }

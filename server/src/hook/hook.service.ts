@@ -1,6 +1,10 @@
+import * as ts from "typescript";
 import { bulkProvisionAccess, provisionAccess } from "../access/access.db";
 import { encrypt } from "../crypto/crypto.service";
 import { transaction } from "../db";
+import * as keyService from "../key/key.service";
+import { createKey } from "../key/key.service";
+import { KeyType } from "../key/key.types";
 import * as secretService from "../secret/secret.remote";
 import { enqueue } from "../worker/queue.service";
 import {
@@ -9,10 +13,6 @@ import {
 } from "./hook-name.service";
 import * as db from "./hook.db";
 import { HookDetail } from "./hook.types";
-import * as ts from "typescript";
-import * as keyService from "../key/key.service";
-import { createKey } from "../key/key.service";
-import { KeyType } from "../key/key.types";
 
 export async function listHooks({ userId }: { userId: string }) {
   return db.listHooks({ userId });
@@ -41,16 +41,12 @@ export async function bulkCreateHook({
     encrypt(accessKey, process.env.SECRET_ACCESS_KEY_KEY!)
   );
 
-  console.log("names and keys");
-
   const hookIds = await db.bulkInsertHook(
     Array.from({ length: userIds.length }, (n, i) => ({
       name: names[i],
       encryptedSecretAccessKey: encryptedAccessKeys[i],
     }))
   );
-
-  console.log("bulk insert hook works");
 
   await Promise.all([
     bulkProvisionAccess(

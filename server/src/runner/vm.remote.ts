@@ -1,5 +1,6 @@
 import axios from "axios";
 import { WebhookRequest } from "../request/request.types";
+import { Template } from "../template/template.types";
 import { RunnerError } from "./runner.errors";
 import { ConsoleMessage, RuntimeError } from "./runner.types";
 
@@ -52,6 +53,20 @@ export async function runCode({
     mode,
   });
   return res.data;
+}
+
+export async function runTemplatesCode({
+  code,
+  state,
+}: {
+  code: string;
+  state: unknown;
+}): Promise<Template[]> {
+  const res = await client.post<{ templates: Template[] }>("/templates", {
+    code: code || "",
+    state: state ? JSON.stringify(state) : undefined,
+  });
+  return res.data.templates;
 }
 
 export async function runCodeBulk({

@@ -40,7 +40,7 @@ function responder(request, secrets) {
 function getIdempotencyKey(request) { return request.id; }`;
 
 const codeBread = {
-  config: {
+  template: {
     code: (code: string, state: string | undefined) => `(function(state) {
       const requests = [];
       ${templateFns}
@@ -51,6 +51,8 @@ const codeBread = {
   response: {
     code: (code: string, requestsJson: string, secretsJson: string) =>
       `(function(requests, secrets) {
+        // this is for template code
+        const state = null;
         ${sharedHeaderCode}
         (function() {
           ${code}
@@ -154,7 +156,7 @@ export function runCode({
   state?: string;
   invalidIdempotencyKeys: string[];
   timeout?: number;
-  mode: "reducer" | "response" | "query" | "config"; // or side-effects?
+  mode: "reducer" | "response" | "query" | "template"; // or side-effects?
   filename?: string;
 }>) {
   const codeLength = code.split("\n").length;
@@ -190,8 +192,8 @@ export function runCode({
       secretsJson,
       state
     );
-  } else if (mode === "config") {
-    codeWithRuntime = codeBread.config.code(code, state);
+  } else if (mode === "template") {
+    codeWithRuntime = codeBread.template.code(code, state);
   } else {
     throw new Error("invalid mode");
   }
@@ -204,7 +206,7 @@ export function runCode({
     throw new Error("timeout");
   }
 
-  const ret = artifacts
+  const artifactsReport = artifacts
     .report({ codeLength, filename, offset: codeBread[mode].offset })
     .map((report) => ({
       ...report,
@@ -213,8 +215,11 @@ export function runCode({
 
   console.log(
     "console output",
-    ...ret.map((r) => r.console.map((c) => c.messages))
+    ...artifactsReport.map((r) => r.console.map((c) => c.messages))
   );
 
-  return ret;
+  return {
+    templates: artifacts.templatesArray,
+    responses: artifactsReport,
+  };
 }

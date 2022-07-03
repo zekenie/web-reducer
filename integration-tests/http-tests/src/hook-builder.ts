@@ -64,6 +64,13 @@ type PaginatedHookHistory<PostBody, State> = {
   }[];
 };
 
+type TemplateFields = any;
+
+export type Template = {
+  name: string;
+  template: TemplateFields;
+};
+
 export type KeyWorkflowState = "paused" | "live";
 export type KeyType = "read" | "write";
 
@@ -208,6 +215,13 @@ export async function buildAuthenticatedApi(
       async playKey({ hookId, key }: { hookId: string; key: string }) {
         await authenticatedClient.post(`/hooks/${hookId}/keys/${key}/play`);
       },
+
+      async templates({ hookId }: { hookId: string }) {
+        const { data } = await authenticatedClient.get<{ keys: Template[] }>(
+          `/hooks/${hookId}/templates`
+        );
+        return data.keys;
+      },
     },
   };
 }
@@ -232,6 +246,13 @@ function buildApi<PostBody, State>(context: Context) {
       );
       bodyToIdMap.set(body, data.id);
       return data.id;
+    },
+
+    async templates() {
+      const { data } = await authenticatedClient.get(
+        `/hooks/${context.hookId}/templates`
+      );
+      return data.templates;
     },
 
     async publish(): Promise<void> {

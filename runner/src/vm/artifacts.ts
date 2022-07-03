@@ -51,7 +51,7 @@ type Template = JSON;
 
 export class Artifacts {
   public console: VMConsole = new VMConsole(this);
-  public readonly templates: { [key: string]: Template } = {};
+  private readonly templates: { [key: string]: Template } = {};
   private requestArtifacts: { [id: string]: RequestArtifact } = {};
   // for order
   private ids: string[] = [];
@@ -70,6 +70,12 @@ export class Artifacts {
     return Object.values(this.requestArtifacts).every(
       (artifact) => !artifact.isOpen
     );
+  }
+
+  get templatesArray(): { name: string; template: any }[] {
+    return Object.keys(this.templates).reduce((arr, name) => {
+      return [...arr, { name, template: this.templates[name] }];
+    }, [] as { name: string; template: any }[]);
   }
 
   addTemplate(name: string, template: Template) {

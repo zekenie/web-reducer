@@ -1,6 +1,79 @@
 import { formatRequest, formatRequests } from "./test-helpers";
 import { runCode } from "./vm.service";
 
+describe("templates", () => {
+  it("can add templates", () => {
+    const code = `
+      template('foobar', () => {
+        return {
+          foo: input('bar')
+        }
+      })
+    `;
+
+    expect(
+      runCode({
+        secretsJson: "{}",
+        mode: "template",
+        code: code,
+        requestsJson: "[]",
+        invalidIdempotencyKeys: [],
+        state: "{}",
+      })
+    ).toEqual(
+      expect.objectContaining({
+        templates: [
+          {
+            name: "foobar",
+            template: {
+              foo: {
+                __wr_type: "input",
+                name: "bar",
+              },
+            },
+          },
+        ],
+      })
+    );
+  });
+
+  it("has access to state", () => {
+    const code = `
+      template('foobar', (state) => {
+        return {
+          foo: select('nameOfSelect', state.options)
+        }
+      })
+    `;
+
+    const result = runCode({
+      secretsJson: "{}",
+      mode: "template",
+      code: code,
+      requestsJson: "[]",
+      invalidIdempotencyKeys: [],
+      state: `{ "options": [1,2]}`,
+    });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        templates: [
+          {
+            name: "foobar",
+            template: {
+              foo: {
+                __wr_type: "select",
+                name: "nameOfSelect",
+                options: [1, 2],
+              },
+            },
+          },
+        ],
+      })
+    );
+  });
+});
+
 describe("query", () => {
   it("runs hello world", () => {
     const helloWorld = `
@@ -22,16 +95,18 @@ describe("query", () => {
         state: "{}",
       })
     ).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          ms: expect.any(Number),
-          error: null,
-          response: {
-            statusCode: 200,
-            body: { hello: "world" },
-          },
-        }),
-      ])
+      expect.objectContaining({
+        responses: expect.arrayContaining([
+          expect.objectContaining({
+            ms: expect.any(Number),
+            error: null,
+            response: {
+              statusCode: 200,
+              body: { hello: "world" },
+            },
+          }),
+        ]),
+      })
     );
   });
 
@@ -55,16 +130,18 @@ describe("query", () => {
         state: "{}",
       })
     ).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          ms: expect.any(Number),
-          error: null,
-          response: {
-            statusCode: 200,
-            body: { FOO: "bar" },
-          },
-        }),
-      ])
+      expect.objectContaining({
+        responses: expect.arrayContaining([
+          expect.objectContaining({
+            ms: expect.any(Number),
+            error: null,
+            response: {
+              statusCode: 200,
+              body: { FOO: "bar" },
+            },
+          }),
+        ]),
+      })
     );
   });
 
@@ -88,16 +165,18 @@ describe("query", () => {
         state: "{}",
       })
     ).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          ms: expect.any(Number),
-          error: null,
-          response: {
-            statusCode: 200,
-            body: { FOO: "bar" },
-          },
-        }),
-      ])
+      expect.objectContaining({
+        responses: expect.arrayContaining([
+          expect.objectContaining({
+            ms: expect.any(Number),
+            error: null,
+            response: {
+              statusCode: 200,
+              body: { FOO: "bar" },
+            },
+          }),
+        ]),
+      })
     );
   });
 
@@ -121,16 +200,18 @@ describe("query", () => {
         state: `{ "foo": "bar" }`,
       })
     ).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          ms: expect.any(Number),
-          error: null,
-          response: {
-            statusCode: 200,
-            body: { FOO: "bar" },
-          },
-        }),
-      ])
+      expect.objectContaining({
+        responses: expect.arrayContaining([
+          expect.objectContaining({
+            ms: expect.any(Number),
+            error: null,
+            response: {
+              statusCode: 200,
+              body: { FOO: "bar" },
+            },
+          }),
+        ]),
+      })
     );
   });
 });
@@ -156,16 +237,18 @@ describe("responder", () => {
         state: "{}",
       })
     ).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          ms: expect.any(Number),
-          error: null,
-          response: {
-            statusCode: 200,
-            body: { hello: "world" },
-          },
-        }),
-      ])
+      expect.objectContaining({
+        responses: expect.arrayContaining([
+          expect.objectContaining({
+            ms: expect.any(Number),
+            error: null,
+            response: {
+              statusCode: 200,
+              body: { hello: "world" },
+            },
+          }),
+        ]),
+      })
     );
   });
 
@@ -192,17 +275,19 @@ describe("responder", () => {
         state: "{}",
       })
     ).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          ms: expect.any(Number),
-          state: undefined,
-          error: null,
-          response: {
-            statusCode: 200,
-            body: { hello: "world" },
-          },
-        }),
-      ])
+      expect.objectContaining({
+        responses: expect.arrayContaining([
+          expect.objectContaining({
+            ms: expect.any(Number),
+            state: undefined,
+            error: null,
+            response: {
+              statusCode: 200,
+              body: { hello: "world" },
+            },
+          }),
+        ]),
+      })
     );
   });
 
@@ -222,18 +307,20 @@ describe("responder", () => {
         state: JSON.stringify({ number: 4 }),
       })
     ).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: expect.any(String),
-          ms: expect.any(Number),
-          error: {
-            message: "oh no",
-            name: "TypeError",
-            stacktrace: expect.stringContaining("hook.js:3"),
-          },
-          state: undefined,
-        }),
-      ])
+      expect.objectContaining({
+        responses: expect.arrayContaining([
+          expect.objectContaining({
+            id: expect.any(String),
+            ms: expect.any(Number),
+            error: {
+              message: "oh no",
+              name: "TypeError",
+              stacktrace: expect.stringContaining("hook.js:3"),
+            },
+            state: undefined,
+          }),
+        ]),
+      })
     );
   });
 });
@@ -255,14 +342,16 @@ describe("reducer", () => {
         state: "{}",
       })
     ).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          state: "hello world",
-          id: expect.any(String),
-          ms: expect.any(Number),
-          error: null,
-        }),
-      ])
+      expect.objectContaining({
+        responses: expect.arrayContaining([
+          expect.objectContaining({
+            state: "hello world",
+            id: expect.any(String),
+            ms: expect.any(Number),
+            error: null,
+          }),
+        ]),
+      })
     );
   });
 
@@ -282,14 +371,16 @@ describe("reducer", () => {
         state: JSON.stringify({ number: 4 }),
       })
     ).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: expect.any(String),
-          ms: expect.any(Number),
-          error: null,
-          state: { number: 7 },
-        }),
-      ])
+      expect.objectContaining({
+        responses: expect.arrayContaining([
+          expect.objectContaining({
+            id: expect.any(String),
+            ms: expect.any(Number),
+            error: null,
+            state: { number: 7 },
+          }),
+        ]),
+      })
     );
   });
 
@@ -310,14 +401,16 @@ describe("reducer", () => {
         state: JSON.stringify({ number: 4 }),
       })
     ).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: expect.any(String),
-          ms: expect.any(Number),
-          error: null,
-          state: { number: 8 },
-        }),
-      ])
+      expect.objectContaining({
+        responses: expect.arrayContaining([
+          expect.objectContaining({
+            id: expect.any(String),
+            ms: expect.any(Number),
+            error: null,
+            state: { number: 8 },
+          }),
+        ]),
+      })
     );
   });
 
@@ -343,7 +436,7 @@ describe("reducer", () => {
         }),
         invalidIdempotencyKeys: [],
         state: JSON.stringify({ number: 4 }),
-      })
+      }).responses
     ).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -371,7 +464,7 @@ describe("reducer", () => {
         requestsJson: formatRequest({ body: { number: 3 } }),
         invalidIdempotencyKeys: [],
         state: JSON.stringify({ number: 4 }),
-      })
+      }).responses
     ).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -441,7 +534,7 @@ describe("reducer", () => {
       ]),
       invalidIdempotencyKeys: [],
       state: JSON.stringify({ number: 4 }),
-    });
+    }).responses;
     expect(result).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -475,7 +568,7 @@ describe("console", () => {
         requestsJson: formatRequest({ body: { number: 3 } }),
         invalidIdempotencyKeys: [],
         state: JSON.stringify({ number: 4 }),
-      })
+      }).responses
     ).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -533,7 +626,7 @@ describe("console", () => {
         ]),
         invalidIdempotencyKeys: [],
         state: JSON.stringify({ number: 4 }),
-      })
+      }).responses
     ).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

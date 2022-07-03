@@ -3,12 +3,35 @@ import { Router } from "express";
 import * as service from "./vm.service";
 import VMInput from "./inputs/vm.input";
 import BulkVMInput from "./inputs/bulk-vm.input";
+import VMConfigInput from "./inputs/vm-config.input";
 
 export default Router()
+  .post(
+    "/templates",
+    validate(VMConfigInput),
+    async function vmConfigController(req, res, next) {
+      const body = req.body as VMConfigInput;
+      try {
+        const results = service.runCode({
+          code: body.code,
+          requestsJson: `[]`,
+          invalidIdempotencyKeys: [],
+          secretsJson: `{}`,
+          state: body.state,
+          mode: "template",
+        });
+        res.json({
+          templates: results.templates,
+        });
+      } catch (e) {
+        next(e);
+      }
+    }
+  )
   .post("/", validate(VMInput), async function vmController(req, res, next) {
     const body = req.body as VMInput;
     try {
-      const [payload] = service.runCode({
+      const results = service.runCode({
         code: body.code,
         requestsJson: `[${body.requestJson}]`,
         invalidIdempotencyKeys: [],
@@ -16,7 +39,8 @@ export default Router()
         state: body.state,
         mode: body.mode,
       });
-      res.json(payload);
+      const [resp] = results.responses;
+      res.json(resp);
     } catch (e) {
       next(e);
     }
@@ -35,7 +59,7 @@ export default Router()
           secretsJson: body.secretsJson,
           mode: "reducer",
         });
-        res.json(payload);
+        res.json(payload.responses);
       } catch (e) {
         next(e);
       }
