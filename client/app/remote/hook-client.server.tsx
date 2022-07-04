@@ -70,6 +70,13 @@ export type KeyRecord = {
   type: KeyType;
 };
 
+type TemplateFields = any;
+
+export type Template = {
+  name: string;
+  template: TemplateFields;
+};
+
 const hookClientFactory = (httpClient: HttpJsonClient) => ({
   async list() {
     return httpClient.get<HookOverview[]>("/hooks");
@@ -118,6 +125,14 @@ const hookClientFactory = (httpClient: HttpJsonClient) => ({
     );
     return keys;
   },
+
+  async getTemplates({ id }: { id: string }): Promise<Template[]> {
+    const { templates } = await httpClient.get<{ templates: Template[] }>(
+      `/hooks/${id}/templates`
+    );
+    return templates;
+  },
+
   async pauseKey({ id, key }: { id: string; key: string }) {
     await httpClient.post(`/hooks/${id}/keys/${key}/pause`);
   },

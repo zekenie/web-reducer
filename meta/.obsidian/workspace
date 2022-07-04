@@ -88,6 +88,7 @@
   "active": "990832f70d0c11ad",
   "lastOpenFiles": [
     "Feature Board.md",
+    "readmes/readme.md",
     "ideas/template requests.md",
     "remnote.md",
     "ideas/scheduled-requests.md",
@@ -95,7 +96,6 @@
     "examples/Card games.md",
     "examples/help tickets.md",
     "Tech Investments.md",
-    "ideas/jq expressions in request table.md",
-    "examples/Something with qr codes.md"
+    "ideas/jq expressions in request table.md"
   ]
 }

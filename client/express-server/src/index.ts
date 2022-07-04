@@ -47,6 +47,7 @@ app.use(
   })
 );
 
+app.use("/write", writeKeyHandler);
 app.use(cookieParserMiddleware);
 
 // Remix fingerprints its assets so we can cache forever.
@@ -68,7 +69,6 @@ app.use(
 app.get("/heartbeat", (req, res) => res.json({ ok: true }));
 app.use(morgan("tiny"));
 app.use("/read/:readKey", cors({ origin: "*" }), readKeyHandler);
-app.use("/write", writeKeyHandler);
 
 app.use((req, res, next) => {
   res.setCreds = (creds: Credentials) => {
