@@ -100,8 +100,11 @@ export async function __dangerouslyDeleteAllRequestsForHook({
 }: {
   hookId: string;
 }) {
-  await db.__dangerouslyDeleteAllRequestsForHook({ hookId });
-  await db.pauseHook({ hookId });
+  await transaction(async () => {
+    await db.__dangerouslyDeleteAllRequestsForHook({ hookId });
+    await db.resetRequestCount({ hookId });
+    await db.pauseHook({ hookId });
+  });
   await enqueue({
     name: "bulk-run-hook",
     input: {
