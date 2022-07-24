@@ -48,18 +48,19 @@ kanban-plugin: basic
 - [ ] add test for options requests for write endpoint
 - [ ] more robust console feature
 - [ ] consider tasteful indexes
-- [ ] zero out request count on archive
 - [ ] delete hook
+- [ ] store current state in redis so we avoid any dependency on db on write
 
 
 ## In Progress
 
-- [ ] pool of guest accounts
 
 
 ## Done
 
 **Complete**
+- [x] pool of guest accounts
+- [x] zero out request count on archive
 - [x] [make sockets more durable](https://medium.com/voodoo-engineering/websockets-on-production-with-node-js-bdc82d07bb9f)
 - [x] reset state, clear requests
 - [x] get to legal from unauthenticated state

@@ -2,7 +2,6 @@ import { createBullBoard } from "@bull-board/api";
 import { BullAdapter } from "@bull-board/api/bullAdapter";
 import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
 import { ExpressAdapter } from "@bull-board/express";
-import { Router } from "express";
 import { allQueues } from "./queues";
 
 const serverAdapter = new ExpressAdapter();

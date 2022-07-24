@@ -21,7 +21,7 @@ export async function enqueue(
   const enqueued = await queue.add(
     job.name,
     { ...job.input, _spanCarrier: serializeCurrentSpan() },
-    { jobId }
+    { jobId, removeOnComplete: 100, removeOnFail: 250 }
   );
   forWorkerType("all").size.add(1);
   forWorkerType(job.name).size.add(1);

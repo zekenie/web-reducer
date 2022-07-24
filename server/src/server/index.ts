@@ -40,7 +40,16 @@ export default function makeServer(config: Config) {
 
   app.use(makeRequestContextMiddleware());
 
-  app.use("/admin/queues", workerController);
+  app.use(
+    "/admin/queues",
+    (req, res, next) => {
+      // https://github.com/felixmosh/bull-board/issues/311
+      // because otherwise forces assets to serve https
+      res.setHeader("Content-Security-Policy", "");
+      next();
+    },
+    workerController
+  );
   app.use("/test-internals", testInternalsController);
 
   app.use("/hooks", hookController);
