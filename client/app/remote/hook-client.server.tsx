@@ -88,6 +88,10 @@ const hookClientFactory = (httpClient: HttpJsonClient) => ({
     return httpClient.post<HookDetail>("/hooks");
   },
 
+  async delete(id: string): Promise<void> {
+    await httpClient.delete(`/hooks/${id}`);
+  },
+
   async history(id: string, { token }: { token?: string } = {}) {
     const qs = token ? `?token=${token}` : "";
     return httpClient.get<PaginatedTokenResponse<Request>>(

@@ -5,12 +5,15 @@ import {
   InboxInIcon,
   KeyIcon,
 } from "@heroicons/react/outline";
-import { useFetcher } from "@remix-run/react";
-import { Label, Textarea, TextInput } from "flowbite-react";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import type { HookDetail } from "~/remote/hook-client.server";
 import { useSocket } from "~/routes/hooks/$hookId";
 import type { SocketMessage } from "~/socket-messages.types";
+import DetailsForm from "./details-form";
+import { Tab, Tabs } from "~/components/tabs";
+import { useFetcher } from "@remix-run/react";
+import { Button } from "flowbite-react";
+import { useModals } from "~/modals/lib/modal-provider";
 
 export function formatNumber(num: number): string {
   if (num < 1000) {
@@ -34,11 +37,31 @@ export function formatNumber(num: number): string {
 }
 
 function ResourceBar({ hook }: { hook: HookDetail }) {
-  const fetcher = useFetcher();
-
   const [requestCount, setRequestCount] = useState(hook.requestCount);
-
+  const [tab, setTab] = useState<"details" | "danger-zone">("details");
   const { latestEvent } = useSocket<SocketMessage>();
+  const fetcher = useFetcher();
+  const { pushModal } = useModals();
+
+  const deleteHook = useCallback(async () => {
+    const confirmed = await pushModal({
+      name: "confirm",
+      props: {
+        title: "Are you SURE?",
+        body: "This code and all data will be PERMANENTLY deleted",
+        confirmText: "Destroy it",
+      },
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    fetcher.submit(null, {
+      method: "post",
+      action: `/hooks/${hook.id}/delete`,
+    });
+  }, [fetcher, hook.id, pushModal]);
 
   useEffect(() => {
     if (latestEvent) {
@@ -47,16 +70,6 @@ function ResourceBar({ hook }: { hook: HookDetail }) {
       }
     }
   }, [latestEvent]);
-
-  const updateField = useCallback(
-    (field: "name" | "description", value: string) => {
-      fetcher.submit(
-        { [field]: value },
-        { method: "post", action: `/hooks/${hook.id}/update` }
-      );
-    },
-    [hook, fetcher]
-  );
 
   return (
     <Popover className="relative">
@@ -95,46 +108,28 @@ function ResourceBar({ hook }: { hook: HookDetail }) {
             // leaveTo="opacity-0 translate-y-1"
           >
             <Popover.Panel className="absolute left-1/2 z-10 w-full max-w-md -translate-x-1/2 transform px-4 sm:px-0 lg:max-w-3xl">
-              <div className="shadow-lg space-y-2 text-xs overflow-hidden rounded-b h-64 bg-slate-50 p-2 border-x border-b">
-                <div>
-                  <div className="mb-2 block">
-                    <Label htmlFor="name">Name</Label>
-                  </div>
-                  <TextInput
-                    disabled={fetcher.state === "submitting"}
-                    onBlur={(e) => updateField("name", e.currentTarget.value)}
-                    id="name"
-                    name="name"
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") {
-                        updateField("name", e.currentTarget.value);
-                        return;
-                      }
-                      e.currentTarget.value = slugify(
-                        e.currentTarget.value + e.key
-                      );
-
-                      e.preventDefault();
-                      return false;
-                    }}
-                    defaultValue={hook.name}
-                  />
-                </div>
-                <div>
-                  <div className="mb-2 block">
-                    <Label htmlFor="description">Description</Label>
-                  </div>
-                  <Textarea
-                    defaultValue={hook.description}
-                    disabled={fetcher.state === "submitting"}
-                    id="description"
-                    onBlur={(e) =>
-                      updateField("description", e.currentTarget.value)
-                    }
-                    name="description"
-                    placeholder="What is this for?"
-                    rows={4}
-                  />
+              <div className="shadow-lg space-y-2 text-xs overflow-hidden rounded-b h-72 bg-slate-50 border-x border-b">
+                <Tabs>
+                  <Tab
+                    onClick={() => setTab("details")}
+                    selected={tab === "details"}
+                  >
+                    Details
+                  </Tab>
+                  <Tab
+                    onClick={() => setTab("danger-zone")}
+                    selected={tab === "danger-zone"}
+                  >
+                    Danger zone
+                  </Tab>
+                </Tabs>
+                <div className="m-2">
+                  {tab === "details" && <DetailsForm />}
+                  {tab === "danger-zone" && (
+                    <Button onClick={deleteHook} color="red">
+                      Delete!
+                    </Button>
+                  )}
                 </div>
               </div>
             </Popover.Panel>
@@ -146,13 +141,3 @@ function ResourceBar({ hook }: { hook: HookDetail }) {
 }
 
 export default ResourceBar;
-
-const slugify = (text: string) =>
-  text
-    .toString()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w-]+/g, "-")
-    .replace(/--+/g, "-");

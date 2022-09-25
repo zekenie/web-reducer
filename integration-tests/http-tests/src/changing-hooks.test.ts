@@ -82,6 +82,21 @@ describe("changing hooks", () => {
     expect(updateRes.status).toEqual(403);
   });
 
+  describe("deleting hooks", () => {
+    it("deletes hook", async () => {
+      const authedApi = await buildAuthenticatedApi();
+      const { data: hook } = await authedApi.hook.create();
+      await authedApi.hook.writeKey(hook.writeKeys[0]!, {});
+      await allQueuesDrained();
+      await authedApi.hook.delete(hook.id);
+      const { count } = await getPool().one<{ count: number }>(
+        sql`select count(*) from "hook" where id = ${hook.id}`
+      );
+
+      expect(count).toEqual(0);
+    });
+  });
+
   describe("resetting requests", () => {
     it("deletes all requests of hook", async () => {
       const authedApi = await buildAuthenticatedApi();

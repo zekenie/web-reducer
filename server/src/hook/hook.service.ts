@@ -6,6 +6,7 @@ import * as keyService from "../key/key.service";
 import { createKey } from "../key/key.service";
 import { KeyType } from "../key/key.types";
 import * as secretService from "../secret/secret.remote";
+import { getAccessKeyForHook } from "../secret/secret.service";
 import { enqueue } from "../worker/queue.service";
 import {
   bulkGenerateHookNames,
@@ -93,6 +94,17 @@ export async function createHook({
     });
     throw e;
   }
+}
+
+export async function __dangerouslyDeleteHook({
+  hookId,
+}: {
+  hookId: string;
+}): Promise<void> {
+  const accessKey = await getAccessKeyForHook({ hookId });
+  await db.__dangerouslyHARDDeleteAllRequestsForHook({ hookId });
+  await db.__dangerouslyDeleteHook({ hookId });
+  await secretService.deleteNamespace({ accessKey });
 }
 
 export async function __dangerouslyDeleteAllRequestsForHook({

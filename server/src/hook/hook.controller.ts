@@ -60,6 +60,14 @@ export default Router()
       next(e);
     }
   })
+  .delete("/:hookId", async function deleteHook(req, res, next) {
+    try {
+      await service.__dangerouslyDeleteHook({ hookId: req.params.hookId });
+      res.status(202).json({ deleted: true });
+    } catch (e) {
+      next(e);
+    }
+  })
   .post("/:hookId/publish", async function publishDraft(req, res, next) {
     try {
       await service.publishDraft({ hookId: req.params.hookId });

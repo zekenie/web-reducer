@@ -47,6 +47,22 @@ export async function getRequestCount({ hookId }: { hookId: string }) {
   return requestCount;
 }
 
+export async function __dangerouslyDeleteHook({ hookId }: { hookId: string }) {
+  const pool = getPool();
+  await pool.query(sql`
+    delete from "access" where "hookId" = ${hookId}
+  `);
+  await pool.query(sql`
+    delete from "key" where "hookId" = ${hookId}
+  `);
+  await pool.query(sql`
+    delete from "version" where "hookId" = ${hookId}
+  `);
+  await pool.query(sql`
+    delete from "hook" where id = ${hookId}
+  `);
+}
+
 export async function __dangerouslyDeleteAllRequestsForHook({
   hookId,
 }: {
@@ -56,6 +72,27 @@ export async function __dangerouslyDeleteAllRequestsForHook({
   await pool.query(sql`
     update "request"
     set "ignore" = true
+    where "writeKey" in (
+      select "key"
+      from "key"
+      where "hookId" = ${hookId}
+      and "type" = 'write'
+    )
+  `);
+}
+
+export async function __dangerouslyHARDDeleteAllRequestsForHook({
+  hookId,
+}: {
+  hookId: string;
+}) {
+  const pool = getPool();
+  await pool.query(sql`
+    delete from "state"
+    where "hookId" = ${hookId}
+  `);
+  await pool.query(sql`
+    delete from "request"
     where "writeKey" in (
       select "key"
       from "key"

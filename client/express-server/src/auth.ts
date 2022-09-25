@@ -116,7 +116,7 @@ export default async function credentialExchange({
         return createGuestUser();
     }
   } catch (e) {
-    console.warn("credentailExchange error with strategy " + strategy, e);
+    console.warn("credentialExchange error with strategy " + strategy, e);
     return createGuestUser();
   }
   throw new Error("unsupported strategy");

@@ -167,6 +167,9 @@ export async function buildAuthenticatedApi(
           }
         );
       },
+      async delete(id: string, axiosConfig?: AxiosRequestConfig) {
+        return authenticatedClient.delete(`/hooks/${id}`, axiosConfig);
+      },
       async update(
         id: string,
         updates: { code?: string; name?: string; description?: string },
