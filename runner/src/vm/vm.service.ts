@@ -1,6 +1,8 @@
 import * as vmCrypto from "./vm-crypto.service";
 import vm2 from "vm2";
 import { Artifacts } from "./artifacts";
+import Ajv, { Schema } from "ajv";
+import { Schema as JtdSchema, validate } from "jtd";
 
 const templateFns = `
 function template(name, cb) {
@@ -140,6 +142,18 @@ const codeBread = {
   },
 };
 
+function validateJsonSchema(schema: Schema, data: unknown) {
+  const ajv = new Ajv();
+  const validate = ajv.compile(schema);
+  const valid = validate(data);
+  return { valid, errors: validate.errors };
+}
+
+function validateJsonTypeDef(schema: JtdSchema, data: unknown) {
+  const errors = validate(schema, data, { maxDepth: 32, maxErrors: 32 });
+  return { valid: errors.length === 0, errors };
+}
+
 export function runCode({
   code,
   state,
@@ -167,6 +181,8 @@ export function runCode({
     timeout,
     sandbox: {
       artifacts,
+      validateJsonSchema,
+      validateJsonTypeDef,
       ...vmCrypto,
       makeQueryParams: (queryString: string) =>
         new URLSearchParams(queryString),

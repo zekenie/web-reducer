@@ -107,6 +107,107 @@ describe("existing hooks", () => {
     );
   });
 
+  it("can validate json type def", async () => {
+    const body1 = { id: "foo", plan: "FREE" };
+    const body2 = { id: "foo", plan: "PAID" };
+    const body3 = { id: "foo", plan: "INVALID" };
+    const { api, context, authenticatedClient } = await buildHook({
+      code: `
+        const acceptableReqBody = {
+          "properties": {
+            "id": { "type": "string" },
+            "plan": { "enum": ["FREE", "PAID"]}
+          }
+        }
+
+
+        function responder(request) {
+          const { valid, errors } = validateJsonTypeDef(acceptableReqBody, request.body)
+          return {
+            statusCode: valid ? 201 : 400,
+            body: { valid, errors },
+          }
+        }
+      `,
+    });
+
+    await authenticatedClient.post(`/write/${context.writeKey}`, body1, {
+      headers: { "Content-Type": "application/json" },
+    });
+
+    await authenticatedClient.post(`/write/${context.writeKey}`, body2, {
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const { data, status } = await authenticatedClient.post(
+      `/write/${context.writeKey}`,
+      body3,
+      {
+        headers: { "Content-Type": "application/json" },
+        validateStatus: () => true,
+      }
+    );
+
+    expect(status).toEqual(400);
+    expect(data.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: ["plan"],
+          schemaPath: ["properties", "plan", "enum"],
+        }),
+      ])
+    );
+  });
+
+  it("can validate json schema", async () => {
+    const body1 = {
+      foo: 1,
+      bar: "abc",
+    };
+
+    const body2 = {
+      foo: "yo",
+      bar: "abc",
+    };
+    const { api, context, authenticatedClient } = await buildHook({
+      code: `
+        const acceptableReqBody = {
+          type: "object",
+          properties: {
+            foo: {type: "integer"},
+            bar: {type: "string", nullable: true}
+          },
+          required: ["foo"],
+          additionalProperties: false
+        }
+
+
+        function responder(request) {
+          const { valid, errors } = validateJsonSchema(acceptableReqBody, request.body)
+          return {
+            statusCode: valid ? 201 : 400,
+            body: { valid, errors },
+          }
+        }
+      `,
+    });
+
+    await authenticatedClient.post(`/write/${context.writeKey}`, body1, {
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const { status } = await authenticatedClient.post(
+      `/write/${context.writeKey}`,
+      body2,
+      {
+        headers: { "Content-Type": "application/json" },
+        validateStatus: () => true,
+      }
+    );
+
+    expect(status).toEqual(400);
+  });
+
   it("works with query strings", async () => {
     const { api } = await buildHook({
       code: `function reducer (oldState = { number: 0 }, req) {
