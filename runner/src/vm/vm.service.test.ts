@@ -297,16 +297,17 @@ describe("responder", () => {
         throw new TypeError('oh no')   // line 3
       }
     `;
-    expect(
-      runCode({
-        secretsJson: "{}",
-        mode: "response",
-        code: program,
-        requestsJson: formatRequest({ body: { number: 3 } }),
-        invalidIdempotencyKeys: [],
-        state: JSON.stringify({ number: 4 }),
-      })
-    ).toEqual(
+
+    const output = runCode({
+      secretsJson: "{}",
+      mode: "response",
+      code: program,
+      requestsJson: formatRequest({ body: { number: 3 } }),
+      invalidIdempotencyKeys: [],
+      state: JSON.stringify({ number: 4 }),
+    });
+
+    expect(output).toEqual(
       expect.objectContaining({
         responses: expect.arrayContaining([
           expect.objectContaining({

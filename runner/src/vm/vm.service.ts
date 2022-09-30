@@ -71,7 +71,7 @@ const codeBread = {
           }
         })()
       })(${requestsJson}, ${secretsJson})`,
-    offset: 18 + 18,
+    offset: 18 + 20,
   },
   query: {
     code: (
