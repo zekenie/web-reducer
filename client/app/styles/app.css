@@ -2376,12 +2376,12 @@ input:checked + .toggle-bg {
   width: 16rem;
 }
 
-.max-w-xl {
-  max-width: 36rem;
-}
-
 .max-w-prose {
   max-width: 65ch;
+}
+
+.max-w-xl {
+  max-width: 36rem;
 }
 
 .max-w-2xl {

@@ -137,6 +137,37 @@ uuid()
 // -> "3af57774-b58c-4d74-9d12-13b2240e4cb7"
 ```
 
+### Validation
+
+#### `validateJsonSchema`
+
+Commonly in the `responder` function, but elsewhere as well, you may want to validate untrusted JSON. `validateJsonSchema` can be used to see if an arbitrary object conforms to the constraints of a [json schema](https://json-schema.org/).
+
+```js
+const schema = {...};
+const { valid, errors } = validateJsonSchema(schema, req.body);
+if (valid) {
+  return {
+    statusCode: 200,
+    body: {...}
+  }
+}
+```
+
+#### `validateJsonTypeDef`
+
+Similar to `validateJsonSchema`, you may want to validate untrusted JSON using [JSONTypeDef](https://jsontypedef.com/).
+
+```js
+const typeDef = {...};
+const { valid, errors } = validateJsonTypeDef(typeDef, req.body);
+if (valid) {
+  return {
+    statusCode: 200,
+    body: {...}
+  }
+}
+```
 
 ### Crypto
 
@@ -177,9 +208,9 @@ Examples to come!
 
 Clients interact with hook from `readKeys` and `writeKeys` in the form of HTTP requests and websocket connections
 
-### `readKey` endpoints
+### Read endpoints
 
-`readKeys` let clients see the current state. Requests made to `https://webreducer.dev/read/:readKey` will expose the current state. If you navigate your browser to that page, you'll see an HTML page containing a pretty representation of the state with live updates. If you `curl` the endpoint, you'll see JSON alone.
+Read endpoints let clients see the current state. Requests made to `https://webreducer.dev/read/:readKey` will expose the current state. If you navigate your browser to that page, you'll see an HTML page containing a pretty representation of the state with live updates. If you `curl` the endpoint, you'll see JSON alone.
 
 ```sh
 $ curl https://webreducer.dev/read/:readKey
@@ -221,4 +252,14 @@ socket.addEventListener("message", (message) => {
 });
 ```
 
-### Write keys
+### Write endpoints
+
+If you want to send data to a hook, your client needs to have a secret write endpoint.
+
+```sh
+$ curl -X POST \
+-d '{"foo":"bar"}' \
+-H 'Content-Type: application/json' \
+https://webreducer.dev/write/:writeKey
+# { "output": { "from": "your responder function" } }
+```
