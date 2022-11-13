@@ -25,3 +25,24 @@ export type HookOverview = {
   workflowState: HookWorkflowState;
   requestCount: number;
 };
+
+export type HookRow = {
+  id: string;
+  createdAt: Date;
+  workflowState: HookWorkflowState;
+  name: string;
+  // @todo, this is not marked as `not null` but should it be?
+  secretAccessKey: string;
+  description?: string;
+  requestCount: number;
+};
+
+export type VersionRow = {
+  id: string;
+  code: string;
+  compiledCode?: string;
+  hookId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  workflowState: VersionWorkflowState;
+};

@@ -1,5 +1,17 @@
 import { IncomingHttpHeaders } from "http";
 
+export type RequestRow = {
+  id: string;
+  contentType: string;
+  body: any;
+  writeKey: string;
+  createdAt: Date;
+  hookId: string;
+  headers: IncomingHttpHeaders;
+  queryString?: string;
+  ignore: boolean;
+};
+
 export type WebhookRequest = {
   id: string;
   body: {};

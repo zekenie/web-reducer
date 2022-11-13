@@ -1,5 +1,10 @@
 import { randomUUID } from "crypto";
 import { JsonWebTokenError, sign } from "jsonwebtoken";
+import {
+  InvalidJwtError,
+  InvalidJwtSubError,
+  InvalidOrExpiredJwtError,
+} from "./auth.errors";
 import { validateAndDecodeJwt } from "./auth.service";
 
 process.env.JWT_SECRET = "secret";
@@ -18,9 +23,7 @@ describe("auth service", () => {
   });
   describe("validateAndDecodeJwt", () => {
     it("throws with invalid jwt", () => {
-      expect(() => validateAndDecodeJwt(userId)).toThrowError(
-        "unable to decode jwt"
-      );
+      expect(() => validateAndDecodeJwt(userId)).toThrowError(InvalidJwtError);
     });
 
     it("correctly identifies a signed token", () => {
@@ -31,13 +34,15 @@ describe("auth service", () => {
 
     it("errors when the jwt secret is incorrect", () => {
       const token = makeSignedJwt(userId, "wrong secret");
-      expect(() => validateAndDecodeJwt(token)).toThrowError(JsonWebTokenError);
+      expect(() => validateAndDecodeJwt(token)).toThrowError(
+        InvalidOrExpiredJwtError
+      );
     });
 
     it("errors when the jwt subject is not a uuid", () => {
       const token = makeSignedJwt("foo");
       expect(() => validateAndDecodeJwt(token)).toThrowError(
-        "jwt sub is not uuid"
+        InvalidJwtSubError
       );
     });
   });

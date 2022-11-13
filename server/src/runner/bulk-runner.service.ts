@@ -1,6 +1,8 @@
 import { cargoQueue } from "async";
-import { last } from "lodash";
+import { keyBy, last } from "lodash";
 import { sql } from "slonik";
+import { bulkInsertConsole } from "../console/console.db";
+import { ConsoleMessage, ConsoleMessageInsert } from "../console/console.types";
 import { getPool, transaction } from "../db";
 import {
   getPublishedCodeByHook,
@@ -92,20 +94,35 @@ export async function runBulk(
 
           const lastResult = last(runResults)!;
           currentState = lastResult.state as {};
-          await bulkCreateState({
+          const stateResults = await bulkCreateState({
             hookId,
             versionId: code.versionId,
             requests: runResults.map((result, i) => {
               const request = requests[i];
               return {
                 id: request.id,
-                console: result.console,
                 idempotencyKey: result.idempotencyKey,
                 executionTime: result.ms,
                 state: result.state as {},
                 error: result.error,
               };
             }),
+          });
+
+          const stateResultsByRequestId = keyBy(stateResults, "requestId");
+
+          await bulkInsertConsole({
+            consoleLogs: runResults.reduce((acc, runResult, i) => {
+              const request = requests[i];
+              return [
+                ...acc,
+                ...runResult.console.map((con) => ({
+                  ...con,
+                  requestId: request.id!,
+                  stateId: stateResultsByRequestId[request.id].id,
+                })),
+              ];
+            }, [] as ConsoleMessageInsert[]),
           });
         }
 

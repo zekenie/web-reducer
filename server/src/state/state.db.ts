@@ -6,9 +6,13 @@ import {
   PaginatedTokenResponse,
   PaginationQueryArgs,
 } from "../pagination/pagination.types";
-import { ConsoleMessage, RuntimeError } from "../runner/runner.types";
+import { RuntimeError } from "../runner/runner.types";
 import { generateNextToken, parseNextToken } from "./tokens";
 import { StateHistory } from "./state.types";
+import {
+  getConsoleByStateId,
+  getConsoleByStateIds,
+} from "../console/console.db";
 
 export async function doesStateExist({
   hookId,
@@ -46,13 +50,16 @@ export async function getStateHistoryForRequest({
 }): Promise<StateHistory | null> {
   const pool = getPool();
 
-  const res = await pool.maybeOne<StateHistory>(sql`
+  const res = await pool.maybeOne<
+    { _stateId: string } & Omit<StateHistory, "console">
+  >(sql`
+
     select
-      "requestId",
+      state.id as "_stateId",
+      state."requestId",
       state,
       request."body",
       error,
-      console,
       "request"."createdAt",
       "request"."queryString",
       "request"."headers"
@@ -65,7 +72,13 @@ export async function getStateHistoryForRequest({
     and version."workflowState" = ${VersionWorkflowState.PUBLISHED}
   `);
 
-  return res;
+  if (!res) {
+    return null;
+  }
+
+  const console = await getConsoleByStateId({ stateId: res?._stateId });
+
+  return { ...res, console };
 }
 
 export async function getStateHistoryPage(
@@ -74,18 +87,20 @@ export async function getStateHistoryPage(
 ): Promise<PaginatedTokenResponse<StateHistory>> {
   const pool = getPool();
 
-  const res = await pool.query<StateHistory & { fullCount: number }>(sql`
+  const res = await pool.query<
+    Omit<StateHistory, "console"> & { _stateId: string; fullCount: number }
+  >(sql`
     with "publishedVersion" as (
       select * from "version"
       where "workflowState" = ${VersionWorkflowState.PUBLISHED}
       and "hookId" = ${hookId}
     )
     select
-      "requestId",
+      state.id as "_stateId",
+      state."requestId",
       state,
       request."body",
       error,
-      console,
       "request"."createdAt",
       "request"."queryString",
       "request"."headers",
@@ -111,10 +126,18 @@ export async function getStateHistoryPage(
       objects: [],
     };
   }
+
+  const consoleOutput = await getConsoleByStateIds({
+    stateIds: records.map((r) => r._stateId),
+  });
+
   const [{ fullCount }] = records;
   const hasNext = fullCount > paginationArgs.pageSize;
 
-  const objects = records.map((record) => omit(record, "fullCount"));
+  const objects = records.map((record) => ({
+    ...omit(record, "fullCount"),
+    console: consoleOutput[record._stateId] || [],
+  }));
 
   return {
     nextToken: generateNextToken({ hasNext, objects }),
@@ -205,34 +228,33 @@ export async function bulkCreateState({
   requests: {
     id: string;
     executionTime: number;
-    console: ConsoleMessage[];
     idempotencyKey?: string;
     state: {};
     error?: RuntimeError;
   }[];
   hookId: string;
   versionId: string;
-}) {
+}): Promise<readonly { requestId: string; id: string }[]> {
   const pool = getPool();
-  const res = await pool.many(sql`
+  const results = await pool.many<{ id: string; requestId: string }>(sql`
     insert into state
-    (state, error, console, "executionTime", "hookId", "requestId", "versionId")
+    (state, error, "executionTime", "hookId", "requestId", "versionId")
     select * from ${sql.unnest(
       requests.map((request) => {
         return [
           JSON.stringify(request.state || null),
           JSON.stringify(request.error || null),
-          JSON.stringify(request.console),
           request.executionTime,
           hookId,
           request.id,
           versionId,
         ];
       }),
-      ["jsonb", "jsonb", "jsonb", "int4", "uuid", "uuid", "uuid"]
+      ["jsonb", "jsonb", "int4", "uuid", "uuid", "uuid"]
     )}
-    returning id
+    returning id, "requestId"
   `);
+  return results;
 }
 
 export async function createState({
@@ -240,30 +262,29 @@ export async function createState({
   error,
   hookId,
   requestId,
-  console: theirConsole = [],
   idempotencyKey,
   versionId,
   executionTime,
 }: {
   state: {};
   error?: RuntimeError;
-  console?: ConsoleMessage[];
   hookId: string;
   requestId: string;
   idempotencyKey?: string;
   versionId: string;
   executionTime: number;
-}): Promise<void> {
+}): Promise<{ id: string }> {
   const pool = getPool();
-  await pool.anyFirst(sql`
+  return pool.one<{ id: string }>(sql`
       insert into state 
-      (state, error, console, "executionTime", "hookId", "requestId", "idempotencyKey", "versionId")
+      (state, error, "executionTime", "hookId", "requestId", "idempotencyKey", "versionId")
       values
-      (${state ? sql.json(state) : null}, ${error ? sql.json(error) : null}, ${
-    theirConsole?.length ? sql.json(theirConsole) : sql.json([])
+      (${state ? sql.json(state) : null}, ${
+    error ? sql.json(error) : null
   }, ${executionTime}, ${hookId}, ${requestId}, ${
     idempotencyKey || null
   }, ${versionId})
+      returning id
     `);
 }
 

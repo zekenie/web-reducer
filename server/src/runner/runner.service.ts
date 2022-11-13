@@ -1,3 +1,4 @@
+import { bulkInsertConsole } from "../console/console.db";
 import { getCodeByWriteKey, getRequestCount } from "../hook/hook.db";
 import { HookWorkflowState } from "../hook/hook.types";
 import { getKeysForHook } from "../key/key.service";
@@ -55,32 +56,28 @@ export async function runHook(requestId: string): Promise<void> {
     state: state?.state,
   });
 
-  if (idempotencyKey) {
-    const ok = await isIdempotencyKeyOk(idempotencyKey, { versionId, hookId });
-    if (!ok) {
-      return createState({
-        // leave old state as is because we have an idempotency violation
-        state: state as {},
-        error,
-        hookId,
-        requestId,
-        console,
-        idempotencyKey,
-        versionId,
-        executionTime: ms,
-      });
-    }
-  }
+  const shouldKeepOldState =
+    idempotencyKey &&
+    !(await isIdempotencyKeyOk(idempotencyKey, { versionId, hookId }));
 
-  await createState({
-    state: newState as {},
+  const { id: stateId } = await createState({
+    state: shouldKeepOldState ? (state as {}) : (newState as {}),
     error,
     hookId,
     requestId,
-    console,
     idempotencyKey,
     versionId,
     executionTime: ms,
+  });
+
+  await bulkInsertConsole({
+    consoleLogs: console.map((c) => ({
+      level: c.level,
+      messages: c.messages,
+      timestamp: new Date(c.timestamp),
+      stateId,
+      requestId,
+    })),
   });
 
   try {

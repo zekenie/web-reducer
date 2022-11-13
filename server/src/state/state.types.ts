@@ -1,4 +1,5 @@
-import { ConsoleMessage, RuntimeError } from "../runner/runner.types";
+import { ConsoleMessage } from "../console/console.types";
+import { RuntimeError } from "../runner/runner.types";
 
 export type StateHistory = {
   requestId: string;
@@ -14,4 +15,18 @@ export type StateHistory = {
 export type StateHistoryContract = StateHistory & {
   bodyHash: string;
   stateHash: string;
+};
+
+// @todo versionId current allows null but it shouldn't
+
+export type StateRow = {
+  id: string;
+  requestId: string;
+  createdAt: Date;
+  state: any;
+  hookId: string;
+  versionId: string;
+  error?: any;
+  executionTime: number;
+  idempotencyKey?: string;
 };
