@@ -2,6 +2,7 @@ export type LogLevels = "warn" | "error" | "log" | "trace" | "debug" | "info";
 
 export type ConsoleMessageInsert = {
   stateId?: string;
+  hookId: string;
 } & ConsoleMessage;
 
 export type ConsoleMessage = {
@@ -17,5 +18,6 @@ export type ConsoleRow = {
   messages: string[];
   timestamp: Date;
   requestId?: string;
-  stateId: string;
+  stateId?: string;
+  hookId: string;
 };

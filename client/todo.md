@@ -1,6 +1,6 @@
 - [x] import modal system from prototype client
 - [x] build out layouts in remix
-- [ ] move hygen templates for modals to remix
+- [ ] ~~move hygen templates for modals to remix~~
 
 - [ ] button component solution
 - [ ] nav pill (aka your hooks)
@@ -11,10 +11,10 @@
 
 - [ ] turn off and on read key
 - [ ] turn off and on hook
-- [ ] when publish do i recompute state
-- [ ] request detail (modal?)
+- [x] when publish do i recompute state
+- [x] request detail (modal?)
   - diff state
   - headers
   - body
   - ignore request
-- [ ] clear requests
+- [x] clear requests

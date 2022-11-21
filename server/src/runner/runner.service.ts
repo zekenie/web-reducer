@@ -76,6 +76,7 @@ export async function runHook(requestId: string): Promise<void> {
       messages: c.messages,
       timestamp: new Date(c.timestamp),
       stateId,
+      hookId,
       requestId,
     })),
   });

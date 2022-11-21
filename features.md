@@ -33,3 +33,7 @@
 - your code runs on a separate server, database
 
 ### thoughtlog
+
+- named access keys
+- config vs secrets
+- define config through code with https://jsontypedef.com/

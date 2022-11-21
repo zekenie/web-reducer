@@ -1,0 +1,2 @@
+- We can replace authenticated websocket system with [remix's official realtime system](https://github.com/remix-run/examples/tree/main/_official-realtime-app)
+- [trpc](https://trpc.io/) instead of http calls internally?

@@ -1,5 +1,5 @@
 import { parse } from "cookie";
-import type { IncomingMessage, Server } from "http";
+import type { IncomingMessage } from "http";
 import IORedis from "ioredis";
 import type { URL } from "url";
 import type { WebSocket } from "ws";

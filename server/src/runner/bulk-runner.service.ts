@@ -119,6 +119,7 @@ export async function runBulk(
                 ...runResult.console.map((con) => ({
                   ...con,
                   requestId: request.id!,
+                  hookId,
                   stateId: stateResultsByRequestId[request.id].id,
                 })),
               ];

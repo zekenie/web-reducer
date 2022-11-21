@@ -1,7 +1,5 @@
 ---
-
 kanban-plugin: basic
-
 ---
 
 ## Considering
@@ -17,7 +15,6 @@ kanban-plugin: basic
 - [ ] what happens if you open the editor in 2 windows..... weird race condition about draft updates?
 - [ ] what if the runtime had access to a secret namespace?
 - [ ] keys table could count reqs? be able to open a modal to filter by reqs by key?
-
 
 ## Todo
 
@@ -40,25 +37,22 @@ kanban-plugin: basic
 - [ ] request time availible in req obj
 - [ ] artifacts should be availible at request time, not just reducer time
 
-
 ## Must have for launch
 
 - [ ] Minimal solution for mobile clients... some web page
-- [ ] writeKey section on docs
+- [x] writeKey section on docs
 - [ ] add test for options requests for write endpoint
 - [ ] more robust console feature
 - [ ] consider tasteful indexes
-- [ ] delete hook
+- [x] delete hook
 - [ ] store current state in redis so we avoid any dependency on db on write
 
-
 ## In Progress
-
-
 
 ## Done
 
 **Complete**
+
 - [x] pool of guest accounts
 - [x] zero out request count on archive
 - [x] [make sockets more durable](https://medium.com/voodoo-engineering/websockets-on-production-with-node-js-bdc82d07bb9f)
@@ -107,11 +101,10 @@ kanban-plugin: basic
 - [ ] [[Custom Responses]]<br><br>- [x] runner has `responder` method<br>- [x] server uses `responder` method on runner<br>- [x] write test of custom response in integration test
 - [ ] Import crypto into runtime
 
-
-
-
 %% kanban:settings
+
 ```
 {"kanban-plugin":"basic"}
 ```
+
 %%
