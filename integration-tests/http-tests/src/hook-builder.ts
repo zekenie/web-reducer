@@ -54,14 +54,15 @@ export type RuntimeError = {
   stacktrace?: string;
 };
 
-type PaginatedHookHistory<PostBody, State> = {
-  nextToken: string | null;
-  objects: {
-    state: State;
-    body: PostBody;
-    createdAt: number;
-    error: RuntimeError | undefined;
-  }[];
+type PaginatedHookHistory<PostBody, State> = Paginated<
+  HookHistory<PostBody, State>
+>;
+
+type HookHistory<PostBody, State> = {
+  state: State;
+  body: PostBody;
+  createdAt: number;
+  error: RuntimeError | undefined;
 };
 
 type TemplateFields = any;
@@ -69,6 +70,20 @@ type TemplateFields = any;
 export type Template = {
   name: string;
   template: TemplateFields;
+};
+
+export type LogLevels = "warn" | "error" | "log" | "trace" | "debug" | "info";
+
+export type ConsoleMessage = {
+  level: LogLevels;
+  messages: string[];
+  timestamp: Date;
+  requestId?: string;
+};
+
+type Paginated<T> = {
+  nextToken: string | null;
+  objects: T[];
 };
 
 export type KeyWorkflowState = "paused" | "live";
@@ -315,6 +330,19 @@ function buildApi<PostBody, State>(context: Context) {
         updates,
         axiosConfig
       );
+    },
+    async console({
+      nextToken: nextConsoleToken,
+    }: {
+      nextToken?: string;
+    } = {}): Promise<{ console: Paginated<ConsoleMessage> }> {
+      const { data } = await authenticatedClient.get<{
+        console: Paginated<ConsoleMessage>;
+      }>(`/hooks/${context.hookId}/console`, {
+        params: { token: nextConsoleToken },
+      });
+
+      return data;
     },
     async history(): Promise<PaginatedHookHistory<PostBody, State>> {
       const { data } = await authenticatedClient.get<

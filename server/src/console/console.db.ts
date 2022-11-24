@@ -41,14 +41,14 @@ export async function bulkInsertConsole({
 
 function generateSqlFilterExpressionForToken(token?: string) {
   if (!token) {
-    return sql` and "console"."timestamp" < ${new Date().toISOString()} `;
+    return sql``;
   }
-  const { id, timestamp } = parseNextToken(token);
+  const { id, number } = parseNextToken(token);
 
-  return sql` and ("console"."timestamp", "id") < (${timestamp.toISOString()}, ${id}) `;
+  return sql` and ("console"."number", "id") < (${number!}, ${id}) `;
 }
 
-export async function getConsolePage({
+export async function getConsolePageForHook({
   hookId,
   paginationArgs,
 }: {
@@ -57,11 +57,14 @@ export async function getConsolePage({
 }): Promise<PaginatedTokenResponse<ConsoleRow>> {
   const pool = getPool();
 
-  const rows = await pool.any<ConsoleRow & { fullCount: number }>(sql`
+  const rows = await pool.any<
+    ConsoleRow & { fullCount: number; number: number }
+  >(sql`
     select 
       id,
       messages,
       "requestId",
+      "number",
       "stateId",
       timestamp,
       level,
@@ -69,7 +72,7 @@ export async function getConsolePage({
     from "console"
     where "hookId" = ${hookId}
     ${generateSqlFilterExpressionForToken(paginationArgs.token)}
-    order by "console"."timestamp" desc
+    order by "console"."number" desc
     limit ${paginationArgs.pageSize}
   `);
 

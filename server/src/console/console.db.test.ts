@@ -5,7 +5,7 @@ import stateFactory from "../state/state.factory";
 import {
   bulkInsertConsole,
   getConsoleByStateIds,
-  getConsolePage,
+  getConsolePageForHook,
 } from "./console.db";
 import consoleFactory from "./console.factory";
 
@@ -60,7 +60,7 @@ describe("console.db", () => {
   describe("getConsolePage", () => {
     it("returns an empty page to start", async () => {
       const hook = await hookFactory.create();
-      const res = await getConsolePage({
+      const res = await getConsolePageForHook({
         hookId: hook.id,
         paginationArgs: { pageSize: 5 },
       });
@@ -76,7 +76,7 @@ describe("console.db", () => {
       const consoles = await consoleFactory
         .associations({ hookId: hook.id })
         .createList(4);
-      const res = await getConsolePage({
+      const res = await getConsolePageForHook({
         hookId: hook.id,
         paginationArgs: { pageSize: 5 },
       });
@@ -99,7 +99,7 @@ describe("console.db", () => {
           .create();
       }
 
-      const page1 = await getConsolePage({
+      const page1 = await getConsolePageForHook({
         hookId: hook.id,
         paginationArgs: { pageSize: 5 },
       });
@@ -108,7 +108,7 @@ describe("console.db", () => {
 
       expect(page1.objects.length).toEqual(5);
 
-      const page2 = await getConsolePage({
+      const page2 = await getConsolePageForHook({
         hookId: hook.id,
         paginationArgs: { pageSize: 5, token: page1.nextToken! },
       });

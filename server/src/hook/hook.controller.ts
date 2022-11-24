@@ -10,6 +10,7 @@ import UpdateHookInput from "./inputs/update-hook.input";
 import CreateKeyInput from "./inputs/create-key.input";
 import createHttpError from "http-errors";
 import templateController from "../template/template.controller";
+import consoleController from "../console/console.controller";
 
 export default Router()
   .use(makeAuthMiddleware())
@@ -38,6 +39,7 @@ export default Router()
     makeAccessMiddleware((req) => req.params.hookId)
   )
   .use("/:hookId/templates", templateController)
+  .use("/:hookId/console", consoleController)
   .get("/:hookId", async function (req, res, next) {
     try {
       const hook = await service.readHook(req.params.hookId);

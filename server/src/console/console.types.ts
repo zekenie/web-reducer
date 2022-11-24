@@ -20,4 +20,5 @@ export type ConsoleRow = {
   requestId?: string;
   stateId?: string;
   hookId: string;
+  number: number;
 };
